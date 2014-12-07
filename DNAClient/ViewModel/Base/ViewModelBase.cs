@@ -20,14 +20,15 @@ namespace DNAClient.ViewModel.Base
     public class ViewModelBase : INotifyPropertyChanged
     {
         
-        internal void RaisePropertyChanged(string prop)
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void RaisePropertyChanged(string prop)
         {
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(prop));
             }
         }
-        public event PropertyChangedEventHandler PropertyChanged;
 
         bool? _CloseWindowFlag;
         public bool? CloseWindowFlag

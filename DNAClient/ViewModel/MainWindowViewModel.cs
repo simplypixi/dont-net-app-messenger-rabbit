@@ -6,11 +6,12 @@
 //   View model głównego okna
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
+using System.Collections.ObjectModel;
 
 namespace DNAClient.ViewModel
 {
     using DNAClient.ViewModel.Base;
-
+    using DNAClient.View;
     /// <summary>
     /// View model głonego okna
     /// </summary>
@@ -57,6 +58,15 @@ namespace DNAClient.ViewModel
         private void NewConversationWindow(object parameter)
         {
            ProductionWindowFactory.CreateConversationWindow(this.Recipient);
+        }
+
+        public ObservableCollection<Contact> contacts =
+            new ObservableCollection<Contact>();
+
+        public ObservableCollection<Contact> Contacts
+        {
+            get { return contacts; }
+            set { contacts = value; }
         }
     }
 }

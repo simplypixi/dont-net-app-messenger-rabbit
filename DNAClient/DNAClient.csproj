@@ -63,6 +63,7 @@
     <Compile Include="ViewModel\ConversationViewModel.cs" />
     <Compile Include="ViewModel\LoginViewModel.cs" />
     <Compile Include="ViewModel\MainWindowViewModel.cs" />
+    <Compile Include="View\Contact.cs" />
     <Compile Include="View\ConversationWindow.xaml.cs">
       <DependentUpon>ConversationWindow.xaml</DependentUpon>
     </Compile>
@@ -70,6 +71,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="View\FriendsBook.cs" />
     <Compile Include="View\LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>
     </Compile>
@@ -122,7 +124,9 @@
       <Name>DTO</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Properties\DataSources\" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="Img\butt_zamk.png" />
     <Resource Include="Img\logo.png" />

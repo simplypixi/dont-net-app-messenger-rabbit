@@ -4,16 +4,16 @@
 winexe
 C#
 .cs
-C:\Users\Mariusz\Desktop\DNA\DNA\DNAClient\obj\Debug\
+C:\Users\Mariusz\Desktop\dna\DNAClient\obj\Debug\
 DNAClient
 none
 false
 DEBUG;TRACE
-C:\Users\Mariusz\Desktop\DNA\DNA\DNAClient\App.xaml
+C:\Users\Mariusz\Desktop\dna\DNAClient\App.xaml
 3-948229014
 
-18-1492383462
-141156453995
+20-1544785832
+14120061962
 View\ConversationWindow.xaml;View\LoginWindow.xaml;View\MainWindow.xaml;
 
 True
