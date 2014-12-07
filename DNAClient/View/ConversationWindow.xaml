@@ -1,0 +1,41 @@
+﻿<Window x:Class="DNAClient.View.ConversationWindow"
+        x:Name="Conversation"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:DNAClient.ViewModel"
+        DataContext="{DynamicResource ConversationViewModel}"
+        Title="ConversationWindow" Height="300" Width="500">   
+    <Window.Resources>
+        <vm:ConversationViewModel x:Key="ConversationViewModel"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" MinHeight="30"/>
+        </Grid.RowDefinitions>
+        
+        <StackPanel Grid.Row="0">
+            <TextBlock Height="24" Margin="5,5,5,0" Text="User"/>
+            <TextBox Height="24" Text="{Binding User}" Margin="5,0"/>
+            <TextBlock Height="24" Margin="5,5,5,0" Text="Recipient"/>
+            <TextBox Height="24" Text="{Binding Recipient}" Margin="5,0"/>
+            <Grid Margin="0,5" Height="150">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Height="24" Width="200" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,15,5,0" Text="Message"/>
+                <TextBox Grid.Column="0" Height="80" Width="200" HorizontalAlignment="Left" Text="{Binding Message}" Margin="5,0" AcceptsReturn="True" TextWrapping="Wrap"/>
+                <TextBlock Grid.Column="1" Height="24" Width="200" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="5,15,5,0" Text="Received"/>
+                <TextBox Grid.Column="1" Height="80" Text="{Binding Received}" Margin="5,0" AcceptsReturn="True" TextWrapping="Wrap" IsReadOnly="True" VerticalScrollBarVisibility="Auto"/>
+            </Grid>
+            
+        </StackPanel>
+        <Button Grid.Row="1" Height="24" Width="60" HorizontalAlignment="Left" Margin="5"
+                Content="Send"
+                Command="{Binding SendMessageCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="lol"/>
+        <Button Grid.Row="1" Height="24" Width="60" HorizontalAlignment="Right" Margin="5"
+                Content="Close"
+                Command="{Binding CloseWindowCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="{Binding ElementName=Conversation}"/>
+    </Grid>
+</Window>

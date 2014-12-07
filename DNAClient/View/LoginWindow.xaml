@@ -1,0 +1,22 @@
+﻿<Window x:Class="DNAClient.View.LoginWindow"
+        x:Name="Window"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:DNAClient.ViewModel"
+        DataContext="{DynamicResource LoginViewModel}"
+        Title="LoginWindow" Height="200" Width="300">
+
+    <Window.Resources>
+        <vm:LoginViewModel x:Key="LoginViewModel"/>
+    </Window.Resources>
+    <Grid>
+        <StackPanel>
+            <TextBlock Height="24" Margin="5,5,5,0" Text="Ekran logowania/rejestracji" HorizontalAlignment="Center"/>
+            <TextBlock Height="24" Margin="5,5,5,0" Text="Login"/>
+            <TextBox Height="24" Text="{Binding Login}" Margin="5,0"/>
+            <Button Height="24" Width="80" HorizontalAlignment="Left" Margin="5"
+                Content="Login"
+                Command="{Binding LoginCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="{Binding ElementName=Window}"/>
+        </StackPanel>
+    </Grid>
+</Window>
