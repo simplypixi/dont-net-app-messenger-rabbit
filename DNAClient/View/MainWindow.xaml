@@ -3,18 +3,53 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:DNAClient.ViewModel"
         DataContext="{DynamicResource MainWindowViewModel}"
-        Title="MainWindow" Height="300" Width="300">
+        WindowStyle="None"
+		ResizeMode="NoResize"
+        Title="DNA" Height="350" Width="305" Background="#FF02B6E3" WindowStartupLocation="CenterScreen" BorderBrush="#FF02B6E3">
     <Window.Resources>
         <vm:MainWindowViewModel x:Key="MainWindowViewModel"/>
     </Window.Resources>
+ 
     <Grid>
-        <StackPanel>
-            <TextBlock Height="24" Margin="5,5,5,0" Text="To będzie nasze główne okno" HorizontalAlignment="Center"/>
-            <TextBlock Height="24" Margin="5,5,5,0" Text="Recipient"/>
-            <TextBox Height="24" Text="{Binding Recipient}" Margin="5,0"/>
-            <Button Height="24" Width="100" HorizontalAlignment="Left" Margin="5"
-                Content="New conversation"
-                Command="{Binding NewConversationWindowCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="lol"/>
+        <StackPanel VerticalAlignment="Top">
+            <Grid x:Name="top" Height="49">
+                <Button Content="" HorizontalAlignment="Left" Margin="282,10,0,0" VerticalAlignment="Top" Height="13" Width="13" BorderBrush="{x:Null}" Cursor="Hand" IsCancel="True" ClipToBounds="True" ToolTip="Kliknij, aby zamknąć" RenderTransformOrigin="0.923,-9.385" Panel.ZIndex="11">
+                    <Button.Background>
+
+                        <ImageBrush ImageSource="../Img/butt_zamk.png"/>
+                    </Button.Background>
+                </Button>
+                <Image Margin="10,10,252,-6.128" Source="../Img/logo.png" Stretch="Fill" Height="50" Width="35"/>
+                <Rectangle Fill="#FF02B6E3" HorizontalAlignment="Left" Height="12.128" Margin="11,43,0,-6.128" Stroke="#FF02B6E3" VerticalAlignment="Top" Width="51"/>
+            </Grid>
+            <Grid x:Name="lista" Height="234">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="58*"/>
+                    <RowDefinition Height="59*"/>
+                </Grid.RowDefinitions>
+                <ScrollViewer Height="214" VerticalAlignment="Top" Margin="10,10,9,0" PanningMode="VerticalOnly" Grid.RowSpan="2">
+                    <ItemsControl Height="214" VerticalAlignment="Top" Width="283" Margin="-7,0,0,0">
+                        <Button Content="Maciej" Height="42.96" Foreground="White" BorderBrush="White" Background="#FF02B6E3" ClickMode="Press" FontSize="13.333" Margin="7,0,8,14"
+                                 Command="{Binding NewConversationWindowCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="lol"
+                                />
+                        <Button Content="Darek" Height="42.96" Foreground="White" BorderBrush="White" Background="#FF02B6E3" ClickMode="Press" FontSize="13.333" Margin="7,0,8,14"
+                                 Command="{Binding NewConversationWindowCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="lol"
+                                />
+                        <Button Content="Maciek" Height="42.96" Foreground="White" BorderBrush="White" Background="#FF02B6E3" ClickMode="Press" FontSize="13.333" Margin="7,0,8,14"
+                                 Command="{Binding NewConversationWindowCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="lol"
+                                />
+                        <Button Content="Maciej" Height="42.96" Foreground="White" BorderBrush="White" Background="#FF02B6E3" ClickMode="Press" FontSize="13.333" Margin="7,0,8,14"
+                                 Command="{Binding NewConversationWindowCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="lol"
+                                />
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+
+            <Grid Height="58" Margin="0" HorizontalAlignment="Left" Width="295">
+                <TextBox HorizontalAlignment="Left" Height="40" Text="{Binding Recipient}" Padding="5,5,10,0" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="228.667" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
+                <Button x:Name="button" Padding="0,-18,0,0" Content="+" HorizontalAlignment="Left" VerticalAlignment="Top" Width="43.333" Height="40" Background="#FF02B6E3" BorderBrush="{x:Null}" FontFamily="Segoe UI Semibold" FontSize="48" Foreground="White" ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="249.667,10,0,0" Cursor="Hand" ToolTip="Kliknij, aby dodać znajomego."/>
+            </Grid>
         </StackPanel>
     </Grid>
+
 </Window>

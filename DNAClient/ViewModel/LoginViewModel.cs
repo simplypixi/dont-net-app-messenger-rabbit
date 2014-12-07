@@ -40,8 +40,13 @@ namespace DNAClient.ViewModel
             set
             {
                 this.login = value;
-                this.RaisePropertyChanged("Login");
+                this.RaisePropertyChanged("Podaj login...");
             }
+        }
+
+        private void Button_Click(object s, System.Windows.RoutedEventArgs e)
+        {
+            this.CloseWindow();
         }
 
         /// <summary>
