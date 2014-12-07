@@ -12,6 +12,7 @@ namespace DNA
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Data.SqlClient;
 
     using DTO;
 
@@ -71,11 +72,25 @@ namespace DNA
                     message.Message);
                 SendMessageNotification(message);
             }
-
-            if (routingKey == "server.request.authorization")
+          
+            if (routingKey == "server.request.login")
             {
-                var authorizationRequest = body.DeserializeAuthResponse();
+                AuthRequest authorizationRequest = body.DeserializeAuthRequest();
                 Console.WriteLine(" [Auth] '{0}':'{1}'", routingKey, authorizationRequest.Login);
+
+                string connetionString = "Data Source=montwulfpc\Baza;Initial Catalog=DNA;User ID=dna;Password=dna"; 
+                string sql = string.Format("SELECT 1 FROM User WHERE login = '{0}'",authorizationRequest.Login);
+                SqlConnection conn = new SqlConnection(connetionString);
+
+                conn.Open();
+                using(SqlCommand command = new SqlCommand(sql, conn))
+                { 
+                    if(command.ExecuteNonQuery() > 0)
+                    {
+                        
+                    }
+                }
+                conn.Close(); 
             }
         }
 
