@@ -26,9 +26,21 @@ namespace DNAClient.View
             InitializeComponent();
         }
 
-        private void Label_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void MainWindow_MouseDown(object sender, MouseButtonEventArgs e)
         {
-
+            if (e.ChangedButton == MouseButton.Left)
+                this.DragMove();
         }
+
+        private void lista1_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            var item = ItemsControl.ContainerFromElement(lista1, e.OriginalSource as DependencyObject) as ListBoxItem;
+            if (item != null)
+            {
+                Contact st = item.DataContext as Contact;
+                ProductionWindowFactory.CreateConversationWindow(st.Name);
+            }
+        }
+
     }
 }

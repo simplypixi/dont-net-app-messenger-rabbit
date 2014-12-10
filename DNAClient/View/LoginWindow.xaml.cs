@@ -23,5 +23,11 @@ namespace DNAClient.View
         {
             InitializeComponent();
         }
+
+        private void LoginWindow_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                this.DragMove();
+        }
     }
 }

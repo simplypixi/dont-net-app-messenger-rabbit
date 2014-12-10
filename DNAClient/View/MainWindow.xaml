@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         xmlns:vm="clr-namespace:DNAClient.ViewModel"
+        MouseDown="MainWindow_MouseDown"
         DataContext="{DynamicResource FriendsBookViewModel}"
         WindowStyle="None"
 		ResizeMode="NoResize"
@@ -39,18 +40,20 @@
                          IsTabStop="True"
                          IsSynchronizedWithCurrentItem="False"
                          SelectedItem="{Binding SelectedContact}"
+                         PreviewMouseDoubleClick="lista1_PreviewMouseDown" 
                          
                          >
                     <ListBox.InputBindings>
                         <MouseBinding Gesture="LeftDoubleClick"
                                       Command="{Binding NewConversationWindowCommand, UpdateSourceTrigger=PropertyChanged}"
-                                      CommandParameter=" "/>
+                                     />
                     </ListBox.InputBindings>
+                    
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Width="270">
+
                                 <Label Content="{Binding Name}" 
-                        
                                        HorizontalAlignment="Stretch" Cursor="Hand" Foreground="#fff" MinWidth="200"></Label>
                             </StackPanel>
                         </DataTemplate>

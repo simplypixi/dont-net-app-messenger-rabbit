@@ -3,6 +3,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:DNAClient.ViewModel"
+        MouseDown="LoginWindow_MouseDown"
         DataContext="{DynamicResource LoginViewModel}"
         WindowStyle="None"
         Title="DNA" Height="337" Width="294" Background="#FF02B6E3" WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
