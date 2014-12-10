@@ -17,39 +17,18 @@ namespace DNAClient.View
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    using DNAClient.ViewModel;
     public partial class MainWindow : Window
     {
 
         public MainWindow()
         {
             InitializeComponent();
-
-            Console.WriteLine("Dodano 1.");
-            ContactList.Contacts.Add(new Contact() { Name = "Darek" });
-            Console.WriteLine("Dodano 2.");
-            ContactList.Contacts.Add(new Contact() { Name = "Maciek" });
-            ContactList.Contacts.Add(new Contact() { Name = "Maciej" });
-            ContactList.Contacts.Add(new Contact() { Name = "Mariusz" });
         }
 
-        private void button_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void Label_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            //    Tworzę kontakt.
-            Contact contact = new Contact() { Name = loginBox.Text };
-            //    Dodaję do listy.
-          
-            ContactList.Contacts.Add(contact);
-            Console.WriteLine("Dodano: " + ContactList.Contacts[ContactList.Contacts.Count-1].Name);
 
-        }
-
-        private void lista1_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            var item = ItemsControl.ContainerFromElement(lista1, e.OriginalSource as DependencyObject) as ListBoxItem;
-            if (item != null)
-            {
-                Contact st = item.DataContext as Contact;
-            }
         }
     }
 }

@@ -22,9 +22,17 @@ namespace DNAClient.ViewModel
         /// </summary>
         private string recipient;
 
+        private Contact selectedContact;
+
         public MainWindowViewModel()
         {
             this.NewConversationWindowCommand = new RelayCommand(this.NewConversationWindow);
+            this.addFriendCommand = new RelayCommand(this.addNewFriend);
+
+            Contacts.Add(new Contact() { Name = "Maciek" });
+            Contacts.Add(new Contact() { Name = "Maciej" });
+            Contacts.Add(new Contact() { Name = "Mariusz" });
+            Contacts.Add(new Contact() { Name = "Darek" });
         }
 
         /// <summary>
@@ -44,6 +52,20 @@ namespace DNAClient.ViewModel
             }
         }
 
+        public Contact SelectedContact {
+            get
+            {
+                return this.selectedContact;
+            }
+
+            set
+            {
+                this.selectedContact = value;
+                this.RaisePropertyChanged("SelectedContact");
+            }
+
+        }
+
         /// <summary>
         /// Komenda otwarcia nowego okna konweracji
         /// </summary>
@@ -57,16 +79,41 @@ namespace DNAClient.ViewModel
         /// </param>
         private void NewConversationWindow(object parameter)
         {
-           ProductionWindowFactory.CreateConversationWindow(this.Recipient);
+           ProductionWindowFactory.CreateConversationWindow(this.SelectedContact.Name);
         }
+
+         public RelayCommand addFriendCommand { get; set; }
+        private string friendName;
 
         public ObservableCollection<Contact> contacts =
             new ObservableCollection<Contact>();
 
         public ObservableCollection<Contact> Contacts
         {
-            get { return contacts; }
-            set { contacts = value; }
+            get {
+                return contacts; }
+            set { 
+                contacts = value;
+                RaisePropertyChanged("Contacts");
+            }
+        }
+
+        public string Friend
+        {
+            get
+            {
+                return this.friendName;
+            }
+
+            set
+            {
+                this.friendName = value;
+                this.RaisePropertyChanged("Friend");
+            }
+        }
+
+        private void addNewFriend(object parameter){
+            Contacts.Add(new Contact() { Name = this.Friend });
         }
     }
 }

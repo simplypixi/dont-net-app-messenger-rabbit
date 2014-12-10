@@ -3,14 +3,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-        xmlns:local="clr-namespace:DNAClient.View" 
+        xmlns:vm="clr-namespace:DNAClient.ViewModel"
+        DataContext="{DynamicResource FriendsBookViewModel}"
         WindowStyle="None"
 		ResizeMode="NoResize"
         Title="DNA" Height="350" Width="305" Background="#FF02B6E3" WindowStartupLocation="CenterScreen" BorderBrush="#FF02B6E3">
-    <Window.DataContext>
-        <local:FriendsBook x:Name="ContactList"/>
-    </Window.DataContext>
 
+    <Window.Resources>
+        <vm:MainWindowViewModel x:Key="FriendsBookViewModel"/>
+    </Window.Resources>
+    
     <Grid>
         <StackPanel VerticalAlignment="Top">
             <Grid x:Name="top" Height="49">
@@ -27,13 +29,43 @@
                     <RowDefinition Height="58*"/>
                     <RowDefinition Height="59*"/>
                 </Grid.RowDefinitions>
-                <ListBox x:Name="lista1" HorizontalAlignment="Left" Height="224" Margin="10,10,0,0" VerticalAlignment="Top" Width="285" Grid.RowSpan="2" Background="#FF02B6E3" Cursor="Hand" 
-                         ItemsSource="{Binding Contacts}" BorderBrush="#FF6FD3EC" IsTabStop="True" PreviewMouseDoubleClick="lista1_PreviewMouseDown" IsSynchronizedWithCurrentItem="False"/>
+                <ListBox x:Name="lista1" HorizontalAlignment="Left" 
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         Height="224" 
+                         Margin="10,10,0,0" VerticalAlignment="Top" 
+                         Width="285" Grid.RowSpan="2" 
+                         Background="#FF02B6E3"
+                         ItemsSource="{Binding Contacts}" 
+                         IsTabStop="True"
+                         IsSynchronizedWithCurrentItem="False"
+                         SelectedItem="{Binding SelectedContact}"
+                         
+                         >
+                    <ListBox.InputBindings>
+                        <MouseBinding Gesture="LeftDoubleClick"
+                                      Command="{Binding NewConversationWindowCommand, UpdateSourceTrigger=PropertyChanged}"
+                                      CommandParameter=" "/>
+                    </ListBox.InputBindings>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Width="270">
+                                <Label Content="{Binding Name}" 
+                        
+                                       HorizontalAlignment="Stretch" Cursor="Hand" Foreground="#fff" MinWidth="200"></Label>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
             </Grid>
 
             <Grid Height="58" Margin="0" HorizontalAlignment="Left" Width="295">
-                <TextBox x:Name="loginBox" HorizontalAlignment="Left" Height="40" Padding="5,5,10,0" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="228.667" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="Segoe UI Light" FontSize="18.667" BorderThickness="1" Text="Wpisz login..."/>
-                <Button x:Name="button" Padding="0,-18,0,0" Content="+" HorizontalAlignment="Left" VerticalAlignment="Top" Width="43.333" Height="40" Background="#FF02B6E3" BorderBrush="{x:Null}" FontFamily="Segoe UI Semibold" FontSize="48" Foreground="White" ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="249.667,10,0,0" Cursor="Hand" ToolTip="Kliknij, aby dodać znajomego." Click="button_Click"/>
+                <TextBox x:Name="loginBox" HorizontalAlignment="Left" Height="40" Padding="5,5,10,0" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="228.667" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="Segoe UI Light" FontSize="18.667" BorderThickness="1" Text="{Binding Friend}"/>
+                <Button x:Name="button" 
+                        Padding="0,-18,0,0" 
+                        Command="{Binding addFriendCommand, UpdateSourceTrigger=PropertyChanged}"
+                        CommandParameter=" "
+                        Content="+" HorizontalAlignment="Left" VerticalAlignment="Top" Width="43.333" Height="40" Background="#FF02B6E3" BorderBrush="{x:Null}" FontFamily="Segoe UI Semibold" FontSize="48" 
+                        Foreground="White" ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="249.667,10,0,0" Cursor="Hand" ToolTip="Kliknij, aby dodać znajomego."/>
             </Grid>
         </StackPanel>
     </Grid>

@@ -40,7 +40,7 @@ namespace DNAClient.ViewModel
             set
             {
                 this.login = value;
-                this.RaisePropertyChanged("Podaj login...");
+                this.RaisePropertyChanged("Login");
             }
         }
 
