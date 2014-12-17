@@ -50,7 +50,8 @@ namespace DNAClient.ViewModel
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
 
             // Uruchomienie zadania, które w tle będzie nasłuchiwać wiadomości przychodzących z serwera
-            Task.Factory.StartNew(() => GetChannel(this));
+            var ctx = SynchronizationContext.Current;
+            Task.Factory.StartNew(() => GetChannel(this, ctx));
         }
 
         /// <summary>
@@ -147,7 +148,7 @@ namespace DNAClient.ViewModel
         /// </summary>
         private void SendMessageToQueue()
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
+            var factory = new ConnectionFactory() { HostName = "localhost" /*, UserName = "dna", Password = "dna" */};
             using (var connection = factory.CreateConnection())
             {
                 using (var channel = connection.CreateModel())
@@ -177,9 +178,9 @@ namespace DNAClient.ViewModel
         /// Przekazuje tutaj view model, ponieważ ta metoda musi być statyczna, a trzeba jakoś 
         /// ustawić property od odebranych wiadomości (pewnie nie jest to zbyt dobra praktyka, ale póki co działa :P)
         /// </param>
-        public static void GetChannel(ConversationViewModel conversationViewModel)
+        public static void GetChannel(ConversationViewModel conversationViewModel, SynchronizationContext ctx)
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
+            var factory = new ConnectionFactory() { HostName = "localhost" /*, UserName = "dna", Password = "dna" */ };
             using (var connection = factory.CreateConnection())
             {
                 using (var channel = connection.CreateModel())
@@ -190,7 +191,7 @@ namespace DNAClient.ViewModel
                     Debug.WriteLine(" [Clt] Waiting for request.");
 
                     var consumer = new EventingBasicConsumer(channel);
-                    consumer.Received += (_, msg) => Receive(msg, conversationViewModel);
+                    consumer.Received += (_, msg) => ctx.Post( foo_ => Receive(msg, conversationViewModel), null);
 
                     channel.QueueBind(queueName, "ClientExchange", string.Format("client.notification.*.{0}", conversationViewModel.User));
                     channel.BasicConsume(queueName, true, consumer);

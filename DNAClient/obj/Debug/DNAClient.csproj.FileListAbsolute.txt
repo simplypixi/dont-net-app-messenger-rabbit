@@ -98,3 +98,14 @@ C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\obj\Debug\DNAClient.Properties.R
 C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\obj\Debug\DNAClient.csproj.GenerateResource.Cache
 C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\obj\Debug\DNAClient.exe
 C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\obj\Debug\DNAClient.pdb
+C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\bin\Debug\System.Windows.Interactivity.dll
+C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\bin\Debug\System.Windows.Interactivity.xml
+C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\bin\Debug\de\System.Windows.Interactivity.resources.dll
+C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\bin\Debug\en\System.Windows.Interactivity.resources.dll
+C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\bin\Debug\es\System.Windows.Interactivity.resources.dll
+C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\bin\Debug\fr\System.Windows.Interactivity.resources.dll
+C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\bin\Debug\it\System.Windows.Interactivity.resources.dll
+C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\bin\Debug\ja\System.Windows.Interactivity.resources.dll
+C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\bin\Debug\ko\System.Windows.Interactivity.resources.dll
+C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\bin\Debug\zh-Hans\System.Windows.Interactivity.resources.dll
+C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\bin\Debug\zh-Hant\System.Windows.Interactivity.resources.dll

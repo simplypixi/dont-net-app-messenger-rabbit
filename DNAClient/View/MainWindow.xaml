@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         xmlns:vm="clr-namespace:DNAClient.ViewModel"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         MouseDown="MainWindow_MouseDown"
         DataContext="{DynamicResource FriendsBookViewModel}"
         WindowStyle="None"
@@ -17,13 +18,23 @@
     <Grid>
         <StackPanel VerticalAlignment="Top">
             <Grid x:Name="top" Height="49">
-                <Button Content="" HorizontalAlignment="Left" Margin="281,10,0,0" VerticalAlignment="Top" Height="13" Width="13" BorderBrush="{x:Null}" Cursor="Hand" IsCancel="True" ClipToBounds="True" ToolTip="Kliknij, aby zamknąć" RenderTransformOrigin="0.923,-9.385" Panel.ZIndex="11">
+                <Button 
+                    
+                    Content="" HorizontalAlignment="Left" Margin="281,10,0,0" VerticalAlignment="Top" Height="13" Width="13" BorderBrush="{x:Null}" Cursor="Hand" IsCancel="True" ClipToBounds="True" ToolTip="Kliknij, aby zamknąć" RenderTransformOrigin="0.923,-9.385" Panel.ZIndex="11">
                     <Button.Background>
                         <ImageBrush ImageSource="../Img/butt_zamk.png"/>
                     </Button.Background>
                 </Button>
                 <Image Margin="14,10,259,-11" Source="../Img/logo.png" Stretch="Fill" Height="50"/>
                 <Rectangle Fill="#FF02B6E3" HorizontalAlignment="Left" Height="12.128" Margin="11,49,0,-12.128" Stroke="#FF02B6E3" VerticalAlignment="Top" Width="51"/>
+                <TextBlock HorizontalAlignment="Left" Margin="60,7,0,0" TextWrapping="Wrap" Text="Użytkownik: " VerticalAlignment="Top" Foreground="#FFE0E0E0"/>
+                <TextBlock HorizontalAlignment="Left" Margin="129,7,0,0" TextWrapping="Wrap" Text="Niezalogowany" VerticalAlignment="Top" Foreground="White"/>
+                <TextBlock HorizontalAlignment="Left" Margin="60,27,0,0" TextWrapping="Wrap" Text="Status: " VerticalAlignment="Top" Foreground="#FFE0E0E0"/>
+                <ComboBox HorizontalAlignment="Left" Margin="103.383,27.96,0,0" VerticalAlignment="Top" Width="31.374" Height="15" BorderBrush="{x:Null}" Background="{x:Null}" Foreground="White">
+                    <ComboBoxItem Content="Dostępny" HorizontalAlignment="Left" Background="#FF02B6E3" Padding="6,4,10,5" Width="100"/>
+                    <ComboBoxItem Content="Zajęty" HorizontalAlignment="Left" Background="#FF02B6E3" Padding="6,4,10,5" Width="100"/>
+                    <ComboBoxItem Content="Niedostępny" HorizontalAlignment="Left" Background="#FF02B6E3" Padding="6,4,10,5" Width="100"/>
+                </ComboBox>
             </Grid>
             <Grid x:Name="list" Height="234">
                 <Grid.RowDefinitions>
@@ -40,14 +51,15 @@
                          IsTabStop="True"
                          IsSynchronizedWithCurrentItem="False"
                          SelectedItem="{Binding SelectedContact}"
-                         PreviewMouseDoubleClick="lista1_PreviewMouseDown" 
+                    
                          
                          >
-                    <ListBox.InputBindings>
-                        <MouseBinding Gesture="LeftDoubleClick"
-                                      Command="{Binding NewConversationWindowCommand, UpdateSourceTrigger=PropertyChanged}"
-                                     />
-                    </ListBox.InputBindings>
+
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseDoubleClick">
+                            <i:InvokeCommandAction Command="{Binding NewConversationWindowCommand}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
                     
                     <ListBox.ItemTemplate>
                         <DataTemplate>

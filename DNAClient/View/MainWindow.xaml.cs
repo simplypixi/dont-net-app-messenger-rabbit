@@ -32,15 +32,5 @@ namespace DNAClient.View
                 this.DragMove();
         }
 
-        private void lista1_PreviewMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            var item = ItemsControl.ContainerFromElement(lista1, e.OriginalSource as DependencyObject) as ListBoxItem;
-            if (item != null)
-            {
-                Contact st = item.DataContext as Contact;
-                ProductionWindowFactory.CreateConversationWindow(st.Name);
-            }
-        }
-
     }
 }
