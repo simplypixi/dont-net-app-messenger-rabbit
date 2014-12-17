@@ -1,0 +1,16 @@
+F:\Nowy folder\dna\DTO\bin\Debug\DTO.dll
+F:\Nowy folder\dna\DTO\bin\Debug\RabbitMQ.Client.dll
+F:\Nowy folder\dna\DTO\bin\Debug\ServiceStack.Client.dll
+F:\Nowy folder\dna\DTO\bin\Debug\ServiceStack.Common.dll
+F:\Nowy folder\dna\DTO\bin\Debug\ServiceStack.dll
+F:\Nowy folder\dna\DTO\bin\Debug\ServiceStack.Interfaces.dll
+F:\Nowy folder\dna\DTO\bin\Debug\ServiceStack.Text.dll
+F:\Nowy folder\dna\DTO\bin\Debug\RabbitMQ.Client.xml
+F:\Nowy folder\dna\DTO\bin\Debug\ServiceStack.xml
+F:\Nowy folder\dna\DTO\bin\Debug\ServiceStack.Client.xml
+F:\Nowy folder\dna\DTO\bin\Debug\ServiceStack.Common.xml
+F:\Nowy folder\dna\DTO\bin\Debug\ServiceStack.Text.xml
+F:\Nowy folder\dna\DTO\obj\Debug\DTO.dll
+F:\Nowy folder\dna\DTO\obj\Debug\DTO.pdb
+F:\Nowy folder\dna\DTO\obj\Debug\DTO.csprojResolveAssemblyReference.cache
+F:\Nowy folder\dna\DTO\bin\Debug\DTO.pdb

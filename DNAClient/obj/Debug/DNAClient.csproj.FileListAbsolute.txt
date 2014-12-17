@@ -109,3 +109,39 @@ C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\bin\Debug\ja\System.Windows.Inte
 C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\bin\Debug\ko\System.Windows.Interactivity.resources.dll
 C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\bin\Debug\zh-Hans\System.Windows.Interactivity.resources.dll
 C:\Users\Mariusz\Documents\GitHub\dna\DNAClient\bin\Debug\zh-Hant\System.Windows.Interactivity.resources.dll
+F:\Nowy folder\dna\DNAClient\bin\Debug\DNAClient.exe.config
+F:\Nowy folder\dna\DNAClient\bin\Debug\DNAClient.exe
+F:\Nowy folder\dna\DNAClient\bin\Debug\DNAClient.pdb
+F:\Nowy folder\dna\DNAClient\bin\Debug\DTO.dll
+F:\Nowy folder\dna\DNAClient\bin\Debug\RabbitMQ.Client.dll
+F:\Nowy folder\dna\DNAClient\bin\Debug\System.Windows.Interactivity.dll
+F:\Nowy folder\dna\DNAClient\bin\Debug\ServiceStack.Text.dll
+F:\Nowy folder\dna\DNAClient\bin\Debug\RabbitMQ.Client.xml
+F:\Nowy folder\dna\DNAClient\bin\Debug\System.Windows.Interactivity.xml
+F:\Nowy folder\dna\DNAClient\bin\Debug\ServiceStack.Text.xml
+F:\Nowy folder\dna\DNAClient\bin\Debug\de\System.Windows.Interactivity.resources.dll
+F:\Nowy folder\dna\DNAClient\bin\Debug\en\System.Windows.Interactivity.resources.dll
+F:\Nowy folder\dna\DNAClient\bin\Debug\es\System.Windows.Interactivity.resources.dll
+F:\Nowy folder\dna\DNAClient\bin\Debug\fr\System.Windows.Interactivity.resources.dll
+F:\Nowy folder\dna\DNAClient\bin\Debug\it\System.Windows.Interactivity.resources.dll
+F:\Nowy folder\dna\DNAClient\bin\Debug\ja\System.Windows.Interactivity.resources.dll
+F:\Nowy folder\dna\DNAClient\bin\Debug\ko\System.Windows.Interactivity.resources.dll
+F:\Nowy folder\dna\DNAClient\bin\Debug\zh-Hans\System.Windows.Interactivity.resources.dll
+F:\Nowy folder\dna\DNAClient\bin\Debug\zh-Hant\System.Windows.Interactivity.resources.dll
+F:\Nowy folder\dna\DNAClient\obj\Debug\DNAClient.csprojResolveAssemblyReference.cache
+F:\Nowy folder\dna\DNAClient\obj\Debug\View\ConversationWindow.g.cs
+F:\Nowy folder\dna\DNAClient\obj\Debug\View\LoginWindow.g.cs
+F:\Nowy folder\dna\DNAClient\obj\Debug\View\MainWindow.g.cs
+F:\Nowy folder\dna\DNAClient\obj\Debug\App.g.cs
+F:\Nowy folder\dna\DNAClient\obj\Debug\GeneratedInternalTypeHelper.g.cs
+F:\Nowy folder\dna\DNAClient\obj\Debug\DNAClient_MarkupCompile.cache
+F:\Nowy folder\dna\DNAClient\obj\Debug\DNAClient_MarkupCompile.lref
+F:\Nowy folder\dna\DNAClient\obj\Debug\View\ConversationWindow.baml
+F:\Nowy folder\dna\DNAClient\obj\Debug\View\LoginWindow.baml
+F:\Nowy folder\dna\DNAClient\obj\Debug\View\MainWindow.baml
+F:\Nowy folder\dna\DNAClient\obj\Debug\DNAClient.g.resources
+F:\Nowy folder\dna\DNAClient\obj\Debug\DNAClient.Properties.Resources.resources
+F:\Nowy folder\dna\DNAClient\obj\Debug\DNAClient.csproj.GenerateResource.Cache
+F:\Nowy folder\dna\DNAClient\obj\Debug\DNAClient.exe
+F:\Nowy folder\dna\DNAClient\obj\Debug\DNAClient.pdb
+F:\Nowy folder\dna\DNAClient\bin\Debug\DTO.pdb

@@ -14,7 +14,6 @@ namespace DNA
     using System.Threading.Tasks;
 
     using DTO;
-
     using RabbitMQ.Client;
     using RabbitMQ.Client.Events;
 
@@ -24,6 +23,7 @@ namespace DNA
     public class Server
     {
         private static readonly ManualResetEvent FinishEvent = new ManualResetEvent(false);
+        private static ConnectionFactory factory = Constants.ConnectionFactory;
 
         static void Main(string[] args)
         {
@@ -36,19 +36,18 @@ namespace DNA
 
         public static void GetChannel()
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
             using (var connection = factory.CreateConnection())
             {
                 using (var channel = connection.CreateModel())
                 {
-                    channel.ExchangeDeclare("ServerExchange", "topic");
+                    channel.ExchangeDeclare(Constants.Exchange, "topic");
                     var queueName = channel.QueueDeclare();
 
                     Console.WriteLine(" [Srv] Waiting for request. " + "To exit press CTRL+C");
 
                     var consumer = new EventingBasicConsumer(channel);
                     consumer.Received += (_, msg) => Receive(msg);
-                    channel.QueueBind(queueName, "ServerExchange", "server.request.*");
+                    channel.QueueBind(queueName, Constants.Exchange, Constants.keyServerRequest + ".*");
                     channel.BasicConsume(queueName, true, consumer);
 
                     FinishEvent.WaitOne();
@@ -61,7 +60,7 @@ namespace DNA
             var body = args.Body;
             var routingKey = args.RoutingKey;
 
-            if (routingKey == "server.request.message")
+            if (routingKey == Constants.keyServerRequestMessage)
             {
                 var message = body.DeserializeMessageReq();
                
@@ -73,7 +72,7 @@ namespace DNA
                 SendMessageNotification(message);
             }
 
-            if (routingKey == "server.request.authorization")
+            if (routingKey == Constants.keyServerRequestAuthorization)
             {
                 var authorizationRequest = body.DeserializeAuthResponse();
                 Console.WriteLine(" [Auth] '{0}':'{1}'", routingKey, authorizationRequest.Login);
@@ -82,14 +81,13 @@ namespace DNA
 
         private static void SendMessageNotification(MessageReq messageReq)
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" };
             using (var connection = factory.CreateConnection())
             {
                 using (var channel = connection.CreateModel())
                 {
-                    channel.ExchangeDeclare("ClientExchange", "topic");
+                    channel.ExchangeDeclare(Constants.Exchange, "topic");
 
-                    var routingKey = string.Format("client.notification.message.{0}", messageReq.Recipient);
+                    var routingKey = string.Format(Constants.keyClientNotificationMessage + messageReq.Recipient);
                     var message = new MessageNotification
                     {
                         Message = messageReq.Message,
@@ -99,7 +97,7 @@ namespace DNA
                     };
 
                     var body = message.Serialize();
-                    channel.BasicPublish("ClientExchange", routingKey, null, body);
+                    channel.BasicPublish(Constants.Exchange, routingKey, null, body);
 
                     Console.WriteLine(
                         " [Msg] KEY[{0}] From: {1} '{2}' - To: {3}",
