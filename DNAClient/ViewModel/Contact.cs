@@ -20,6 +20,7 @@ namespace DNAClient.ViewModel
         }
 
         protected string name;
+        protected string state;
 
         public string Name
         {
@@ -33,6 +34,20 @@ namespace DNAClient.ViewModel
                 }
             }
         }
+
+        public string State
+        {
+            get { return state;  }
+            set
+            {
+                if (state != value)
+                {
+                    state = value;
+                    RaisePropertyChanged("State");
+                }
+            }
+        }
+
 
     }
 }

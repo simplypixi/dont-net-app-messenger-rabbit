@@ -64,6 +64,7 @@ namespace DNA
             if (routingKey == "server.request.message")
             {
                 var message = body.DeserializeMessageReq();
+               
                 Console.WriteLine(
                     " [Msg] '{0}':'{1} - {2}'",
                     routingKey,

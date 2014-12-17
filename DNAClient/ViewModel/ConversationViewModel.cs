@@ -218,7 +218,8 @@ namespace DNAClient.ViewModel
             if (routingKey.StartsWith("client.notification"))
             {
                 var message = body.DeserializeMessageNotification();
-                conversationViewModel.Received += "\n" + message.Message;
+                conversationViewModel.Received += message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n\n";
+
             }
         }
     }
