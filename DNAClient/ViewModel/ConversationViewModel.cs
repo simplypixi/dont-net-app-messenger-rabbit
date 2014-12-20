@@ -139,8 +139,17 @@ namespace DNAClient.ViewModel
 
         private void SendMessage(object parameter)
         {
-            this.Received += DateTimeOffset.Now + " przez Ja:\n" + this.Message + "\n\n";
-            this.SendMessageToQueue();
+            if (this.Message != null)
+            {
+                this.Message = this.Message.Trim();
+            }
+
+            if (this.Message != String.Empty)
+            {
+                this.Received += DateTimeOffset.Now + " przez Ja:\n" + this.Message + "\n\n";
+                this.SendMessageToQueue();
+                this.Message = String.Empty;
+            }
         }
 
         /// <summary>
