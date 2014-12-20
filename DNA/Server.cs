@@ -55,6 +55,12 @@ namespace DNA
             }
         }
 
+        /// <summary>
+        /// Metoda obsługująca odebranie wiadomości
+        /// </summary>
+        /// <param name="args">
+        /// The args.
+        /// </param>
         private static void Receive(BasicDeliverEventArgs args)
         {
             var body = args.Body;
