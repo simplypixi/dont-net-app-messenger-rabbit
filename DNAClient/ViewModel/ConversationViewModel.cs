@@ -11,6 +11,8 @@ namespace DNAClient.ViewModel
 {
     using System;
     using System.Diagnostics;
+    using System.IO;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
@@ -43,8 +45,11 @@ namespace DNAClient.ViewModel
         // odebrane wiadomości (do przerobienia na listę lub coś w ten deseń)
         private string received;
         private static ConnectionFactory factory = Constants.ConnectionFactory;
+        private string userPath;
+
         public ConversationViewModel()
         {
+            this.userPath = Constants.userPath;
             this.User = GlobalsParameters.Instance.CurrentUser;
             this.SendMessageCommand = new RelayCommand(this.SendMessage);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
@@ -137,18 +142,58 @@ namespace DNAClient.ViewModel
             }
         }
 
+        private static void AddText(FileStream fs, string value)
+        {
+            byte[] info = new UTF8Encoding(true).GetBytes(value);
+            fs.Write(info, 0, info.Length);
+        }
+        private void AddToHistory(string message) {
+            if (this.Recipient == null)
+            {
+                return;
+            }
+             var historyFile = this.userPath + "//" + this.Recipient;
+             if (! File.Exists(historyFile))
+             {
+                 FileStream aFile = new FileStream(historyFile, FileMode.Create, FileAccess.Write);
+                 StreamWriter sw = new StreamWriter(aFile);
+                 sw.WriteLine(message);
+                 sw.Close();
+                 aFile.Close();
+             }
+             else
+             {
+                 FileStream aFile = new FileStream(historyFile, FileMode.Append, FileAccess.Write);
+                 StreamWriter sw = new StreamWriter(aFile);
+                 sw.WriteLine(message);
+                 sw.Close();
+                 aFile.Close();
+             }
+            
+        }
+
         private void SendMessage(object parameter)
         {
             if (this.Message != null)
             {
                 this.Message = this.Message.Trim();
             }
+<<<<<<< HEAD
 
             if (this.Message != String.Empty)
             {
                 this.Received += DateTimeOffset.Now + " przez Ja:\n" + this.Message + "\n\n";
                 this.SendMessageToQueue();
                 this.Message = String.Empty;
+=======
+            if (this.Message != String.Empty)
+            {
+                var msg = DateTimeOffset.Now + " przez Ja:\n" + this.Message + "\n";
+                this.Received += msg + "\n";
+                this.SendMessageToQueue();
+                AddToHistory(msg);
+                this.Message = String.Empty;               
+>>>>>>> Nie wysyłamy pustych wiadomości i kasujemy z inputa wysłaną wiadomość.
             }
         }
 
@@ -225,7 +270,9 @@ namespace DNAClient.ViewModel
             if (routingKey.StartsWith(Constants.keyClientNotification))
             {
                 var message = body.DeserializeMessageNotification();
-                conversationViewModel.Received += message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n\n";
+                var msg = message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n";
+                conversationViewModel.AddToHistory(msg);
+                conversationViewModel.Received += msg + "\n";
 
             }
         }
