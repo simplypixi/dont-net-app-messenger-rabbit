@@ -42,7 +42,7 @@ namespace DNAClient.ViewModel
 
         // odebrane wiadomości (do przerobienia na listę lub coś w ten deseń)
         private string received;
-
+        private static ConnectionFactory factory = Constants.ConnectionFactory;
         public ConversationViewModel()
         {
             this.User = GlobalsParameters.Instance.CurrentUser;
@@ -148,14 +148,12 @@ namespace DNAClient.ViewModel
         /// </summary>
         private void SendMessageToQueue()
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" /*, UserName = "dna", Password = "dna" */};
             using (var connection = factory.CreateConnection())
             {
                 using (var channel = connection.CreateModel())
                 {
-                    channel.ExchangeDeclare("ServerExchange", "topic");
+                    channel.ExchangeDeclare(Constants.Exchange, "topic");
 
-                    var routingKey = "server.request.message";
                     var message = new MessageReq
                                       {
                                           Login = this.User,
@@ -165,7 +163,7 @@ namespace DNAClient.ViewModel
                                       };
 
                     var body = message.Serialize();
-                    channel.BasicPublish("ServerExchange", routingKey, null, body);
+                    channel.BasicPublish(Constants.Exchange, Constants.keyServerRequestMessage, null, body);
                     Debug.WriteLine("{0} wysłał \"{1}\" do: {2}", this.User, this.Message, this.Recipient);
                 }
             }
@@ -180,12 +178,11 @@ namespace DNAClient.ViewModel
         /// </param>
         public static void GetChannel(ConversationViewModel conversationViewModel, SynchronizationContext ctx)
         {
-            var factory = new ConnectionFactory() { HostName = "localhost" /*, UserName = "dna", Password = "dna" */ };
             using (var connection = factory.CreateConnection())
             {
                 using (var channel = connection.CreateModel())
                 {
-                    channel.ExchangeDeclare("ClientExchange", "topic");
+                    channel.ExchangeDeclare(Constants.Exchange, "topic");
                     var queueName = channel.QueueDeclare();
 
                     Debug.WriteLine(" [Clt] Waiting for request.");
@@ -193,7 +190,7 @@ namespace DNAClient.ViewModel
                     var consumer = new EventingBasicConsumer(channel);
                     consumer.Received += (_, msg) => ctx.Post( foo_ => Receive(msg, conversationViewModel), null);
 
-                    channel.QueueBind(queueName, "ClientExchange", string.Format("client.notification.*.{0}", conversationViewModel.User));
+                    channel.QueueBind(queueName, Constants.Exchange, string.Format(Constants.keyClientNotification + ".*.{0}", conversationViewModel.User));
                     channel.BasicConsume(queueName, true, consumer);
 
                     FinishEvent.WaitOne();
@@ -215,7 +212,7 @@ namespace DNAClient.ViewModel
             var body = args.Body;
             var routingKey = args.RoutingKey;
 
-            if (routingKey.StartsWith("client.notification"))
+            if (routingKey.StartsWith(Constants.keyClientNotification))
             {
                 var message = body.DeserializeMessageNotification();
                 conversationViewModel.Received += message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n\n";

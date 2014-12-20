@@ -1,0 +1,12 @@
+F:\Nowy folder\dna\DNA\bin\Debug\DNA.exe.config
+F:\Nowy folder\dna\DNA\bin\Debug\DNA.exe
+F:\Nowy folder\dna\DNA\bin\Debug\DNA.pdb
+F:\Nowy folder\dna\DNA\bin\Debug\DTO.dll
+F:\Nowy folder\dna\DNA\bin\Debug\RabbitMQ.Client.dll
+F:\Nowy folder\dna\DNA\bin\Debug\ServiceStack.Text.dll
+F:\Nowy folder\dna\DNA\bin\Debug\RabbitMQ.Client.xml
+F:\Nowy folder\dna\DNA\bin\Debug\ServiceStack.Text.xml
+F:\Nowy folder\dna\DNA\obj\Debug\DNAServer.csprojResolveAssemblyReference.cache
+F:\Nowy folder\dna\DNA\obj\Debug\DNA.exe
+F:\Nowy folder\dna\DNA\obj\Debug\DNA.pdb
+F:\Nowy folder\dna\DNA\bin\Debug\DTO.pdb
