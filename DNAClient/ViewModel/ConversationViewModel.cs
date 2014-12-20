@@ -142,11 +142,6 @@ namespace DNAClient.ViewModel
             }
         }
 
-        private static void AddText(FileStream fs, string value)
-        {
-            byte[] info = new UTF8Encoding(true).GetBytes(value);
-            fs.Write(info, 0, info.Length);
-        }
         private void AddToHistory(string message) {
             if (this.Recipient == null)
             {
@@ -178,14 +173,7 @@ namespace DNAClient.ViewModel
             {
                 this.Message = this.Message.Trim();
             }
-<<<<<<< HEAD
 
-            if (this.Message != String.Empty)
-            {
-                this.Received += DateTimeOffset.Now + " przez Ja:\n" + this.Message + "\n\n";
-                this.SendMessageToQueue();
-                this.Message = String.Empty;
-=======
             if (this.Message != String.Empty)
             {
                 var msg = DateTimeOffset.Now + " przez Ja:\n" + this.Message + "\n";
@@ -193,7 +181,6 @@ namespace DNAClient.ViewModel
                 this.SendMessageToQueue();
                 AddToHistory(msg);
                 this.Message = String.Empty;               
->>>>>>> Nie wysyłamy pustych wiadomości i kasujemy z inputa wysłaną wiadomość.
             }
         }
 

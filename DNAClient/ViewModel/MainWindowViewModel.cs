@@ -12,6 +12,9 @@ namespace DNAClient.ViewModel
 {
     using DNAClient.ViewModel.Base;
     using DNAClient.View;
+
+    using DTO;
+
     /// <summary>
     /// View model głonego okna
     /// </summary>
@@ -23,10 +26,13 @@ namespace DNAClient.ViewModel
         private string recipient;
 
         private Contact selectedContact;
+        private string userPath;
 
         public MainWindowViewModel()
         {
+            this.userPath = Constants.userPath;
             this.NewConversationWindowCommand = new RelayCommand(this.NewConversationWindow);
+            this.OpenHistoryCommand = new RelayCommand(this.OpenHistory);
             this.addFriendCommand = new RelayCommand(this.addNewFriend);
 
             Contacts.Add(new Contact() { Name = "Maciek" });
@@ -67,10 +73,28 @@ namespace DNAClient.ViewModel
         }
 
         /// <summary>
+        /// Komenda otwarcia historii rozmowy
+        /// </summary>
+        public RelayCommand OpenHistoryCommand { get; set; }
+
+        /// <summary>
+        /// Metoda otwierająca historię rozmowy
+        /// </summary>
+        /// <param name="parameter">
+        /// The parameter.
+        /// </param>
+        private void OpenHistory(object parameter)
+        {
+            var historyFile = this.userPath + "//" + this.SelectedContact.Name;
+            System.Diagnostics.Process.Start(@historyFile);
+        }
+
+        /// <summary>
         /// Komenda otwarcia nowego okna konweracji
         /// </summary>
         public RelayCommand NewConversationWindowCommand { get; set; }
 
+        
         /// <summary>
         /// Metoda otwierająca nowe okno konwersacji
         /// </summary>
@@ -81,6 +105,8 @@ namespace DNAClient.ViewModel
         {
            ProductionWindowFactory.CreateConversationWindow(this.SelectedContact.Name);
         }
+
+
 
          public RelayCommand addFriendCommand { get; set; }
         private string friendName;
