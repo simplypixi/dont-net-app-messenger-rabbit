@@ -27,14 +27,19 @@ namespace DNA
 
         static void Main(string[] args)
         {
-            Task.Factory.StartNew(GetChannel);
+            //DatabaseHelper db = new DatabaseHelper();
+            //bool x = db.Login("Maciej", "test");
+            //Console.WriteLine(x.ToString());
+            Task.Factory.StartNew(() => GetChannel(Constants.keyRequestMessage));
+            Task.Factory.StartNew(() => GetChannelRPC());
+
             Console.WriteLine("Starting server...");
 
             Console.ReadLine();
             FinishEvent.Set();
         }
 
-        public static void GetChannel()
+        public static void GetChannel(string key)
         {
             using (var connection = factory.CreateConnection())
             {
@@ -43,14 +48,57 @@ namespace DNA
                     channel.ExchangeDeclare(Constants.Exchange, "topic");
                     var queueName = channel.QueueDeclare();
 
-                    Console.WriteLine(" [Srv] Waiting for request. " + "To exit press CTRL+C");
-
                     var consumer = new EventingBasicConsumer(channel);
                     consumer.Received += (_, msg) => Receive(msg);
-                    channel.QueueBind(queueName, Constants.Exchange, Constants.keyServerRequest + ".*");
+                    channel.QueueBind(queueName, Constants.Exchange, key);
                     channel.BasicConsume(queueName, true, consumer);
-
+                    Console.WriteLine(key);
                     FinishEvent.WaitOne();
+                }
+            }
+        }
+
+        public static void GetChannelRPC()
+        {
+            using (var connection = factory.CreateConnection())
+            {
+                using (var channel = connection.CreateModel())
+                {
+                    channel.QueueDeclare(Constants.Exchange, false, false, false, null);
+                    channel.BasicQos(0, 1, false);
+                    var consumer = new QueueingBasicConsumer(channel);
+                    channel.BasicConsume(Constants.Exchange, false, consumer);
+                    Console.WriteLine(" [x] Awaiting RPC requests");
+
+                    while (true)
+                    {
+                        AuthResponse response = null;
+                        var ea = (BasicDeliverEventArgs)consumer.Queue.Dequeue();
+
+                        var body = ea.Body;
+                        var props = ea.BasicProperties;
+                        var replyProps = channel.CreateBasicProperties();
+                        replyProps.CorrelationId = props.CorrelationId;
+
+                        try
+                        {
+                            var request = body.DeserializeAuthRequest();
+                            Console.WriteLine(" RPC: {0}", request);
+                            // tutaj sprawdzanie z baza danych
+                            response = new AuthResponse();
+                            response.IsAuthenticated = true;
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(" RPC: YES NO? " + e.Message);
+                        }
+                        finally
+                        {
+                            var responseBytes = response.Serialize();
+                            channel.BasicPublish("", props.ReplyTo, replyProps, responseBytes);
+                            channel.BasicAck(ea.DeliveryTag, false);
+                        }
+                    }
                 }
             }
         }
@@ -69,19 +117,13 @@ namespace DNA
             if (routingKey == Constants.keyServerRequestMessage)
             {
                 var message = body.DeserializeMessageReq();
-               
+
                 Console.WriteLine(
                     " [Msg] '{0}':'{1} - {2}'",
                     routingKey,
                     message.Login,
                     message.Message);
                 SendMessageNotification(message);
-            }
-
-            if (routingKey == Constants.keyServerRequestAuthorization)
-            {
-                var authorizationRequest = body.DeserializeAuthResponse();
-                Console.WriteLine(" [Auth] '{0}':'{1}'", routingKey, authorizationRequest.Login);
             }
         }
 
