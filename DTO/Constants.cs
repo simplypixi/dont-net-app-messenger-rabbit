@@ -1,4 +1,4 @@
-﻿﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,6 +24,6 @@ namespace DTO
         public static string keyServerRequestAuthorization = "server.request.authorization";
         public static string Exchange = "ClientExchange";
         public static string keyClientNotification = "client.notification";
-        public static string keyServerRequest = "server.request";
+        public static string keyRequestMessage = "server.request.message";
     }
 }
