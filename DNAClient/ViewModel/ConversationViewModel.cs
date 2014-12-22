@@ -19,8 +19,9 @@ namespace DNAClient.ViewModel
 
     using DTO;
 
-    using RabbitMQ.Client;
-    using RabbitMQ.Client.Events;
+    using global::RabbitMQ.Client;
+    using global::RabbitMQ.Client.Events;
+
 
     /// <summary>
     /// View model okna konwersacji
@@ -43,6 +44,7 @@ namespace DNAClient.ViewModel
         // odebrane wiadomości (do przerobienia na listę lub coś w ten deseń)
         private string received;
         private static ConnectionFactory factory = Constants.ConnectionFactory;
+
         public ConversationViewModel()
         {
             this.User = GlobalsParameters.Instance.CurrentUser;
