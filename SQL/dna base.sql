@@ -1,7 +1,11 @@
 /*------------ DROPY
 DROP TABLE User;
 */
-use DNA;
+
+CREATE DATABASE DNA
+GO
+
+USE DNA
 CREATE TABLE "User"
 (
 	"Id" INT IDENTITY(1,1) PRIMARY KEY,
