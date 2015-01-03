@@ -26,13 +26,12 @@ namespace DNAClient.ViewModel
         
         private static readonly ManualResetEvent FinishEvent = new ManualResetEvent(false);
         private string recipient;
-        private string currentuser;
-
-        private Contact selectedContact;
+        private string currentUser;
+        private Contact selectedContact = new Contact() { Name = null };
 
         public MainWindowViewModel()
         {
-            this.currentUser = GlobalsParameters.Instance.CurrentUser;
+            this.CurrentUser = GlobalsParameters.Instance.CurrentUser;
             this.NewConversationWindowCommand = new RelayCommand(this.NewConversationWindow);
             this.addFriendCommand = new RelayCommand(this.addNewFriend);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
@@ -47,17 +46,17 @@ namespace DNAClient.ViewModel
         /// Property odbiorcy do zbindowania w xamlu
         /// </summary>
         /// 
-        public string currentUser
+        public string CurrentUser
         {
             get
             {
-                return this.currentuser;
+                return this.currentUser;
             }
 
             set
             {
-                this.currentuser = value;
-                this.RaisePropertyChanged("currentUser");
+                this.currentUser = value;
+                this.RaisePropertyChanged("CurrentUser");
             }
         }
         public string Recipient
@@ -101,7 +100,10 @@ namespace DNAClient.ViewModel
         /// </param>
         private void NewConversationWindow(object parameter)
         {
-           ProductionWindowFactory.CreateConversationWindow(this.SelectedContact.Name);
+            if (!String.IsNullOrEmpty(this.SelectedContact.Name))
+            {
+                ProductionWindowFactory.CreateConversationWindow(this.SelectedContact.Name);
+            }
         }
 
          public RelayCommand addFriendCommand { get; set; }
