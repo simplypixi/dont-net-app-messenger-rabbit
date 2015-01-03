@@ -10,6 +10,12 @@ using System.Collections.ObjectModel;
 
 namespace DNAClient.ViewModel
 {
+    using System;
+    using System.Diagnostics;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System.Windows;
+
     using DNAClient.ViewModel.Base;
     using DNAClient.View;
     /// <summary>
@@ -17,9 +23,8 @@ namespace DNAClient.ViewModel
     /// </summary>
     public class MainWindowViewModel : ViewModelBase
     {
-        /// <summary>
-        /// Odbiorca (później będzie to lista znajomych)
-        /// </summary>
+        
+        private static readonly ManualResetEvent FinishEvent = new ManualResetEvent(false);
         private string recipient;
 
         private Contact selectedContact;
@@ -28,6 +33,7 @@ namespace DNAClient.ViewModel
         {
             this.NewConversationWindowCommand = new RelayCommand(this.NewConversationWindow);
             this.addFriendCommand = new RelayCommand(this.addNewFriend);
+            this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
 
             Contacts.Add(new Contact() { Name = "Maciek" });
             Contacts.Add(new Contact() { Name = "Maciej" });
@@ -114,6 +120,19 @@ namespace DNAClient.ViewModel
 
         private void addNewFriend(object parameter){
             Contacts.Add(new Contact() { Name = this.Friend });
+        }
+
+        public RelayCommand CloseWindowCommand { get; set; }
+
+        private void CloseWindow(object parameter)
+        {
+            var window = parameter as Window;
+
+            if (window != null)
+            {
+                FinishEvent.Set();
+                window.Close();
+            }
         }
     }
 }

@@ -9,6 +9,7 @@
         DataContext="{DynamicResource FriendsBookViewModel}"
         WindowStyle="None"
 		ResizeMode="NoResize"
+        x:Name="Login"
         Title="DNA" Height="350" Width="305" Background="#FF02B6E3" WindowStartupLocation="CenterScreen" BorderBrush="#FF02B6E3">
 
     <Window.Resources>
@@ -18,7 +19,7 @@
     <Grid>
         <StackPanel VerticalAlignment="Top">
             <Grid x:Name="top" Height="49">
-                <Button Content="" HorizontalAlignment="Left" Margin="281,10,0,0" VerticalAlignment="Top" Height="13" Width="13" BorderBrush="{x:Null}" Cursor="Hand" IsCancel="True" ClipToBounds="True" ToolTip="Kliknij, aby zamknąć" RenderTransformOrigin="0.923,-9.385" Panel.ZIndex="11">
+                <Button Command="{Binding CloseWindowCommand, UpdateSourceTrigger=PropertyChanged}" Content="" CommandParameter="{Binding ElementName=Login}" HorizontalAlignment="Left" Margin="281,10,0,0" VerticalAlignment="Top" Height="13" Width="13" BorderBrush="{x:Null}" Cursor="Hand" IsCancel="True" ClipToBounds="True" ToolTip="Kliknij, aby zamknąć" RenderTransformOrigin="0.923,-9.385" Panel.ZIndex="11">
                     <Button.Background>
                         <ImageBrush ImageSource="../Img/butt_zamk.png"/>
                     </Button.Background>
