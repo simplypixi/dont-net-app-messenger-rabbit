@@ -32,5 +32,10 @@ namespace DNAClient.View
                 this.DragMove();
         }
 
+        private void comboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
     }
 }

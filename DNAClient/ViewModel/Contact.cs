@@ -17,6 +17,7 @@ namespace DNAClient.ViewModel
     {
         public Contact()
         {
+            this.State = "#FFD1D1D1"; 
         }
 
         protected string name;

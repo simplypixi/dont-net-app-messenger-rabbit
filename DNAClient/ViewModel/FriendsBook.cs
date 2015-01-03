@@ -56,5 +56,6 @@ namespace DNAClient.ViewModel
             Contacts.Add(new Contact() { Name = this.Friend });
         }
 
+
     }
 }

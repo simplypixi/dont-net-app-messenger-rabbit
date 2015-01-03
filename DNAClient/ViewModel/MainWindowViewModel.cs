@@ -170,5 +170,10 @@ namespace DNAClient.ViewModel
                 window.Close();
             }
         }
+
+        private void ChangeStatus(object parameter)
+        {
+
+        }
     }
 }
