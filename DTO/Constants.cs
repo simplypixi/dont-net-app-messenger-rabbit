@@ -21,6 +21,8 @@ namespace DTO
         public static ConnectionFactory ConnectionFactory = new ConnectionFactory() { HostName = "localhost" };//192.168.0.103", UserName = "dna", Password = "dna" };
         public static string keyServerRequestMessage = "server.request.message";
         public static string keyClientNotificationMessage = "client.notification.message.";
+        public static string keyServerRequestStatus = "server.request.status";
+        public static string keyClientNotificationStatus = "client.notification.status.";
         public static string keyServerRequestAuthorization = "server.request.authorization";
         public static string Exchange = "ClientExchange";
         public static string keyClientNotification = "client.notification";

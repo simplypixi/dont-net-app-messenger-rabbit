@@ -16,6 +16,7 @@ namespace DNAClient.ViewModel
     using System.Windows;
 
     using DNAClient.ViewModel.Base;
+    using DNAClient.View;
 
     using DTO;
 

@@ -83,6 +83,18 @@ namespace DNA
                 var authorizationRequest = body.DeserializeAuthResponse();
                 Console.WriteLine(" [Auth] '{0}':'{1}'", routingKey, authorizationRequest.Login);
             }
+
+            if (routingKey == Constants.keyServerRequestStatus)
+            {
+                var message = body.DeserializePresenceStatusNotification();
+
+                Console.WriteLine(
+                    " [State] '{0}':'{1} - {2}'",
+                    routingKey,
+                    message.Login,
+                    message.PresenceStatus);
+                SendStatusNotification(message);
+            }
         }
 
         private static void SendMessageNotification(MessageReq messageReq)
@@ -111,6 +123,36 @@ namespace DNA
                         message.Sender,
                         message.Message,
                         message.Recipient);
+                }
+            }
+        }
+
+        private static void SendStatusNotification(PresenceStatusNotification statusChange)
+        {
+            using (var connection = factory.CreateConnection())
+            {
+                using (var channel = connection.CreateModel())
+                {
+                    channel.ExchangeDeclare(Constants.Exchange, "topic");
+
+                    var routingKey = string.Format(Constants.keyClientNotificationStatus + statusChange.Recipient);
+
+                    var message = new PresenceStatusNotification
+                    {
+                        Login = statusChange.Login,
+                        PresenceStatus = statusChange.PresenceStatus,
+                        Recipient = statusChange.Recipient
+                    };
+
+                    var body = message.Serialize();
+                    channel.BasicPublish(Constants.Exchange, routingKey, null, body);
+
+                    Console.WriteLine(
+                        " [State] KEY[{0}] From: {1} '{2}' - To: {3}",
+                        routingKey,
+                        statusChange.Login,
+                        statusChange.PresenceStatus,
+                        statusChange.Recipient);
                 }
             }
         }

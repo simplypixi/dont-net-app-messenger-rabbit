@@ -102,5 +102,13 @@ namespace DTO
                 return JsonSerializer.DeserializeFromStream<MessageNotification>(stream);
             }
         }
+
+        public static PresenceStatusNotification DeserializePresenceStatusNotification(this byte[] data)
+        {
+            using (var stream = new MemoryStream(data))
+            {
+                return JsonSerializer.DeserializeFromStream<PresenceStatusNotification>(stream);
+            }
+        }
     }
 }

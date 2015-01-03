@@ -15,19 +15,27 @@ namespace DNAClient.ViewModel
     using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
+    using System.Linq;
 
     using DNAClient.ViewModel.Base;
     using DNAClient.View;
+
+    using DTO;
+
+    using RabbitMQ.Client;
+    using RabbitMQ.Client.Events;
     /// <summary>
-    /// View model głonego okna
+    /// ViewModel głonego okna
     /// </summary>
     public class MainWindowViewModel : ViewModelBase
     {
         
         private static readonly ManualResetEvent FinishEvent = new ManualResetEvent(false);
-        private string recipient;
-        private string currentUser;
+        private string recipient, currentUser;
+        private string selectedStatus;
         private Contact selectedContact = new Contact() { Name = null };
+
+        private static ConnectionFactory factory = Constants.ConnectionFactory;
 
         public MainWindowViewModel()
         {
@@ -36,11 +44,19 @@ namespace DNAClient.ViewModel
             this.addFriendCommand = new RelayCommand(this.addNewFriend);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
 
+
+            //Dodanie na sztywno kontaktów; Później trzeba dodać wczytywanie kontaktów z bazy lokalnej lub zdalnej MSSQL
             Contacts.Add(new Contact() { Name = "Maciek" });
             Contacts.Add(new Contact() { Name = "Maciej" });
             Contacts.Add(new Contact() { Name = "Mariusz" });
             Contacts.Add(new Contact() { Name = "Darek" });
+
+            // Uruchomienie zadania, które w tle będzie nasłuchiwać wiadomości przychodzących z serwera
+            var ctx = SynchronizationContext.Current;
+            Task.Factory.StartNew(() => GetChannel(ctx));
         }
+
+
 
         /// <summary>
         /// Property odbiorcy do zbindowania w xamlu
@@ -83,6 +99,23 @@ namespace DNAClient.ViewModel
             {
                 this.selectedContact = value;
                 this.RaisePropertyChanged("SelectedContact");
+            }
+
+        }
+
+        public string SelectedStatus
+        {
+            get
+            {
+                return this.selectedStatus;
+            }
+
+            set
+            {
+                this.selectedStatus = value;
+                Console.WriteLine(selectedStatus);
+                this.RaisePropertyChanged("SelectedStatus");
+                this.SendStatus();
             }
 
         }
@@ -171,9 +204,101 @@ namespace DNAClient.ViewModel
             }
         }
 
-        private void ChangeStatus(object parameter)
+        private void SendStatus()
         {
+            if (!String.IsNullOrEmpty(this.SelectedStatus.Trim()))
+            {
+                foreach (Contact element in this.Contacts)
+                {
+                    this.SendStatusToQueue(element.Name);
+                }
+            }
+        }
 
+        /// <summary>
+        /// Metoda tworząca informację o zmianie stanu i wysyłająca ją do rabbita
+        /// </summary>
+        private void SendStatusToQueue(string recip)
+        {
+            using (var connection = factory.CreateConnection())
+            {
+                using (var channel = connection.CreateModel())
+                {
+                    channel.ExchangeDeclare(Constants.Exchange, "topic");
+
+                    PresenceStatus status = PresenceStatus.Offline;
+                    if(this.SelectedStatus == "Zajęty")
+                        status = PresenceStatus.Afk;
+                    if(this.SelectedStatus == "Dostępny")
+                        status = PresenceStatus.Online;
+
+                    var message = new PresenceStatusNotification
+                    {
+                        Login = this.CurrentUser,
+                        PresenceStatus = status,
+                        Recipient = recip
+                    };
+
+                    var body = message.Serialize();
+                    channel.BasicPublish(Constants.Exchange, Constants.keyServerRequestStatus, null, body);
+                    //Debug.WriteLine("{0} zmienił status na \"{1}\" i poinformował o tym: {2}", this.CurrentUser, this.SelectedStatus, recip);
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Metoda do obierania wiadomości z serwera
+        /// </summary>
+        /// <param name="conversationViewModel">
+        /// Przekazuje tutaj view model, ponieważ ta metoda musi być statyczna, a trzeba jakoś 
+        /// ustawić property od odebranych wiadomości (pewnie nie jest to zbyt dobra praktyka, ale póki co działa :P)
+        /// </param>
+        public void GetChannel(SynchronizationContext ctx)
+        {
+            using (var connection = factory.CreateConnection())
+            {
+                using (var channel = connection.CreateModel())
+                {
+                    channel.ExchangeDeclare(Constants.Exchange, "topic");
+                    var queueName = channel.QueueDeclare();
+
+                    Debug.WriteLine(" [Clt] Waiting for request.");
+
+                    var consumer = new EventingBasicConsumer(channel);
+                    consumer.Received += (_, msg) => ctx.Post(foo_ => Receive(msg), null);
+
+                    channel.QueueBind(queueName, Constants.Exchange, string.Format(Constants.keyClientNotification + ".*.{0}", this.CurrentUser));
+                    channel.BasicConsume(queueName, true, consumer);
+
+                    FinishEvent.WaitOne();
+                }
+            }
+        }
+
+        // Zmienia status użytkownika na liście kontaktów
+        private void Receive(BasicDeliverEventArgs args)
+        {
+            var body = args.Body;
+            var routingKey = args.RoutingKey;
+
+            if (routingKey.StartsWith(Constants.keyClientNotification))
+            {
+                var message = body.DeserializePresenceStatusNotification();
+
+                var contact = Contacts.Where(X => X.Name == message.Login).FirstOrDefault();
+                if (contact != null)
+                {
+                    if (message.PresenceStatus.Equals(PresenceStatus.Offline))
+                        contact.State = "#FFD1D1D1";
+                    if (message.PresenceStatus.Equals(PresenceStatus.Online))
+                        contact.State = "Green";
+                    if (message.PresenceStatus.Equals(PresenceStatus.Afk))
+                        contact.State = "Red";
+                }
+                //Console.WriteLine("dupa {0}, od {1}, do {2}", message.PresenceStatus, message.Login, message.Recipient);
+
+            }
         }
     }
 }

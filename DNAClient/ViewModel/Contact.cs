@@ -36,6 +36,8 @@ namespace DNAClient.ViewModel
             }
         }
 
+
+
         public string State
         {
             get { return state;  }
