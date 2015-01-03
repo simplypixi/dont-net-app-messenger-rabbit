@@ -26,11 +26,13 @@ namespace DNAClient.ViewModel
         
         private static readonly ManualResetEvent FinishEvent = new ManualResetEvent(false);
         private string recipient;
+        private string currentuser;
 
         private Contact selectedContact;
 
         public MainWindowViewModel()
         {
+            this.currentUser = GlobalsParameters.Instance.CurrentUser;
             this.NewConversationWindowCommand = new RelayCommand(this.NewConversationWindow);
             this.addFriendCommand = new RelayCommand(this.addNewFriend);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
@@ -44,6 +46,20 @@ namespace DNAClient.ViewModel
         /// <summary>
         /// Property odbiorcy do zbindowania w xamlu
         /// </summary>
+        /// 
+        public string currentUser
+        {
+            get
+            {
+                return this.currentuser;
+            }
+
+            set
+            {
+                this.currentuser = value;
+                this.RaisePropertyChanged("currentUser");
+            }
+        }
         public string Recipient
         {
             get
@@ -119,7 +135,25 @@ namespace DNAClient.ViewModel
         }
 
         private void addNewFriend(object parameter){
-            Contacts.Add(new Contact() { Name = this.Friend });
+            if (String.IsNullOrEmpty(this.Friend)) { 
+                MessageBox.Show("Aby dodać kontakt, należy wpisać jego nazwę. Spróbuj ponownie.", "Błąd dodawania użytkowika");
+            } else {
+                bool check = false;
+                foreach(Contact element in this.Contacts){
+                    if (element.Name == this.Friend)
+                        check = true;
+                }
+
+                if (!check)
+                {
+                    Contacts.Add(new Contact() { Name = this.Friend });
+                }
+                else
+                {
+                   MessageBox.Show("Taki kontakt już istnieje!", "Błąd dodawania użytkowika");
+                }
+            }
+
         }
 
         public RelayCommand CloseWindowCommand { get; set; }
