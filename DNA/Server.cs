@@ -135,7 +135,7 @@ namespace DNA
                 {
                     channel.ExchangeDeclare(Constants.Exchange, "topic");
 
-                    var routingKey = string.Format(Constants.keyClientNotificationStatus + statusChange.Recipient);
+                    var routingKey = string.Format(Constants.keyClientNotificationStatus + statusChange.Recipient + ".All");
 
                     var message = new PresenceStatusNotification
                     {
