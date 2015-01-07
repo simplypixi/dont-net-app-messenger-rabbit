@@ -17,21 +17,20 @@ namespace DNAClient
     /// </summary>
     public class ProductionWindowFactory
     {
-        public static void CreateConversationWindow(string recipient)
+        public static ConversationViewModel CreateConversationWindow(string recipient)
         {
+            ConversationViewModel cvModel = new ConversationViewModel(recipient);
             ConversationWindow window = new ConversationWindow
             {
-                DataContext = new ConversationViewModel(recipient)
+                DataContext = cvModel,
             };
             window.Show();
+            return cvModel;
         }
 
         public static void CreateMainWindow()
         {
-            MainWindow window = new MainWindow
-            {
-                DataContext = new MainWindowViewModel()
-            };
+            MainWindow window = new MainWindow();
             window.Show();
         }
     }
