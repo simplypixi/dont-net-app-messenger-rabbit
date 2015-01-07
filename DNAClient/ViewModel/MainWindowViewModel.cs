@@ -25,7 +25,7 @@ namespace DNAClient.ViewModel
     using RabbitMQ.Client;
     using RabbitMQ.Client.Events;
     /// <summary>
-    /// ViewModel głonego okna
+    /// ViewModel głownego okna
     /// </summary>
     public class MainWindowViewModel : ViewModelBase
     {
@@ -36,13 +36,17 @@ namespace DNAClient.ViewModel
         private Contact selectedContact = new Contact() { Name = null };
         private bool justLogin = true;
         private bool loadedContacts = false;
+        private string userPath;
+
 
         private static ConnectionFactory factory = Constants.ConnectionFactory;
 
         public MainWindowViewModel()
         {
+            this.userPath = Constants.userPath;
             this.CurrentUser = GlobalsParameters.Instance.CurrentUser;
             this.NewConversationWindowCommand = new RelayCommand(this.NewConversationWindow);
+            this.OpenHistoryCommand = new RelayCommand(this.OpenHistory);
             this.addFriendCommand = new RelayCommand(this.addNewFriend);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
 
@@ -123,6 +127,23 @@ namespace DNAClient.ViewModel
                 this.SendStatus();
             }
 
+        }
+
+        /// <summary>
+        /// Komenda otwarcia historii rozmowy
+        /// </summary>
+        public RelayCommand OpenHistoryCommand { get; set; }
+
+        /// <summary>
+        /// Metoda otwierająca historię rozmowy
+        /// </summary>
+        /// <param name="parameter">
+        /// The parameter.
+        /// </param>
+        private void OpenHistory(object parameter)
+        {
+            var historyFile = this.userPath + "//" + this.SelectedContact.Name;
+            System.Diagnostics.Process.Start(@historyFile);
         }
 
         /// <summary>

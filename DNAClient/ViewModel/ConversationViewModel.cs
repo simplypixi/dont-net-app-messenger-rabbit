@@ -14,6 +14,8 @@ namespace DNAClient.ViewModel
     using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
+    using System.IO;
+    using System.Text;
 
     using DNAClient.ViewModel.Base;
     using DNAClient.View;
@@ -44,8 +46,10 @@ namespace DNAClient.ViewModel
         // odebrane wiadomości (do przerobienia na listę lub coś w ten deseń)
         private string received;
         private static ConnectionFactory factory = Constants.ConnectionFactory;
+        private string userPath;
         public ConversationViewModel()
         {
+            this.userPath = Constants.userPath;
             this.User = GlobalsParameters.Instance.CurrentUser;
             this.SendMessageCommand = new RelayCommand(this.SendMessage);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
@@ -138,6 +142,32 @@ namespace DNAClient.ViewModel
             }
         }
 
+        private void AddToHistory(string message)
+        {
+            if (this.Recipient == null)
+            {
+                return;
+            }
+            var historyFile = this.userPath + "//" + this.Recipient;
+            if (!File.Exists(historyFile))
+            {
+                FileStream aFile = new FileStream(historyFile, FileMode.Create, FileAccess.Write);
+                StreamWriter sw = new StreamWriter(aFile);
+                sw.WriteLine(message);
+                sw.Close();
+                aFile.Close();
+            }
+            else
+            {
+                FileStream aFile = new FileStream(historyFile, FileMode.Append, FileAccess.Write);
+                StreamWriter sw = new StreamWriter(aFile);
+                sw.WriteLine(message);
+                sw.Close();
+                aFile.Close();
+            }
+
+        }
+
         private void SendMessage(object parameter)
         {
             if (this.Message != null)
@@ -147,8 +177,10 @@ namespace DNAClient.ViewModel
 
             if (this.Message != String.Empty)
             {
-                this.Received += DateTimeOffset.Now + " przez Ja:\n" + this.Message + "\n\n";
+                var msg = DateTimeOffset.Now + " przez Ja:\n" + this.Message + "\n";
+                this.Received += msg + "\n";
                 this.SendMessageToQueue();
+                AddToHistory(msg);
                 this.Message = String.Empty;
             }
         }
@@ -201,7 +233,7 @@ namespace DNAClient.ViewModel
                     var consumer = new EventingBasicConsumer(channel);
                     consumer.Received += (_, msg) => ctx.Post( foo_ => Receive(msg, conversationViewModel), null);
 
-                    channel.QueueBind(queueName, Constants.Exchange, string.Format(Constants.keyClientNotification + ".*.{0}", conversationViewModel.User));
+                    channel.QueueBind(queueName, Constants.Exchange, string.Format(Constants.keyClientNotification + ".*.{0}.{1}", conversationViewModel.User, conversationViewModel.Recipient));
                     channel.BasicConsume(queueName, true, consumer);
 
                     FinishEvent.WaitOne();
@@ -226,8 +258,9 @@ namespace DNAClient.ViewModel
             if (routingKey.StartsWith(Constants.keyClientNotification + ".message"))
             {
                 var message = body.DeserializeMessageNotification();
-                conversationViewModel.Received += message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n\n";
-
+                var msg = message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n";
+                conversationViewModel.AddToHistory(msg);
+                conversationViewModel.Received += msg + "\n";
             }
         }
     }
