@@ -27,5 +27,6 @@ namespace DTO
         public static string Exchange = "ClientExchange";
         public static string keyClientNotification = "client.notification";
         public static string keyServerRequest = "server.request";
+        public static string userPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
     }
 }
