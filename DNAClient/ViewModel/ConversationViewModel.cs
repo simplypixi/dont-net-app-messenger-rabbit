@@ -233,7 +233,7 @@ namespace DNAClient.ViewModel
                     var consumer = new EventingBasicConsumer(channel);
                     consumer.Received += (_, msg) => ctx.Post( foo_ => Receive(msg, conversationViewModel), null);
 
-                    channel.QueueBind(queueName, Constants.Exchange, string.Format(Constants.keyClientNotification + ".*.{0}", conversationViewModel.User));
+                    channel.QueueBind(queueName, Constants.Exchange, string.Format(Constants.keyClientNotification + ".*.{0}.{1}", conversationViewModel.User, conversationViewModel.Recipient));
                     channel.BasicConsume(queueName, true, consumer);
 
                     FinishEvent.WaitOne();
