@@ -10,12 +10,14 @@
 namespace DNAClient.ViewModel
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
     using System.IO;
     using System.Text;
+    using System.Windows.Documents;
 
     using DNAClient.ViewModel.Base;
     using DNAClient.View;
@@ -53,10 +55,6 @@ namespace DNAClient.ViewModel
             this.User = GlobalsParameters.Instance.CurrentUser;
             this.SendMessageCommand = new RelayCommand(this.SendMessage);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
-
-            // Uruchomienie zadania, które w tle będzie nasłuchiwać wiadomości przychodzących z serwera
-            var ctx = SynchronizationContext.Current;
-            Task.Factory.StartNew(() => GetChannel(ctx));
         }
 
         /// <summary>
@@ -137,6 +135,14 @@ namespace DNAClient.ViewModel
 
             if (window != null)
             {
+                foreach (ConversationViewModel cvModel in GlobalsParameters.openWindows)
+                {
+                    if (cvModel.Recipient == this.Recipient)
+                    {
+                        GlobalsParameters.openWindows.Remove(cvModel);
+                        break;
+                    }
+                }
                 FinishEvent.Set();
                 window.Close();
             }
@@ -213,36 +219,7 @@ namespace DNAClient.ViewModel
         }
 
         /// <summary>
-        /// Metoda do obierania wiadomości z serwera
-        /// </summary>
-        /// <param name="conversationViewModel">
-        /// Przekazuje tutaj view model, ponieważ ta metoda musi być statyczna, a trzeba jakoś 
-        /// ustawić property od odebranych wiadomości (pewnie nie jest to zbyt dobra praktyka, ale póki co działa :P)
-        /// </param>
-        private void GetChannel(SynchronizationContext ctx)
-        {
-            using (var connection = factory.CreateConnection())
-            {
-                using (var channel = connection.CreateModel())
-                {
-                    channel.ExchangeDeclare(Constants.Exchange, "topic");
-                    var queueName = channel.QueueDeclare();
-
-                    Debug.WriteLine(" [Clt] Waiting for request.");
-
-                    var consumer = new EventingBasicConsumer(channel);
-                    consumer.Received += (_, msg) => ctx.Post( foo_ => Receive(msg), null);
-
-                    channel.QueueBind(queueName, Constants.Exchange, string.Format(Constants.keyClientNotification + ".*.{0}.{1}", this.User, this.Recipient));
-                    channel.BasicConsume(queueName, true, consumer);
-
-                    FinishEvent.WaitOne();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Metoda wywoływana za każdyn razen gdy serwer coś doda do kolejki i klient to przeczyta
+        /// Metoda wywoływana za każdym razem gdy serwer coś doda do kolejki i klient to przeczyta
         /// </summary>
         /// <param name="args">
         /// The args.
@@ -250,12 +227,12 @@ namespace DNAClient.ViewModel
         /// <param name="conversationViewModel">
         /// The conversation view model.
         /// </param>
-        /// 
+        /// </summary>
         private void NewNotificationWindow(string sender, string type)
         {
             ProductionWindowFactory.CreateNotificationWindow(sender, type);
         }
-        private void Receive(BasicDeliverEventArgs args)
+        public void Receive(BasicDeliverEventArgs args)
         {
             var body = args.Body;
             var routingKey = args.RoutingKey;

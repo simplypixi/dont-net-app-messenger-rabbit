@@ -10,6 +10,7 @@
 namespace DNAClient.ViewModel
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Threading;
     using System.Threading.Tasks;
@@ -90,6 +91,7 @@ namespace DNAClient.ViewModel
         private void LoginToServer(object parameter)
         {
             GlobalsParameters.Instance.CurrentUser = this.Login;
+            GlobalsParameters.openWindows = new List<ConversationViewModel>();
             ProductionWindowFactory.CreateMainWindow();
 
             var loginWindow = parameter as LoginWindow;
