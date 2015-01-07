@@ -26,6 +26,15 @@ namespace DNAClient
             window.Show();
         }
 
+        public static void CreateNotificationWindow(string sender, string type)
+        {
+            NotificationWindow window = new NotificationWindow
+            {
+                DataContext = new NotificationWindowViewModel(sender, type)
+            };
+            window.Show();
+        }
+
         public static void CreateMainWindow()
         {
             MainWindow window = new MainWindow

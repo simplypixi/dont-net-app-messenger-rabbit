@@ -46,6 +46,7 @@ namespace DNAClient.ViewModel
             this.userPath = Constants.userPath;
             this.CurrentUser = GlobalsParameters.Instance.CurrentUser;
             this.NewConversationWindowCommand = new RelayCommand(this.NewConversationWindow);
+            this.ContactRightClickCommand = new RelayCommand(this.ContactRightClick);
             this.OpenHistoryCommand = new RelayCommand(this.OpenHistory);
             this.addFriendCommand = new RelayCommand(this.addNewFriend);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
@@ -149,6 +150,26 @@ namespace DNAClient.ViewModel
         /// <summary>
         /// Komenda otwarcia nowego okna konweracji
         /// </summary>
+        public RelayCommand ContactRightClickCommand { get; set; }
+
+        /// <summary>
+        /// Metoda otwierająca nowe okno konwersacji
+        /// </summary>
+        /// <param name="parameter">
+        /// The parameter.
+        /// </param>
+        private void ContactRightClick(object parameter)
+        {
+            if (!String.IsNullOrEmpty(this.SelectedContact.Name))
+            {
+                //ProductionWindowFactory.CreateConversationWindow(this.SelectedContact.Name);
+                Console.WriteLine("dupa");
+            }
+        }
+
+        /// <summary>
+        /// Komenda otwarcia nowego okna konweracji
+        /// </summary>
         public RelayCommand NewConversationWindowCommand { get; set; }
 
         /// <summary>
@@ -164,6 +185,15 @@ namespace DNAClient.ViewModel
                 ProductionWindowFactory.CreateConversationWindow(this.SelectedContact.Name);
             }
         }
+
+
+        /// <summary>
+        /// Metoda otwierająca nowe okno powiadomień
+        /// </summary>
+        /// <param name="parameter">
+        /// The parameter.
+        /// </param>
+
 
          public RelayCommand addFriendCommand { get; set; }
         private string friendName;

@@ -64,9 +64,13 @@
                         <i:EventTrigger EventName="MouseDoubleClick">
                             <i:InvokeCommandAction Command="{Binding NewConversationWindowCommand}"/>
                         </i:EventTrigger>
+                        <i:EventTrigger EventName="MouseRightButtonUp" >
+                            <i:InvokeCommandAction Command="{Binding OpenHistoryCommand}"/>
+                        </i:EventTrigger>
                     </i:Interaction.Triggers>
 
                     <ListBox.ItemTemplate>
+
                         <DataTemplate>
                             <StackPanel Width="300" Margin="-4,0,-4,0">
                                 <StackPanel.Background>

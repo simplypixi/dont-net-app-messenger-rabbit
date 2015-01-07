@@ -56,7 +56,7 @@ namespace DNAClient.ViewModel
 
             // Uruchomienie zadania, które w tle będzie nasłuchiwać wiadomości przychodzących z serwera
             var ctx = SynchronizationContext.Current;
-            Task.Factory.StartNew(() => GetChannel(this, ctx));
+            Task.Factory.StartNew(() => GetChannel(ctx));
         }
 
         /// <summary>
@@ -219,7 +219,7 @@ namespace DNAClient.ViewModel
         /// Przekazuje tutaj view model, ponieważ ta metoda musi być statyczna, a trzeba jakoś 
         /// ustawić property od odebranych wiadomości (pewnie nie jest to zbyt dobra praktyka, ale póki co działa :P)
         /// </param>
-        private static void GetChannel(ConversationViewModel conversationViewModel, SynchronizationContext ctx)
+        private void GetChannel(SynchronizationContext ctx)
         {
             using (var connection = factory.CreateConnection())
             {
@@ -231,9 +231,9 @@ namespace DNAClient.ViewModel
                     Debug.WriteLine(" [Clt] Waiting for request.");
 
                     var consumer = new EventingBasicConsumer(channel);
-                    consumer.Received += (_, msg) => ctx.Post( foo_ => Receive(msg, conversationViewModel), null);
+                    consumer.Received += (_, msg) => ctx.Post( foo_ => Receive(msg), null);
 
-                    channel.QueueBind(queueName, Constants.Exchange, string.Format(Constants.keyClientNotification + ".*.{0}.{1}", conversationViewModel.User, conversationViewModel.Recipient));
+                    channel.QueueBind(queueName, Constants.Exchange, string.Format(Constants.keyClientNotification + ".*.{0}.{1}", this.User, this.Recipient));
                     channel.BasicConsume(queueName, true, consumer);
 
                     FinishEvent.WaitOne();
@@ -250,7 +250,12 @@ namespace DNAClient.ViewModel
         /// <param name="conversationViewModel">
         /// The conversation view model.
         /// </param>
-        private static void Receive(BasicDeliverEventArgs args, ConversationViewModel conversationViewModel)
+        /// 
+        private void NewNotificationWindow(string sender, string type)
+        {
+            ProductionWindowFactory.CreateNotificationWindow(sender, type);
+        }
+        private void Receive(BasicDeliverEventArgs args)
         {
             var body = args.Body;
             var routingKey = args.RoutingKey;
@@ -259,8 +264,11 @@ namespace DNAClient.ViewModel
             {
                 var message = body.DeserializeMessageNotification();
                 var msg = message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n";
-                conversationViewModel.AddToHistory(msg);
-                conversationViewModel.Received += msg + "\n";
+                this.AddToHistory(msg);
+                this.Received += msg + "\n";
+
+                //Testowe odpalenie okna powiadomień
+                this.NewNotificationWindow(message.Sender, "message");
             }
         }
     }
