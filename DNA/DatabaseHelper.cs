@@ -24,6 +24,7 @@ namespace DNA
                 conn.Open();
                 using (SqlCommand command = new SqlCommand(string.Format("SELECT 1 FROM [DNA].[dbo].[User] WHERE Login = '{0}' AND Password = '{1}'", login, password), conn))
                 {
+                    // TODO: DELETE THIS LINE
                     Console.WriteLine(command.CommandText);
                     using (var temp = command.ExecuteReader())
                     {
@@ -47,6 +48,7 @@ namespace DNA
                 conn.Open();
                 using (SqlCommand command = new SqlCommand(string.Format("SELECT 1 FROM [DNA].[dbo].[User] WHERE Login = '{0}' AND Password = '{1}'", login, password), conn))
                 {
+                    // TODO: DELETE THIS LINE
                     Console.WriteLine(command.CommandText);
                     using (var temp = command.ExecuteReader())
                     {

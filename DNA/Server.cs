@@ -70,7 +70,7 @@ namespace DNA
 
                     while (true)
                     {
-                        AuthResponse response = null;
+                        AuthResponse response = new AuthResponse();
                         var ea = (BasicDeliverEventArgs)consumer.Queue.Dequeue();
 
                         var body = ea.Body;
@@ -80,23 +80,45 @@ namespace DNA
 
                         try
                         {
-                            var request = body.DeserializeAuthRequest();
-                            Console.WriteLine(" RPC: {0}", request);
-                            if(db.Login(request.Login, request.Password))
-                            {
-                                Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie sie zalogowal.", request.Login));
-                            }
-                            else
-                            {
-                                Console.WriteLine(string.Format("Nieudana proba zalogowania przez uzytkownika {0}.", request.Login));
-                            }
                             
-                            response = new AuthResponse();
-                            response.IsAuthenticated = true;
+                            var request = body.DeserializeAuthRequest();
+                            if (request.Type == AuthRequest.AuthorizationType.Login)
+                            {
+                                if (db.Login(request.Login, request.Password))
+                                {
+                                    Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie sie zalogowal.", request.Login));
+                                    response.Status = Status.OK;
+                                }
+                                else
+                                {
+                                    Console.WriteLine(string.Format("Nieudana proba zalogowania przez uzytkownika {0}.", request.Login));
+                                    response.Status = Status.Error;
+                                    response.Message = "Nazwa użytkownika i hasło niepoprawne.";
+                                }
+                            }
+                            else if(request.Type == AuthRequest.AuthorizationType.Register)
+                            {
+                                Console.WriteLine(" RPC Login: {0}", request);
+                                if (db.Login(request.Login, request.Password))
+                                {
+                                    Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie sie zarejestrował.", request.Login));
+                                    response.Status = Status.OK;
+                                }
+                                else
+                                {
+                                    Console.WriteLine(string.Format("Nieudana proba zarejestrowania uzytkownika {0}.", request.Login));
+                                    response.Status = Status.Error;
+                                    response.Message = "Nazwa użytkownika i hasło niepoprawne.";
+                                }
+
+                                Console.WriteLine(" RPC Register: {0}", request);
+                                response.Status = Status.Error;
+                                response.Message = "Nie udało się zarejestrować użytkownika";
+                            }
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine(" RPC: YES NO? " + e.Message);
+                            Console.WriteLine("RPC Error: " + e.Message);
                         }
                         finally
                         {

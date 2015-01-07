@@ -12,6 +12,7 @@ namespace DNAClient.ViewModel
     using DNAClient.RabbitFunctions;
     using DNAClient.View;
     using DNAClient.ViewModel.Base;
+    using DTO;
 
     /// <summary>
     /// View model okna logowania
@@ -115,11 +116,11 @@ namespace DNAClient.ViewModel
 
             var rpcClient = new RpcLogin();
 
-            var response = rpcClient.Call(this.Login, this.Login);
+            var response = rpcClient.Call(this.Login, this.Password);
 
             rpcClient.Close();
 
-            if (response.IsAuthenticated)
+            if (response.Status == Status.OK)
             {
                 ProductionWindowFactory.CreateMainWindow();
 
@@ -127,7 +128,7 @@ namespace DNAClient.ViewModel
                 if (loginWindow != null)
                 {
                     loginWindow.Close();
-                } 
+                }
             }
         }
 
@@ -147,7 +148,7 @@ namespace DNAClient.ViewModel
 
             rpcClient.Close();
 
-            if (response.CreatedSuccessfully)
+            if (response.Status == Status.OK)
             {
                 ProductionWindowFactory.CreateMainWindow();
 

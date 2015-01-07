@@ -59,7 +59,7 @@ namespace DNAClient.RabbitFunctions
             var authRequest = new AuthRequest
             {
                 Login = login,
-                Password = password
+                Password = password,
             };
 
             var body = authRequest.Serialize();

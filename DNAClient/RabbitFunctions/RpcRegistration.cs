@@ -46,21 +46,22 @@ namespace DNAClient.RabbitFunctions
         /// True/False w zależności od tego,
         /// czy logowanie na serwer się powiodło
         /// </returns>
-        public CreateUserResponse Call(string login, string password, string confirmedPassword)
+        public AuthResponse Call(string login, string password, string confirmedPassword)
         {
             var corrId = Guid.NewGuid().ToString();
             var props = this.channel.CreateBasicProperties();
             props.ReplyTo = this.replyQueueName;
             props.CorrelationId = corrId;
 
-            var createUserRequest = new CreateUserRequest
+            var authRequest = new AuthRequest
             {
                 Login = login,
                 Password = password,
-                ConfirmedPassword = confirmedPassword
+                ConfirmedPassword = confirmedPassword,
+                Type = AuthRequest.AuthorizationType.Register,
             };
 
-            var body = createUserRequest.Serialize();
+            var body = authRequest.Serialize();
             this.channel.BasicPublish("", Constants.Exchange, props, body);
 
             while (true)
@@ -68,7 +69,7 @@ namespace DNAClient.RabbitFunctions
                 var ea = this.consumer.Queue.Dequeue();
                 if (ea.BasicProperties.CorrelationId == corrId)
                 {
-                    var authResponse = ea.Body.DeserializeCreateUserResponse();
+                    var authResponse = ea.Body.DeserializeAuthResponse();
                     return authResponse;
                 }
             }
