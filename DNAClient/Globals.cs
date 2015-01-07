@@ -9,12 +9,19 @@
 
 namespace DNAClient
 {
+    using System;
+    using System.Collections.Generic;
+
+    using DNAClient.View;
+    using DNAClient.ViewModel;
+
     /// <summary>
     /// Klasa z globalnymi parametrami aplikacji
     /// </summary>
     public class GlobalsParameters
     {
         private static GlobalsParameters instance;
+
 
         public static GlobalsParameters Instance
         {
@@ -34,6 +41,14 @@ namespace DNAClient
         /// </summary>
         public string CurrentUser { get; set; }
 
+        public static List<Okno> openWindows { get; set; }
+
+        public class Okno
+        {
+            public String Name;
+
+            public ConversationViewModel Window;
+        }
         private GlobalsParameters()
         {
             

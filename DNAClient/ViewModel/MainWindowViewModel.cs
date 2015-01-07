@@ -11,6 +11,7 @@ using System.Collections.ObjectModel;
 namespace DNAClient.ViewModel
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Threading;
     using System.Threading.Tasks;
@@ -35,7 +36,6 @@ namespace DNAClient.ViewModel
         private string selectedStatus;
         private Contact selectedContact = new Contact() { Name = null };
         private string userPath;
-
         private static ConnectionFactory factory = Constants.ConnectionFactory;
 
         public MainWindowViewModel()
@@ -153,9 +153,24 @@ namespace DNAClient.ViewModel
         /// </param>
         private void NewConversationWindow(object parameter)
         {
+            foreach (GlobalsParameters.Okno okno in GlobalsParameters.openWindows)
+            {
+                if (this.SelectedContact.Name == okno.Name)
+                {
+                    return;
+                }
+            }
             if (!String.IsNullOrEmpty(this.SelectedContact.Name))
             {
-                ProductionWindowFactory.CreateConversationWindow(this.SelectedContact.Name);
+                ConversationViewModel window = ProductionWindowFactory.CreateConversationWindow(this.SelectedContact.Name);
+                GlobalsParameters.Okno okno = new GlobalsParameters.Okno()
+                                                  {
+                                                      Name = this.SelectedContact.Name, Window = window,
+                                                  };
+                if (!GlobalsParameters.openWindows.Contains(okno))
+                {
+                    GlobalsParameters.openWindows.Add(okno);
+                }
             }
         }
 
@@ -288,7 +303,7 @@ namespace DNAClient.ViewModel
                     var consumer = new EventingBasicConsumer(channel);
                     consumer.Received += (_, msg) => ctx.Post(foo_ => Receive(msg), null);
 
-                    channel.QueueBind(queueName, Constants.Exchange, string.Format(Constants.keyClientNotification + ".*.{0}", this.CurrentUser));
+                    channel.QueueBind(queueName, Constants.Exchange, string.Format(Constants.keyClientNotification + ".*.{0}.*", this.CurrentUser));
                     channel.BasicConsume(queueName, true, consumer);
 
                     FinishEvent.WaitOne();
@@ -301,11 +316,11 @@ namespace DNAClient.ViewModel
         {
             var body = args.Body;
             var routingKey = args.RoutingKey;
+            
 
-            if (routingKey.StartsWith(Constants.keyClientNotification))
+            if (routingKey.StartsWith(Constants.keyClientNotification + ".status"))
             {
                 var message = body.DeserializePresenceStatusNotification();
-
                 var contact = Contacts.Where(X => X.Name == message.Login).FirstOrDefault();
                 if (contact != null)
                 {
@@ -317,8 +332,34 @@ namespace DNAClient.ViewModel
                         contact.State = "Red";
                 }
                 //Console.WriteLine("dupa {0}, od {1}, do {2}", message.PresenceStatus, message.Login, message.Recipient);
-
             }
+
+            if (routingKey.StartsWith(Constants.keyClientNotification + ".message"))
+            {
+                bool ConversationWindowExist = false;
+                var message = body.DeserializeMessageNotification();
+                foreach (GlobalsParameters.Okno okno in GlobalsParameters.openWindows)
+                {
+                    if (okno.Name == message.Sender)
+                    {
+                        ConversationWindowExist = true;
+                        okno.Window.Receive(args);
+                    }
+                }
+                if (!ConversationWindowExist)
+                {
+                    ConversationViewModel window = ProductionWindowFactory.CreateConversationWindow(message.Sender);
+                    GlobalsParameters.Okno okno = new GlobalsParameters.Okno()
+                    {
+                        Name = message.Sender,
+                        Window = window,
+                    };
+                    GlobalsParameters.openWindows.Add(okno);
+                    window.Receive(args);
+                }
+            }
+
+           
         }
     }
 }
