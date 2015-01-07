@@ -228,10 +228,7 @@ namespace DNAClient.ViewModel
         /// The conversation view model.
         /// </param>
         /// </summary>
-        private void NewNotificationWindow(string sender, string type)
-        {
-            ProductionWindowFactory.CreateNotificationWindow(sender, type);
-        }
+
         public void Receive(BasicDeliverEventArgs args)
         {
             var body = args.Body;
@@ -243,9 +240,6 @@ namespace DNAClient.ViewModel
                 var msg = message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n";
                 this.AddToHistory(msg);
                 this.Received += msg + "\n";
-
-                //Testowe odpalenie okna powiadomień
-                this.NewNotificationWindow(message.Sender, "message");
             }
         }
     }

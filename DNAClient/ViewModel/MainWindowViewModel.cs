@@ -375,6 +375,11 @@ namespace DNAClient.ViewModel
                 }
             }
         }
+        private void NewNotificationWindow(string sender, BasicDeliverEventArgs mess, string type)
+        {
+            ProductionWindowFactory.CreateNotificationWindow(sender, mess, type);
+        }
+
 
         // Zmienia status użytkownika na liście kontaktów
         private void Receive(BasicDeliverEventArgs args)
@@ -403,6 +408,9 @@ namespace DNAClient.ViewModel
             {
                 bool ConversationWindowExist = false;
                 var message = body.DeserializeMessageNotification();
+
+                var msg = message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n";
+
                 foreach (ConversationViewModel cvModel in GlobalsParameters.openWindows)
                 {
                     if (cvModel.Recipient == message.Sender)
@@ -413,9 +421,8 @@ namespace DNAClient.ViewModel
                 }
                 if (!ConversationWindowExist)
                 {
-                    ConversationViewModel cvModel = ProductionWindowFactory.CreateConversationWindow(message.Sender);
-                    GlobalsParameters.openWindows.Add(cvModel);
-                    cvModel.Receive(args);
+                    //Testowe odpalenie okna powiadomień
+                    this.NewNotificationWindow(message.Sender, args, "message");
                 }
             }
         }
