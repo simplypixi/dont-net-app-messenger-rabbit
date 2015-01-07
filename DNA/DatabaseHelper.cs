@@ -22,13 +22,14 @@ namespace DNA
             using(conn = new SqlConnection(this.connectionString))
             {
                 conn.Open();
-                using (SqlCommand command = new SqlCommand(string.Format("SELECT 1 FROM [DNA].[dbo].[User] WHERE Login = '{0}' AND Password = '{1}'", login, password), conn))
+                String query = string.Format("SELECT 1 FROM [DNA].[dbo].[User] WHERE Login = '{0}' AND Password = '{1}'", login, password);
+                using (SqlCommand command = new SqlCommand(query, conn))
                 {
                     // TODO: DELETE THIS LINE
                     Console.WriteLine(command.CommandText);
-                    using (var temp = command.ExecuteReader())
+                    using (var reader = command.ExecuteReader())
                     {
-                        if (temp.Read())
+                        if (reader.Read())
                         {
                             return true;
                         }
@@ -46,20 +47,19 @@ namespace DNA
             using (conn = new SqlConnection(this.connectionString))
             {
                 conn.Open();
-                using (SqlCommand command = new SqlCommand(string.Format("SELECT 1 FROM [DNA].[dbo].[User] WHERE Login = '{0}' AND Password = '{1}'", login, password), conn))
+                String query = string.Format("INSERT INTO [DNA].[dbo].[User] (Login, Password) VALUES('{0}', '{1}')", login, password);
+                using (SqlCommand command = new SqlCommand(query, conn))
                 {
                     // TODO: DELETE THIS LINE
                     Console.WriteLine(command.CommandText);
-                    using (var temp = command.ExecuteReader())
+
+                    if(command.ExecuteNonQuery() > 0 )
                     {
-                        if (temp.Read())
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            return false;
-                        }
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
                     }
                 }
             }

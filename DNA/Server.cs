@@ -99,7 +99,7 @@ namespace DNA
                             else if(request.Type == AuthRequest.AuthorizationType.Register)
                             {
                                 Console.WriteLine(" RPC Login: {0}", request);
-                                if (db.Login(request.Login, request.Password))
+                                if (db.Register(request.Login, request.Password))
                                 {
                                     Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie sie zarejestrował.", request.Login));
                                     response.Status = Status.OK;
