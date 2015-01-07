@@ -21,7 +21,7 @@
             </Button.Background>
         </Button>
         <TextBlock Foreground="#FF224F5B" HorizontalAlignment="Left" Width="auto" Margin="0,0,0,34" Text="{Binding Message}"></TextBlock>
-        <Button Margin="0,26,117,0" Background="{x:Null}" BorderBrush="White" Foreground="White">Odbierz</Button>
-        <Button Command="{Binding CloseWindowCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="{Binding ElementName=NotificationWindow}" Margin="119,26,-2,0" Background="{x:Null}" BorderBrush="White" Foreground="White">Odrzuć</Button>
+        <Button Command="{Binding NewConversationWindowCommand}"  Margin="0,26,117,0" Background="{x:Null}" BorderBrush="White" Foreground="White">Odbierz</Button>
+        <Button Command="{Binding CloseWindowCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="{Binding ElementName=Notification_Window}" Margin="119,26,-2,0" Background="{x:Null}" BorderBrush="White" Foreground="White">Odrzuć</Button>
     </Grid>
 </Window>
