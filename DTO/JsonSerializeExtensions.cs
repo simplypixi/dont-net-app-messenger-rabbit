@@ -77,6 +77,22 @@ namespace DTO
             }
         }
 
+        public static CreateUserResponse DeserializeCreateUserResponse(this byte[] data)
+        {
+            using (var stream = new MemoryStream(data))
+            {
+                return JsonSerializer.DeserializeFromStream<CreateUserResponse>(stream);
+            }
+        }
+
+        public static CreateUserRequest DeserializeCreateUserRequest(this byte[] data)
+        {
+            using (var stream = new MemoryStream(data))
+            {
+                return JsonSerializer.DeserializeFromStream<CreateUserRequest>(stream);
+            }
+        }
+
         /// <summary>
         /// Metoda deserializująca request wiadomości
         /// </summary>

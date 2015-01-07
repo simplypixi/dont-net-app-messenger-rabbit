@@ -1,22 +1,16 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="RpcLogin.cs" company="">
-//   
-// </copyright>
-// <summary>
-//   Klasa zawierająca metody służące do logowania na serwer DNA
-// </summary>
-// --------------------------------------------------------------------------------------------------------------------
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace DNAClient.RabbitFunctions
 {
-    using System;
     using DTO;
+
     using RabbitMQ.Client;
 
-    /// <summary>
-    /// Klasa zawierająca metody służące do logowania na serwer DNA
-    /// </summary>
-    class RpcLogin
+    class RpcRegistration
     {
         private readonly IConnection connection;
         private readonly IModel channel;
@@ -26,7 +20,7 @@ namespace DNAClient.RabbitFunctions
         /// <summary>
         /// Konstruktor inicjalizujący paramtery połączenia
         /// </summary>
-        public RpcLogin()
+        public RpcRegistration()
         {
             var factory = Constants.ConnectionFactory;
             this.connection = factory.CreateConnection();
@@ -37,7 +31,7 @@ namespace DNAClient.RabbitFunctions
         }
 
         /// <summary>
-        /// Metoda wywołująca próbę logowania
+        /// Metoda wywołująca próbę rejestracji
         /// </summary>
         /// <param name="login">
         /// Login użytkownika
@@ -45,24 +39,28 @@ namespace DNAClient.RabbitFunctions
         /// <param name="password">
         /// Hasło użytkownika
         /// </param>
+        /// <param name="confirmedPassword">
+        /// Potwierdzenie hasła
+        /// </param>
         /// <returns>
         /// True/False w zależności od tego,
         /// czy logowanie na serwer się powiodło
         /// </returns>
-        public AuthResponse Call(string login, string password)
+        public CreateUserResponse Call(string login, string password, string confirmedPassword)
         {
             var corrId = Guid.NewGuid().ToString();
             var props = this.channel.CreateBasicProperties();
             props.ReplyTo = this.replyQueueName;
             props.CorrelationId = corrId;
 
-            var authRequest = new AuthRequest
+            var createUserRequest = new CreateUserRequest
             {
                 Login = login,
-                Password = password
+                Password = password,
+                ConfirmedPassword = confirmedPassword
             };
 
-            var body = authRequest.Serialize();
+            var body = createUserRequest.Serialize();
             this.channel.BasicPublish("", Constants.Exchange, props, body);
 
             while (true)
@@ -70,7 +68,7 @@ namespace DNAClient.RabbitFunctions
                 var ea = this.consumer.Queue.Dequeue();
                 if (ea.BasicProperties.CorrelationId == corrId)
                 {
-                    var authResponse = ea.Body.DeserializeAuthResponse();
+                    var authResponse = ea.Body.DeserializeCreateUserResponse();
                     return authResponse;
                 }
             }

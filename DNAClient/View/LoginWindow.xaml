@@ -6,25 +6,26 @@
         MouseDown="LoginWindow_MouseDown"
         DataContext="{DynamicResource LoginViewModel}"
         WindowStyle="None"
-        Title="DNA" Height="337" Width="294" Background="#FF02B6E3" WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
+        Title="DNA" Height="375" Width="294" Background="#FF02B6E3" WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
 
 
     <Window.Resources>
         <vm:LoginViewModel x:Key="LoginViewModel"/>
     </Window.Resources>
     <Grid>
-        <StackPanel HorizontalAlignment="Left" Height="377" VerticalAlignment="Top" Width="294">
+        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Width="294">
             <Button Content="" HorizontalAlignment="Left" Margin="272,10,0,0" VerticalAlignment="Top" Height="13" Width="13" BorderBrush="{x:Null}" Cursor="Hand" IsCancel="True" ClipToBounds="True" ToolTip="Kliknij, aby zamknąć" RenderTransformOrigin="0.923,-9.385" Panel.ZIndex="11">
                 <Button.Background>
                     <ImageBrush ImageSource="../Img/butt_zamk.png"/>
                 </Button.Background>
             </Button>
             <Image Margin="108,10,108,0" Source="../Img/logo.png" Stretch="Fill" Height="110"/>
-            <Grid Height="108" Margin="0,35,0,0">
-                <TextBox HorizontalAlignment="Left" Height="40" Text="{Binding Login}" Padding="5,9,10,0" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="272" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
-                <TextBox HorizontalAlignment="Left" Height="40" Padding="5,9,10,0" Margin="10,58,0,0" TextWrapping="Wrap" Text="Hasło..." VerticalAlignment="Top" Width="272" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
-            </Grid>
-            <Grid Height="45">
+            <StackPanel Orientation="Vertical" Margin="0,35,0,0">
+                <TextBox HorizontalAlignment="Left" Height="40" Text="{Binding Login}" Padding="5,9,10,0" Margin="10,0,0,0" TextWrapping="Wrap"  Width="272" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
+                <TextBox HorizontalAlignment="Left" Height="40" Text="{Binding Password}" Padding="5,9,10,0" Margin="10,5,0,0" TextWrapping="Wrap"  Width="272" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
+                <TextBox HorizontalAlignment="Left" Height="40" Text="{Binding ConfirmedPassword}" Padding="5,9,10,0" Margin="10,5,0,0" TextWrapping="Wrap"  Width="272" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
+            </StackPanel>
+            <Grid Height="45" Margin="0,5">
                 <Button x:Name="button" Content="REJESTRACJA" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" Height="40" Background="#FF02B6E3" BorderBrush="White" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="14.667" Foreground="White" ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="10,1,0,0"/>
                 <Button Content="ZALOGUJ" HorizontalAlignment="Left" Margin="155,1,0,0" VerticalAlignment="Top" Width="130" Height="40" Background="#FF02B6E3" BorderBrush="White" FontSize="14.667" Foreground="White" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" ScrollViewer.VerticalScrollBarVisibility="Disabled"                
                         Command="{Binding LoginCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="{Binding ElementName=Window}"/>

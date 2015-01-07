@@ -67,9 +67,10 @@ namespace DTO
         public List<User> Users { get; set; }
     }
 
-    public class CreateUserReq : Request
+    public class CreateUserRequest : Request
     {
         public string Password { get; set; }
+        public string ConfirmedPassword { get; set; }
     }
 
     public class CreateUserResponse : Response
