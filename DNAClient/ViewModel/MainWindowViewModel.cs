@@ -34,6 +34,8 @@ namespace DNAClient.ViewModel
         private string recipient, currentUser;
         private string selectedStatus;
         private Contact selectedContact = new Contact() { Name = null };
+        private bool justLogin = true;
+        private bool loadedContacts = false;
 
         private static ConnectionFactory factory = Constants.ConnectionFactory;
 
@@ -44,16 +46,20 @@ namespace DNAClient.ViewModel
             this.addFriendCommand = new RelayCommand(this.addNewFriend);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
 
-
             //Dodanie na sztywno kontaktów; Później trzeba dodać wczytywanie kontaktów z bazy lokalnej lub zdalnej MSSQL
-            Contacts.Add(new Contact() { Name = "Maciek" });
-            Contacts.Add(new Contact() { Name = "Maciej" });
-            Contacts.Add(new Contact() { Name = "Mariusz" });
-            Contacts.Add(new Contact() { Name = "Darek" });
+                Contacts.Add(new Contact() { Name = "Maciek" });
+                Contacts.Add(new Contact() { Name = "Maciej" });
+                Contacts.Add(new Contact() { Name = "Mariusz" });
+                Contacts.Add(new Contact() { Name = "Darek" });
+
+                var contact = Contacts.Where(X => X.Name == this.CurrentUser).FirstOrDefault();
+                Contacts.Remove(contact);
 
             // Uruchomienie zadania, które w tle będzie nasłuchiwać wiadomości przychodzących z serwera
             var ctx = SynchronizationContext.Current;
-            Task.Factory.StartNew(() => GetChannel(ctx));
+            Task.Factory.StartNew(() => this.GetChannelStatus(ctx));
+
+            this.SelectedStatus = "Zalogowany";
         }
 
 
@@ -113,7 +119,6 @@ namespace DNAClient.ViewModel
             set
             {
                 this.selectedStatus = value;
-                Console.WriteLine(selectedStatus);
                 this.RaisePropertyChanged("SelectedStatus");
                 this.SendStatus();
             }
@@ -200,21 +205,31 @@ namespace DNAClient.ViewModel
             if (window != null)
             {
                 FinishEvent.Set();
+                Console.WriteLine(this.SelectedStatus);
+                this.SelectedStatus = "Niedostępny";
                 window.Close();
             }
         }
 
         private void SendStatus()
         {
-            if (!String.IsNullOrEmpty(this.SelectedStatus.Trim()))
-            {
-                foreach (Contact element in this.Contacts)
+            string state = "";
+         
+                if (!String.IsNullOrEmpty(this.SelectedStatus))
+                    state = this.SelectedStatus.Trim();
+                if (!String.IsNullOrEmpty(state))
                 {
-                    this.SendStatusToQueue(element.Name);
+                    foreach (Contact element in this.Contacts)
+                    {
+                       
+                           this.SendStatusToQueue(element.Name);
+                    }
                 }
-            }
+                if (this.SelectedStatus == "Zalogowany")
+                {
+                    this.SelectedStatus = "Dostępny";
+                }
         }
-
         /// <summary>
         /// Metoda tworząca informację o zmianie stanu i wysyłająca ją do rabbita
         /// </summary>
@@ -225,13 +240,21 @@ namespace DNAClient.ViewModel
                 using (var channel = connection.CreateModel())
                 {
                     channel.ExchangeDeclare(Constants.Exchange, "topic");
+                   PresenceStatus status = PresenceStatus.Login;
 
-                    PresenceStatus status = PresenceStatus.Offline;
-                    if(this.SelectedStatus == "Zajęty")
+                    if (this.SelectedStatus == "Zajęty")
                         status = PresenceStatus.Afk;
-                    if(this.SelectedStatus == "Dostępny")
+                    if (this.SelectedStatus == "Dostępny")
                         status = PresenceStatus.Online;
+                    if (this.SelectedStatus == "Niedostępny")
+                        status = PresenceStatus.Offline;
 
+                    if (this.SelectedStatus == "Zalogowany")
+                    {
+                        status = PresenceStatus.Login;
+                    }
+
+                    Console.WriteLine("Dodano w takcie wysyłanie" + status);
                     var message = new PresenceStatusNotification
                     {
                         Login = this.CurrentUser,
@@ -241,12 +264,9 @@ namespace DNAClient.ViewModel
 
                     var body = message.Serialize();
                     channel.BasicPublish(Constants.Exchange, Constants.keyServerRequestStatus, null, body);
-                    //Debug.WriteLine("{0} zmienił status na \"{1}\" i poinformował o tym: {2}", this.CurrentUser, this.SelectedStatus, recip);
                 }
             }
         }
-
-
         /// <summary>
         /// Metoda do obierania wiadomości z serwera
         /// </summary>
@@ -254,7 +274,7 @@ namespace DNAClient.ViewModel
         /// Przekazuje tutaj view model, ponieważ ta metoda musi być statyczna, a trzeba jakoś 
         /// ustawić property od odebranych wiadomości (pewnie nie jest to zbyt dobra praktyka, ale póki co działa :P)
         /// </param>
-        public void GetChannel(SynchronizationContext ctx)
+        private void GetChannelStatus(SynchronizationContext ctx)
         {
             using (var connection = factory.CreateConnection())
             {
@@ -266,7 +286,7 @@ namespace DNAClient.ViewModel
                     Debug.WriteLine(" [Clt] Waiting for request.");
 
                     var consumer = new EventingBasicConsumer(channel);
-                    consumer.Received += (_, msg) => ctx.Post(foo_ => Receive(msg), null);
+                    consumer.Received += (_, msg) => ctx.Post(foo_ => ReceiveStatus(msg), null);
 
                     channel.QueueBind(queueName, Constants.Exchange, string.Format(Constants.keyClientNotification + ".*.{0}", this.CurrentUser));
                     channel.BasicConsume(queueName, true, consumer);
@@ -277,7 +297,7 @@ namespace DNAClient.ViewModel
         }
 
         // Zmienia status użytkownika na liście kontaktów
-        private void Receive(BasicDeliverEventArgs args)
+        private void ReceiveStatus(BasicDeliverEventArgs args)
         {
             var body = args.Body;
             var routingKey = args.RoutingKey;
@@ -295,10 +315,14 @@ namespace DNAClient.ViewModel
                         contact.State = "Green";
                     if (message.PresenceStatus.Equals(PresenceStatus.Afk))
                         contact.State = "Red";
+                    if (message.PresenceStatus.Equals(PresenceStatus.Login))
+                    {
+                        contact.State = "Green";
+                        this.SelectedStatus = "Dostępny";
+                    }
                 }
-                //Console.WriteLine("dupa {0}, od {1}, do {2}", message.PresenceStatus, message.Login, message.Recipient);
-
             }
         }
+
     }
 }

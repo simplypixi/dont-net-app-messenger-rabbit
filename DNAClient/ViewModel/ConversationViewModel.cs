@@ -187,7 +187,7 @@ namespace DNAClient.ViewModel
         /// Przekazuje tutaj view model, ponieważ ta metoda musi być statyczna, a trzeba jakoś 
         /// ustawić property od odebranych wiadomości (pewnie nie jest to zbyt dobra praktyka, ale póki co działa :P)
         /// </param>
-        public static void GetChannel(ConversationViewModel conversationViewModel, SynchronizationContext ctx)
+        private static void GetChannel(ConversationViewModel conversationViewModel, SynchronizationContext ctx)
         {
             using (var connection = factory.CreateConnection())
             {
@@ -223,7 +223,7 @@ namespace DNAClient.ViewModel
             var body = args.Body;
             var routingKey = args.RoutingKey;
 
-            if (routingKey.StartsWith(Constants.keyClientNotification))
+            if (routingKey.StartsWith(Constants.keyClientNotification + ".message"))
             {
                 var message = body.DeserializeMessageNotification();
                 conversationViewModel.Received += message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n\n";

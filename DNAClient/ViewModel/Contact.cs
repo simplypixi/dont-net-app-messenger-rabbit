@@ -22,6 +22,7 @@ namespace DNAClient.ViewModel
 
         protected string name;
         protected string state;
+        protected bool log;
 
         public string Name
         {
@@ -43,14 +44,19 @@ namespace DNAClient.ViewModel
             get { return state;  }
             set
             {
-                if (state != value)
-                {
                     state = value;
                     RaisePropertyChanged("State");
-                }
             }
         }
-
+        public bool Log
+        {
+            get { return log; }
+            set
+            {
+                    log = value;
+                    RaisePropertyChanged("Log");
+            }
+        }
 
     }
 }

@@ -54,6 +54,7 @@ namespace DTO
         Online,
         Offline,
         Afk,
+        Login
     }
 
     public class User
