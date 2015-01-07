@@ -35,9 +35,9 @@
                           Cursor="Hand" SelectedValue ="{Binding SelectedStatus}" 
                           SelectedValuePath="Content" Background="Black" FontSize="9">
 
-                    <ComboBoxItem Content="Dostępny" HorizontalAlignment="Left" Background="Green" Foreground="White" Padding="6,4,10,5" Width="100"/>
+                    <ComboBoxItem IsSelected="True" Content="Dostępny" HorizontalAlignment="Left" Background="Green" Foreground="White" Padding="6,4,10,5" Width="100"/>
                     <ComboBoxItem Content="Zajęty" HorizontalAlignment="Left" Background="Red" Foreground="White" Padding="6,4,10,5" Width="100"/>
-                    <ComboBoxItem IsSelected="True" Content="Niedostępny" HorizontalAlignment="Left" Background="LightGray" Padding="6,4,10,5" Width="100"/>
+                    <ComboBoxItem Content="Niedostępny" HorizontalAlignment="Left" Background="LightGray" Padding="6,4,10,5" Width="100"/>
                 </ComboBox>
             </Grid>
             <Grid x:Name="list" Height="234" Background="#FF054859">
