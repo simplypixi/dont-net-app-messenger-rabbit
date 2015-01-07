@@ -24,12 +24,10 @@ namespace DNA
     {
         private static readonly ManualResetEvent FinishEvent = new ManualResetEvent(false);
         private static ConnectionFactory factory = Constants.ConnectionFactory;
+        private static DatabaseHelper db = new DatabaseHelper();
 
         static void Main(string[] args)
         {
-            //DatabaseHelper db = new DatabaseHelper();
-            //bool x = db.Login("Maciej", "test");
-            //Console.WriteLine(x.ToString());
             Task.Factory.StartNew(() => GetChannel(Constants.keyRequestMessage));
             Task.Factory.StartNew(() => GetChannelRPC());
 
@@ -84,7 +82,15 @@ namespace DNA
                         {
                             var request = body.DeserializeAuthRequest();
                             Console.WriteLine(" RPC: {0}", request);
-                            // tutaj sprawdzanie z baza danych
+                            if(db.Login(request.Login, request.Password))
+                            {
+                                Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie sie zalogowal.", request.Login));
+                            }
+                            else
+                            {
+                                Console.WriteLine(string.Format("Nieudana proba zalogowania przez uzytkownika {0}.", request.Login));
+                            }
+                            
                             response = new AuthResponse();
                             response.IsAuthenticated = true;
                         }
