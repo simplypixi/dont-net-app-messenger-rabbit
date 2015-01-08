@@ -64,11 +64,15 @@
                         <i:EventTrigger EventName="MouseDoubleClick">
                             <i:InvokeCommandAction Command="{Binding NewConversationWindowCommand}"/>
                         </i:EventTrigger>
-                        <i:EventTrigger EventName="MouseRightButtonUp" >
-                            <i:InvokeCommandAction Command="{Binding OpenHistoryCommand}"/>
-                        </i:EventTrigger>
                     </i:Interaction.Triggers>
-
+                    
+                    <ListBox.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Historia rozmowy" Command="{Binding OpenHistoryCommand}" />
+                            <MenuItem Header="Usuń" Command="{Binding DeleteContactCommand}" CommandParameter="{Binding SelectedContact}"/>
+                        </ContextMenu>
+                    </ListBox.ContextMenu>
+                    
                     <ListBox.ItemTemplate>
 
                         <DataTemplate>
