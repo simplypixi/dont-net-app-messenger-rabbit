@@ -27,6 +27,8 @@ namespace DNAClient.ViewModel
         private string message;
         private BasicDeliverEventArgs messageTMP;
         private string sender;
+
+        public string type { get; set; }
         public string Message
         {
             get
@@ -55,8 +57,10 @@ namespace DNAClient.ViewModel
             if(type == "file")
                 this.Message = sender + " przesyła plik...";
 
+            this.type = type;
             this.messageTMP = mess;
             this.sender = sender;
+            GlobalsParameters.openNotifications.Add(sender+type);
             this.NewConversationWindowCommand = new RelayCommand(this.NewConversationWindow);
         }
 
@@ -65,7 +69,8 @@ namespace DNAClient.ViewModel
         {
             ConversationViewModel cvModel = ProductionWindowFactory.CreateConversationWindow(sender);
             GlobalsParameters.openWindows.Add(cvModel);
-            cvModel.Receive(this.messageTMP);
+            var msg = this.messageTMP.Body.DeserializeMessageNotification();
+            cvModel.AddToHistory(GlobalsParameters.notificationCache[msg.Sender + "message"]);
             this.CloseWindow(parameter);
         }
         
@@ -74,6 +79,12 @@ namespace DNAClient.ViewModel
 
         private void CloseWindow(object parameter)
         {
+            if (!GlobalsParameters.cache.ContainsKey(this.sender))
+            {
+                GlobalsParameters.cache.Add(this.sender, String.Empty);
+            }
+            var msg = this.messageTMP.Body.DeserializeMessageNotification();
+            GlobalsParameters.notificationCache.Remove(msg.Sender + "message");
             var window = parameter as Window;
 
             if (window != null)

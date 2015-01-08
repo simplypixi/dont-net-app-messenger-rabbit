@@ -67,6 +67,10 @@ namespace DNAClient.ViewModel
             : this()
         {
             this.Recipient = recipient;
+            if (GlobalsParameters.cache.ContainsKey(this.Recipient))
+            {
+                this.Received = GlobalsParameters.cache[this.Recipient];
+            }
         }
 
         public string Message
@@ -148,7 +152,7 @@ namespace DNAClient.ViewModel
             }
         }
 
-        private void AddToHistory(string message)
+        public void AddToHistory(string message)
         {
             if (this.Recipient == null)
             {
@@ -185,6 +189,11 @@ namespace DNAClient.ViewModel
             {
                 var msg = DateTimeOffset.Now + " przez Ja:\n" + this.Message + "\n";
                 this.Received += msg + "\n";
+                if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
+                {
+                    GlobalsParameters.cache.Add(this.Recipient, String.Empty);
+                }
+                GlobalsParameters.cache[this.Recipient] += msg + "\n";
                 this.SendMessageToQueue();
                 AddToHistory(msg);
                 this.Message = String.Empty;
@@ -206,7 +215,7 @@ namespace DNAClient.ViewModel
                     var message = new MessageReq
                                       {
                                           Login = this.User,
-                                          Message = this.Message,
+                                          Message = this.Message + "\n",
                                           Recipient = this.Recipient,
                                           SendTime = DateTimeOffset.Now
                                       };
@@ -239,7 +248,8 @@ namespace DNAClient.ViewModel
                 var message = body.DeserializeMessageNotification();
                 var msg = message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n";
                 this.AddToHistory(msg);
-                this.Received += msg + "\n";
+                this.Received += msg;
+                GlobalsParameters.cache[message.Sender] += msg;
             }
         }
     }

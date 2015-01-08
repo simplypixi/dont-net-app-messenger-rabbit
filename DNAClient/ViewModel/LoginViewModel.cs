@@ -92,6 +92,9 @@ namespace DNAClient.ViewModel
         {
             GlobalsParameters.Instance.CurrentUser = this.Login;
             GlobalsParameters.openWindows = new List<ConversationViewModel>();
+            GlobalsParameters.cache = new Dictionary<string, string>();
+            GlobalsParameters.openNotifications = new List<String>();
+            GlobalsParameters.notificationCache = new Dictionary<string, string>();
             ProductionWindowFactory.CreateMainWindow();
 
             var loginWindow = parameter as LoginWindow;
