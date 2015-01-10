@@ -61,7 +61,15 @@ namespace DTO
         /// <returns>
         /// Request autoryzacji
         /// </returns>
-        public static AuthRequest DeserializeAuthResponse(this byte[] data)
+        public static AuthResponse DeserializeAuthResponse(this byte[] data)
+        {
+            using (var stream = new MemoryStream(data))
+            {
+                return JsonSerializer.DeserializeFromStream<AuthResponse>(stream);
+            }
+        }
+
+        public static AuthRequest DeserializeAuthRequest(this byte[] data)
         {
             using (var stream = new MemoryStream(data))
             {

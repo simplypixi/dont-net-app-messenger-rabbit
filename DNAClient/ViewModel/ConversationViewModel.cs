@@ -24,8 +24,9 @@ namespace DNAClient.ViewModel
 
     using DTO;
 
-    using RabbitMQ.Client;
-    using RabbitMQ.Client.Events;
+    using global::RabbitMQ.Client;
+    using global::RabbitMQ.Client.Events;
+
 
     /// <summary>
     /// View model okna konwersacji

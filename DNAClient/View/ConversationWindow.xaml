@@ -8,7 +8,7 @@
         Height="370" Width="525"
 	    WindowStyle="None"
 		ResizeMode="NoResize"
-        Title="Rozmowa z" Background="#FF02B6E3" BorderBrush="#FF02B6E3" Topmost="False">
+        Title="Rozmowa z" Background="#FF02B6E3" BorderBrush="#FF02B6E3">
 
     <Window.Resources>
         <vm:ConversationViewModel x:Key="ConversationViewModel"/>
