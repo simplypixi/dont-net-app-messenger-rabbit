@@ -24,8 +24,9 @@ namespace DNAClient.ViewModel
 
     using DTO;
 
-    using RabbitMQ.Client;
-    using RabbitMQ.Client.Events;
+    using global::RabbitMQ.Client;
+    using global::RabbitMQ.Client.Events;
+
 
     /// <summary>
     /// View model okna konwersacji
@@ -70,6 +71,10 @@ namespace DNAClient.ViewModel
             : this()
         {
             this.Recipient = recipient;
+            if (GlobalsParameters.cache.ContainsKey(this.Recipient))
+            {
+                this.Received = GlobalsParameters.cache[this.Recipient];
+            }
         }
 
         public string Message
@@ -153,7 +158,7 @@ namespace DNAClient.ViewModel
             }
         }
 
-        private void AddToHistory(string message)
+        public void AddToHistory(string message)
         {
             if (this.Recipient == null)
             {
@@ -190,6 +195,11 @@ namespace DNAClient.ViewModel
             {
                 var msg = DateTimeOffset.Now + " przez Ja:\n" + this.Message + "\n";
                 this.Received += msg + "\n";
+                if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
+                {
+                    GlobalsParameters.cache.Add(this.Recipient, String.Empty);
+                }
+                GlobalsParameters.cache[this.Recipient] += msg + "\n";
                 this.SendMessageToQueue();
                 AddToHistory(msg);
                 this.Message = String.Empty;
@@ -211,7 +221,7 @@ namespace DNAClient.ViewModel
                     var message = new MessageReq
                                       {
                                           Login = this.User,
-                                          Message = this.Message,
+                                          Message = this.Message + "\n",
                                           Recipient = this.Recipient,
                                           SendTime = DateTimeOffset.Now,
                                           Attachment = this.attachment
@@ -247,7 +257,9 @@ namespace DNAClient.ViewModel
                 var message = body.DeserializeMessageNotification();
                 var msg = message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n";
                 this.AddToHistory(msg);
-                this.Received += msg + "\n";
+                this.Received += msg;
+                GlobalsParameters.cache[message.Sender] += msg;
+
             }
         }
 

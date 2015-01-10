@@ -24,10 +24,13 @@ namespace DNA
     {
         private static readonly ManualResetEvent FinishEvent = new ManualResetEvent(false);
         private static ConnectionFactory factory = Constants.ConnectionFactory;
+        private static DatabaseHelper db = new DatabaseHelper();
 
         static void Main(string[] args)
         {
-            Task.Factory.StartNew(GetChannel);
+            Task.Factory.StartNew(() => GetChannel());
+            Task.Factory.StartNew(() => GetChannelRPC());
+
             Console.WriteLine("Starting server...");
 
             Console.ReadLine();
@@ -43,14 +46,86 @@ namespace DNA
                     channel.ExchangeDeclare(Constants.Exchange, "topic");
                     var queueName = channel.QueueDeclare();
 
-                    Console.WriteLine(" [Srv] Waiting for request. " + "To exit press CTRL+C");
-
                     var consumer = new EventingBasicConsumer(channel);
                     consumer.Received += (_, msg) => Receive(msg);
                     channel.QueueBind(queueName, Constants.Exchange, Constants.keyServerRequest + ".*");
                     channel.BasicConsume(queueName, true, consumer);
-
                     FinishEvent.WaitOne();
+                }
+            }
+        }
+
+        public static void GetChannelRPC()
+        {
+            using (var connection = factory.CreateConnection())
+            {
+                using (var channel = connection.CreateModel())
+                {
+                    channel.QueueDeclare(Constants.Exchange, false, false, false, null);
+                    channel.BasicQos(0, 1, false);
+                    var consumer = new QueueingBasicConsumer(channel);
+                    channel.BasicConsume(Constants.Exchange, false, consumer);
+                    Console.WriteLine(" [x] Awaiting RPC requests");
+
+                    while (true)
+                    {
+                        AuthResponse response = new AuthResponse();
+                        var ea = (BasicDeliverEventArgs)consumer.Queue.Dequeue();
+
+                        var body = ea.Body;
+                        var props = ea.BasicProperties;
+                        var replyProps = channel.CreateBasicProperties();
+                        replyProps.CorrelationId = props.CorrelationId;
+
+                        try
+                        {
+                            
+                            var request = body.DeserializeAuthRequest();
+                            if (request.Type == AuthRequest.AuthorizationType.Login)
+                            {
+                                if (db.Login(request.Login, request.Password))
+                                {
+                                    Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie sie zalogowal.", request.Login));
+                                    response.Status = Status.OK;
+                                }
+                                else
+                                {
+                                    Console.WriteLine(string.Format("Nieudana proba zalogowania przez uzytkownika {0}.", request.Login));
+                                    response.Status = Status.Error;
+                                    response.Message = "Nazwa użytkownika i hasło niepoprawne.";
+                                }
+                            }
+                            else if(request.Type == AuthRequest.AuthorizationType.Register)
+                            {
+                                Console.WriteLine(" RPC Login: {0}", request);
+                                if (db.Register(request.Login, request.Password))
+                                {
+                                    Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie sie zarejestrował.", request.Login));
+                                    response.Status = Status.OK;
+                                }
+                                else
+                                {
+                                    Console.WriteLine(string.Format("Nieudana proba zarejestrowania uzytkownika {0}.", request.Login));
+                                    response.Status = Status.Error;
+                                    response.Message = "Nazwa użytkownika i hasło niepoprawne.";
+                                }
+
+                                Console.WriteLine(" RPC Register: {0}", request);
+                                response.Status = Status.Error;
+                                response.Message = "Nie udało się zarejestrować użytkownika";
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("RPC Error: " + e.Message);
+                        }
+                        finally
+                        {
+                            var responseBytes = response.Serialize();
+                            channel.BasicPublish("", props.ReplyTo, replyProps, responseBytes);
+                            channel.BasicAck(ea.DeliveryTag, false);
+                        }
+                    }
                 }
             }
         }
@@ -69,19 +144,13 @@ namespace DNA
             if (routingKey == Constants.keyServerRequestMessage)
             {
                 var message = body.DeserializeMessageReq();
-               
+
                 Console.WriteLine(
                     " [Msg] '{0}':'{1} - {2}'",
                     routingKey,
                     message.Login,
                     message.Message);
                 SendMessageNotification(message);
-            }
-
-            if (routingKey == Constants.keyServerRequestAuthorization)
-            {
-                var authorizationRequest = body.DeserializeAuthResponse();
-                Console.WriteLine(" [Auth] '{0}':'{1}'", routingKey, authorizationRequest.Login);
             }
 
             if (routingKey == Constants.keyServerRequestStatus)

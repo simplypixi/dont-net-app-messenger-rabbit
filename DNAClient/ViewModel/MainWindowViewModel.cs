@@ -40,10 +40,6 @@ namespace DNAClient.ViewModel
 
         private Contact selectedContact = new Contact() { Name = null };
 
-        private bool justLogin = true;
-
-        private bool loadedContacts = false;
-
         private string userPath;
 
         private static ConnectionFactory factory = Constants.ConnectionFactory;
@@ -57,6 +53,7 @@ namespace DNAClient.ViewModel
             this.OpenHistoryCommand = new RelayCommand(this.OpenHistory);
             this.addFriendCommand = new RelayCommand(this.addNewFriend);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
+            this.DeleteContactCommand = new RelayCommand(this.DeleteContact);
 
             //Dodanie na sztywno kontaktów; Później trzeba dodać wczytywanie kontaktów z bazy lokalnej lub zdalnej MSSQL
             this.Contacts.Add(new Contact() { Name = "Maciek" });
@@ -139,6 +136,24 @@ namespace DNAClient.ViewModel
 
         }
 
+
+        /// <summary>
+        /// Komenda usunięcia kontaktu z listy
+        /// </summary>
+        public RelayCommand DeleteContactCommand { get; set; }
+
+        /// <summary>
+        /// Metoda usuwająca kontakt z listy
+        /// </summary>
+        /// <param name="parameter">
+        /// The parameter.
+        /// </param>
+        private void DeleteContact(object parameter)
+        {
+            var tmp = parameter as Contact;
+            var contact = Contacts.Where(X => X.Name == tmp.Name).FirstOrDefault();
+            this.Contacts.Remove(contact);
+        }
         /// <summary>
         /// Komenda otwarcia historii rozmowy
         /// </summary>
@@ -421,6 +436,20 @@ namespace DNAClient.ViewModel
                 }
                 if (!ConversationWindowExist)
                 {
+                    if (!GlobalsParameters.cache.ContainsKey(message.Sender))
+                    {
+                        GlobalsParameters.cache.Add(message.Sender, String.Empty);
+                    }
+                    GlobalsParameters.cache[message.Sender] += msg;
+                    if (!GlobalsParameters.openNotifications.Contains(message.Sender + "message"))
+                    {
+                        this.NewNotificationWindow(message.Sender, args, "message");
+                        GlobalsParameters.notificationCache.Add(message.Sender + "message", msg);
+                    }
+                    else
+                    {
+                        GlobalsParameters.notificationCache[message.Sender + "message"] += msg;
+                    }
                     //Testowe odpalenie okna powiadomień
                     this.NewNotificationWindow(message.Sender, args, NotificationType.message);
                 }

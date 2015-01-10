@@ -12,6 +12,12 @@ namespace DTO
     using System;
     using System.Collections.Generic;
 
+    public enum Status
+    {
+        OK,
+        Error
+    }
+
     public class Response
     {
         public Status Status { get; set; }
@@ -30,19 +36,18 @@ namespace DTO
 
     public class AuthRequest : Request
     {
+        public enum AuthorizationType
+        {
+            Login,
+            Register
+        }
         public string Password { get; set; }
-    }
-
-    public enum Status
-    {
-        OK,
-        Error,
-        NotAuthenticated,
+        public string ConfirmedPassword { get; set; }
+        public AuthorizationType Type { get; set; }
     }
 
     public class AuthResponse : Response
     {
-        public bool IsAuthenticated { get; set; }
     }
 
     public class UserListReq : Request
@@ -66,16 +71,6 @@ namespace DTO
     public class UserListResponse : Response
     {
         public List<User> Users { get; set; }
-    }
-
-    public class CreateUserReq : Request
-    {
-        public string Password { get; set; }
-    }
-
-    public class CreateUserResponse : Response
-    {
-        public bool CreatedSuccessfully { get; set; }
     }
 
     public class Attachment

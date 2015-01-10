@@ -77,6 +77,12 @@ namespace DNAClient.ViewModel
             this.messageTMP = mess;
             this.sender = sender;
             this.NewConversationWindowCommand = new RelayCommand(this.NewConversationWindow);
+
+            this.type = type;
+            this.messageTMP = mess;
+            this.sender = sender;
+            GlobalsParameters.openNotifications.Add(sender+type);
+            this.NewConversationWindowCommand = new RelayCommand(this.NewConversationWindow);
         }
 
         public RelayCommand NewConversationWindowCommand { get; set; }
@@ -126,6 +132,12 @@ namespace DNAClient.ViewModel
 
         private void CloseWindow(object parameter)
         {
+            if (!GlobalsParameters.cache.ContainsKey(this.sender))
+            {
+                GlobalsParameters.cache.Add(this.sender, String.Empty);
+            }
+            var msg = this.messageTMP.Body.DeserializeMessageNotification();
+            GlobalsParameters.notificationCache.Remove(msg.Sender + "message");
             var window = parameter as Window;
 
             if (window != null)
