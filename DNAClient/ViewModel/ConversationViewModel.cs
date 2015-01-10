@@ -45,6 +45,8 @@ namespace DNAClient.ViewModel
 
         private string recipient;
 
+        private Attachment attachment;
+
         // odebrane wiadomości (do przerobienia na listę lub coś w ten deseń)
         private string received;
         private static ConnectionFactory factory = Constants.ConnectionFactory;
@@ -55,6 +57,7 @@ namespace DNAClient.ViewModel
             this.User = GlobalsParameters.Instance.CurrentUser;
             this.SendMessageCommand = new RelayCommand(this.SendMessage);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
+            this.AttachFileCommand = new RelayCommand(this.AttachFile);
         }
 
         /// <summary>
@@ -128,6 +131,8 @@ namespace DNAClient.ViewModel
         public RelayCommand SendMessageCommand { get; set; }
 
         public RelayCommand CloseWindowCommand { get; set; }
+
+        public RelayCommand AttachFileCommand { get; set; }
 
         private void CloseWindow(object parameter)
         {
@@ -208,7 +213,8 @@ namespace DNAClient.ViewModel
                                           Login = this.User,
                                           Message = this.Message,
                                           Recipient = this.Recipient,
-                                          SendTime = DateTimeOffset.Now
+                                          SendTime = DateTimeOffset.Now,
+                                          Attachment = this.attachment
                                       };
 
                     var body = message.Serialize();
@@ -216,6 +222,8 @@ namespace DNAClient.ViewModel
                     Debug.WriteLine("{0} wysłał \"{1}\" do: {2}", this.User, this.Message, this.Recipient);
                 }
             }
+
+            this.attachment = null;
         }
 
         /// <summary>
@@ -240,6 +248,29 @@ namespace DNAClient.ViewModel
                 var msg = message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n";
                 this.AddToHistory(msg);
                 this.Received += msg + "\n";
+            }
+        }
+
+        void AttachFile(object param)
+        {
+            Microsoft.Win32.OpenFileDialog win = new Microsoft.Win32.OpenFileDialog();
+
+            Nullable<bool> result = win.ShowDialog();
+
+            if (result != null)
+            {
+                string filePath = win.FileName;
+                Debug.Print(filePath);
+
+                this.attachment = new Attachment();
+
+                byte[] bytes = File.ReadAllBytes(filePath);
+
+                this.attachment.Data = bytes;
+                this.attachment.Name = "Nazwa pliku";
+                this.attachment.MimeType = "Nie wiem co to";
+
+                
             }
         }
     }

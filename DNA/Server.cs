@@ -111,7 +111,8 @@ namespace DNA
                         Message = messageReq.Message,
                         SendTime = DateTime.Now,
                         Sender = messageReq.Login,
-                        Recipient = messageReq.Recipient
+                        Recipient = messageReq.Recipient,
+                        Attachment = messageReq.Attachment
                     };
 
                     var body = message.Serialize();

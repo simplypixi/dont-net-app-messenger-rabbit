@@ -27,6 +27,12 @@ namespace DNAClient.ViewModel
         private string message;
         private BasicDeliverEventArgs messageTMP;
         private string sender;
+
+        /// <summary>
+        /// Typ notyfikacji jaka przyszła do użytkownika
+        /// </summary>
+        private NotificationType notificationType;
+
         public string Message
         {
             get
@@ -44,9 +50,18 @@ namespace DNAClient.ViewModel
         {
         }
 
-        public NotificationWindowViewModel(string sender, BasicDeliverEventArgs mess, string type)
+        public NotificationWindowViewModel(string sender, BasicDeliverEventArgs mess, NotificationType notificationType)
         {
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
+            this.notificationType = notificationType;
+
+            switch (notificationType)
+            {
+                    case NotificationType.message:
+                        this.Message = sender + " zmienił status...";
+                        break;
+                    case NotificationType.status:
+            }
 
             if (type == "status")
                 this.Message = sender + " zmienił status...";

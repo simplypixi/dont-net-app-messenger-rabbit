@@ -424,6 +424,11 @@ namespace DNAClient.ViewModel
                     //Testowe odpalenie okna powiadomień
                     this.NewNotificationWindow(message.Sender, args, "message");
                 }
+
+                if (message.Attachment != null)
+                {
+                    this.NewNotificationWindow(message.Sender, args, "file");
+                }
             }
         }
     }
