@@ -12,26 +12,37 @@ namespace DNAClient
     using DNAClient.View;
     using DNAClient.ViewModel;
 
+    using RabbitMQ.Client;
+    using RabbitMQ.Client.Events;
+
     /// <summary>
     /// Fabryka nowych okien
     /// </summary>
     public class ProductionWindowFactory
     {
-        public static void CreateConversationWindow(string recipient)
+        public static ConversationViewModel CreateConversationWindow(string recipient)
         {
+            ConversationViewModel cvModel = new ConversationViewModel(recipient);
             ConversationWindow window = new ConversationWindow
             {
-                DataContext = new ConversationViewModel(recipient)
+                DataContext = cvModel,
+            };
+            window.Show();
+            return cvModel;
+        }
+
+        public static void CreateNotificationWindow(string sender, BasicDeliverEventArgs mess, string type)
+        {
+            NotificationWindow window = new NotificationWindow
+            {
+                DataContext = new NotificationWindowViewModel(sender, mess, type)
             };
             window.Show();
         }
 
         public static void CreateMainWindow()
         {
-            MainWindow window = new MainWindow
-            {
-                DataContext = new MainWindowViewModel()
-            };
+            MainWindow window = new MainWindow();
             window.Show();
         }
     }

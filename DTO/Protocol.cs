@@ -59,6 +59,7 @@ namespace DTO
         Online,
         Offline,
         Afk,
+        Login
     }
 
     public class User
@@ -106,6 +107,8 @@ namespace DTO
     {
         public string Login { get; set; }
         public PresenceStatus PresenceStatus { get; set; }
+
+        public string Recipient { get; set; }
     }
 
     public class ActivityNotification : Notification

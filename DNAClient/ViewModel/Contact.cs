@@ -17,10 +17,12 @@ namespace DNAClient.ViewModel
     {
         public Contact()
         {
+            this.State = "#FFD1D1D1"; 
         }
 
         protected string name;
         protected string state;
+        protected bool log;
 
         public string Name
         {
@@ -35,19 +37,26 @@ namespace DNAClient.ViewModel
             }
         }
 
+
+
         public string State
         {
             get { return state;  }
             set
             {
-                if (state != value)
-                {
                     state = value;
                     RaisePropertyChanged("State");
-                }
             }
         }
-
+        public bool Log
+        {
+            get { return log; }
+            set
+            {
+                    log = value;
+                    RaisePropertyChanged("Log");
+            }
+        }
 
     }
 }

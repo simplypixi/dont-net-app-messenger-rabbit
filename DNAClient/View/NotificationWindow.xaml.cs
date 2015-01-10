@@ -15,27 +15,20 @@ using System.Windows.Shapes;
 namespace DNAClient.View
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for NotificationWindow.xaml
     /// </summary>
-    using DNAClient.ViewModel;
-    public partial class MainWindow : Window
+    public partial class NotificationWindow : Window
     {
-
-        public MainWindow()
+        public NotificationWindow()
         {
             InitializeComponent();
         }
 
-        private void MainWindow_MouseDown(object sender, MouseButtonEventArgs e)
+        private void Notification_Window_Loaded(object sender, RoutedEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left)
-                this.DragMove();
+            var desktopWorkingArea = System.Windows.SystemParameters.WorkArea;
+            this.Left = desktopWorkingArea.Right - this.Width;
+            this.Top = desktopWorkingArea.Bottom - this.Height;
         }
-
-        private void comboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
-
     }
 }

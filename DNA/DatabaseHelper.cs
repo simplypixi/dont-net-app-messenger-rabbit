@@ -14,7 +14,7 @@ namespace DNA
         
         public DatabaseHelper()
         {
-            this.connectionString = @"Data Source=montwulfpc\Baza;Initial Catalog=DNA; User Id=dna; Password=dna;";
+            this.connectionString = @"Data Source=.;Initial Catalog=DNA; User Id=dna; Password=dna;";
         }
 
         public bool Login(string login, string password)

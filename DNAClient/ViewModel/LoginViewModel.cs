@@ -9,6 +9,13 @@
 
 namespace DNAClient.ViewModel
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System.Windows;
+
     using DNAClient.RabbitFunctions;
     using DNAClient.View;
     using DNAClient.ViewModel.Base;
@@ -22,7 +29,10 @@ namespace DNAClient.ViewModel
         /// <summary>
         /// Login użytkownika
         /// </summary>
+        /// 
         private string login;
+
+        private static readonly ManualResetEvent FinishEvent = new ManualResetEvent(false);
 
         /// <summary>
         /// Hasło użytkownika
@@ -40,6 +50,7 @@ namespace DNAClient.ViewModel
         public LoginViewModel()
         {
             this.LoginCommand = new RelayCommand(this.LoginToServer);
+            this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
             this.RegistrationCommand = new RelayCommand(this.RegistrationOnServer);
         }
 
@@ -76,7 +87,24 @@ namespace DNAClient.ViewModel
                 this.RaisePropertyChanged("Password");
             }
         }
+        /// <summary>
+        /// Komenda zamykania okna, do zbindowania w xamlu
+        /// </summary>
+        public RelayCommand CloseWindowCommand { get; set; }
 
+        /// <summary>
+        /// Metoda zamykania okna
+        /// </summary>
+        private void CloseWindow(object parameter)
+        {
+            var window = parameter as Window;
+
+            if (window != null)
+            {
+                FinishEvent.Set();
+                window.Close();
+            }
+        }
         /// <summary>
         /// Property z potwierdzeniem hasła
         /// </summary>
@@ -113,6 +141,7 @@ namespace DNAClient.ViewModel
         private void LoginToServer(object parameter)
         {
             GlobalsParameters.Instance.CurrentUser = this.Login;
+            GlobalsParameters.openWindows = new List<ConversationViewModel>();
 
             var rpcClient = new RpcLogin();
 

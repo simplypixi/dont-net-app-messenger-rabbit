@@ -14,7 +14,7 @@
     </Window.Resources>
     <Grid>
         <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Width="294">
-            <Button Content="" HorizontalAlignment="Left" Margin="272,10,0,0" VerticalAlignment="Top" Height="13" Width="13" BorderBrush="{x:Null}" Cursor="Hand" IsCancel="True" ClipToBounds="True" ToolTip="Kliknij, aby zamknąć" RenderTransformOrigin="0.923,-9.385" Panel.ZIndex="11">
+            <Button Command="{Binding CloseWindowCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="{Binding ElementName=Window}" Content="" HorizontalAlignment="Left" Margin="272,10,0,0" VerticalAlignment="Top" Height="13" Width="13" BorderBrush="{x:Null}" Cursor="Hand" IsCancel="True" ClipToBounds="True" ToolTip="Kliknij, aby zamknąć" RenderTransformOrigin="0.923,-9.385" Panel.ZIndex="11">
                 <Button.Background>
                     <ImageBrush ImageSource="../Img/butt_zamk.png"/>
                 </Button.Background>
