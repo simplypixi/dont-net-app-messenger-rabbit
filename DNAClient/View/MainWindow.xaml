@@ -67,7 +67,7 @@
                     </i:Interaction.Triggers>
                     
                     <ListBox.ContextMenu>
-                        <ContextMenu>
+                        <ContextMenu Background="#FF02B6E3" Foreground="White">
                             <MenuItem Header="Historia rozmowy" Command="{Binding OpenHistoryCommand}" />
                             <MenuItem Header="Usuń" Command="{Binding DeleteContactCommand}" CommandParameter="{Binding SelectedContact}"/>
                         </ContextMenu>
