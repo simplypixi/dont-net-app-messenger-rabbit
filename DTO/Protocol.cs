@@ -39,7 +39,8 @@ namespace DTO
         public enum AuthorizationType
         {
             Login,
-            Register
+            Register,
+            GetOldMessages
         }
         public string Password { get; set; }
         public string ConfirmedPassword { get; set; }

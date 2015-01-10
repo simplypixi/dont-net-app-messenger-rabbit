@@ -84,6 +84,7 @@ namespace DNAClient.ViewModel
                 GlobalsParameters.cache.Add(this.sender, String.Empty);
             }
             var msg = this.messageTMP.Body.DeserializeMessageNotification();
+            GlobalsParameters.openNotifications.Remove(msg.Sender + "message");
             GlobalsParameters.notificationCache.Remove(msg.Sender + "message");
             var window = parameter as Window;
 

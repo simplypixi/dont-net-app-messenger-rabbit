@@ -20,6 +20,7 @@ namespace DNAClient.ViewModel
     using System.Windows.Documents;
 
     using DNAClient.ViewModel.Base;
+
     using DNAClient.View;
 
     using DTO;
@@ -160,23 +161,7 @@ namespace DNAClient.ViewModel
                 return;
             }
             var historyFile = this.userPath + "//" + this.Recipient;
-            if (!File.Exists(historyFile))
-            {
-                FileStream aFile = new FileStream(historyFile, FileMode.Create, FileAccess.Write);
-                StreamWriter sw = new StreamWriter(aFile);
-                sw.WriteLine(message);
-                sw.Close();
-                aFile.Close();
-            }
-            else
-            {
-                FileStream aFile = new FileStream(historyFile, FileMode.Append, FileAccess.Write);
-                StreamWriter sw = new StreamWriter(aFile);
-                sw.WriteLine(message);
-                sw.Close();
-                aFile.Close();
-            }
-
+            Functions.saveFile(historyFile, message);
         }
 
         private void SendMessage(object parameter)

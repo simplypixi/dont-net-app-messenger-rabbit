@@ -10,8 +10,13 @@
 namespace DNA
 {
     using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using DNAClient;
 
     using DTO;
     using RabbitMQ.Client;
@@ -25,9 +30,12 @@ namespace DNA
         private static readonly ManualResetEvent FinishEvent = new ManualResetEvent(false);
         private static ConnectionFactory factory = Constants.ConnectionFactory;
         private static DatabaseHelper db = new DatabaseHelper();
+        private static string userPath;
 
         static void Main(string[] args)
         {
+            userPath = Constants.userPath;
+            GlobalsParameters.Instance.status = new Dictionary<string, PresenceStatus>();
             Task.Factory.StartNew(() => GetChannel());
             Task.Factory.StartNew(() => GetChannelRPC());
 
@@ -85,6 +93,7 @@ namespace DNA
                             {
                                 if (db.Login(request.Login, request.Password))
                                 {
+                                    GlobalsParameters.Instance.status.Add(request.Login, PresenceStatus.Online);
                                     Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie sie zalogowal.", request.Login));
                                     response.Status = Status.OK;
                                 }
@@ -113,6 +122,33 @@ namespace DNA
                                 Console.WriteLine(" RPC Register: {0}", request);
                                 response.Status = Status.Error;
                                 response.Message = "Nie udało się zarejestrować użytkownika";
+                            }
+                            else if (request.Type == AuthRequest.AuthorizationType.GetOldMessages)
+                            {
+                                string[] filePaths = Directory.GetFiles(userPath);
+                                for (int i = 0; i < filePaths.Length; i++)
+                                {
+                                    if (Regex.IsMatch(filePaths[i], string.Format(@"{0}_(.*)", request.Login)))
+                                    {
+                                        var regex = Regex.Match(
+                                            filePaths[i],
+                                            string.Format(@"{0}_(.*)", request.Login));
+                                        var group = regex.Groups[1];
+                                        string sender = group.Value;
+                                        var file = userPath + "//" + request.Login + "_" + sender;
+                                        StreamReader streamReader = new StreamReader(file);
+                                        string message = streamReader.ReadToEnd();
+                                        streamReader.Close();
+                                        MessageReq messageReq = new MessageReq()
+                                        {
+                                            Recipient = request.Login,
+                                            Login = sender,
+                                            Message = message
+                                        };
+                                        File.Delete(file);
+                                        SendMessageNotification(messageReq, true);
+                                    }
+                                }
                             }
                         }
                         catch (Exception e)
@@ -166,8 +202,15 @@ namespace DNA
             }
         }
 
-        private static void SendMessageNotification(MessageReq messageReq)
+        private static void SendMessageNotification(MessageReq messageReq, bool dontDate = false)
         {
+            if (! (GlobalsParameters.Instance.status.ContainsKey(messageReq.Recipient)
+                && GlobalsParameters.Instance.status[messageReq.Recipient] != PresenceStatus.Offline))
+            {
+                var file = userPath + "//" + messageReq.Recipient + "_" + messageReq.Login;
+                var msg = messageReq.SendTime + " przez " + messageReq.Login + ":\n" + messageReq.Message;
+                Functions.saveFile(file, msg);
+            }
             using (var connection = factory.CreateConnection())
             {
                 using (var channel = connection.CreateModel())
@@ -178,7 +221,7 @@ namespace DNA
                     var message = new MessageNotification
                     {
                         Message = messageReq.Message,
-                        SendTime = DateTime.Now,
+                        SendTime = dontDate ? new DateTime(2000, 1, 1) : DateTime.Now,
                         Sender = messageReq.Login,
                         Recipient = messageReq.Recipient
                     };
@@ -222,6 +265,14 @@ namespace DNA
                         statusChange.Login,
                         statusChange.PresenceStatus,
                         statusChange.Recipient);
+                    if (!GlobalsParameters.Instance.status.ContainsKey(statusChange.Login))
+                    {
+                        GlobalsParameters.Instance.status.Add(statusChange.Login, statusChange.PresenceStatus);
+                    }
+                    else
+                    {
+                        GlobalsParameters.Instance.status[statusChange.Login] = statusChange.PresenceStatus;
+                    }
                 }
             }
         }

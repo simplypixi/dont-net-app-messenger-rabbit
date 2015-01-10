@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="Functions.cs" />
     <Compile Include="JsonSerializeExtensions.cs" />
     <Compile Include="Protocol.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

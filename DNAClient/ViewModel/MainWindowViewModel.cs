@@ -18,7 +18,9 @@ namespace DNAClient.ViewModel
     using System.Windows;
     using System.Linq;
 
+    using DNAClient.RabbitFunctions;
     using DNAClient.ViewModel.Base;
+
     using DNAClient.View;
 
     using DTO;
@@ -69,6 +71,8 @@ namespace DNAClient.ViewModel
             Task.Factory.StartNew(() => this.GetChannel(ctx));
 
             this.SelectedStatus = "Zalogowany";
+            RpcGetOldMessages rpcGet = new RpcGetOldMessages();
+            rpcGet.Call(this.CurrentUser);
         }
 
 
@@ -423,8 +427,8 @@ namespace DNAClient.ViewModel
             {
                 bool ConversationWindowExist = false;
                 var message = body.DeserializeMessageNotification();
-
-                var msg = message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n";
+                var msg = (message.SendTime == new DateTime(2000, 1, 1)) ? String.Empty : message.SendTime.ToString() +" przez " + message.Sender + ":\n";
+                msg += message.Message + "\n";
 
                 foreach (ConversationViewModel cvModel in GlobalsParameters.openWindows)
                 {
