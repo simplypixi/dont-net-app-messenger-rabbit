@@ -448,7 +448,7 @@ namespace DNAClient.ViewModel
                     }
                     else
                     {
-                        GlobalsParameters.notificationCache[message.Sender + "message"] += msg;
+                        GlobalsParameters.notificationCache[message.Sender] += msg;
                     }
                 }
 

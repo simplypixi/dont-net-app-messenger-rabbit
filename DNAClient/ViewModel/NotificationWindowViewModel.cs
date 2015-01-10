@@ -77,11 +77,10 @@ namespace DNAClient.ViewModel
             this.messageTMP = mess;
             this.sender = sender;
             this.NewConversationWindowCommand = new RelayCommand(this.NewConversationWindow);
-
-            this.messageTMP = mess;
-            this.sender = sender;
-            GlobalsParameters.openNotifications.Add(sender);
-            this.NewConversationWindowCommand = new RelayCommand(this.NewConversationWindow);
+            if (this.notificationType == NotificationType.message)
+            {
+                GlobalsParameters.openNotifications.Add(this.sender);
+            }
         }
 
         public RelayCommand NewConversationWindowCommand { get; set; }
@@ -91,7 +90,8 @@ namespace DNAClient.ViewModel
             {
                 ConversationViewModel cvModel = ProductionWindowFactory.CreateConversationWindow(sender);
                 GlobalsParameters.openWindows.Add(cvModel);
-                cvModel.Receive(this.messageTMP);
+                var msg = this.messageTMP.Body.DeserializeMessageNotification();
+                cvModel.AddToHistory(GlobalsParameters.notificationCache[msg.Sender]);
             }
 
             if (this.notificationType == NotificationType.file)
@@ -133,12 +133,18 @@ namespace DNAClient.ViewModel
 
         private void CloseWindow(object parameter)
         {
-            if (!GlobalsParameters.cache.ContainsKey(this.sender))
+            if (this.notificationType == NotificationType.message)
             {
-                GlobalsParameters.cache.Add(this.sender, String.Empty);
+                if (!GlobalsParameters.cache.ContainsKey(this.sender))
+                {
+                    GlobalsParameters.cache.Add(this.sender, String.Empty);
+                }
+
+                var msg = this.messageTMP.Body.DeserializeMessageNotification();
+                GlobalsParameters.notificationCache.Remove(msg.Sender);
+                GlobalsParameters.openNotifications.Remove(msg.Sender);
             }
-            var msg = this.messageTMP.Body.DeserializeMessageNotification();
-            GlobalsParameters.notificationCache.Remove(msg.Sender + "message");
+            
             var window = parameter as Window;
 
             if (window != null)
