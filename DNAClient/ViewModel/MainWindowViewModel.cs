@@ -438,20 +438,18 @@ namespace DNAClient.ViewModel
                 {
                     if (!GlobalsParameters.cache.ContainsKey(message.Sender))
                     {
-                        GlobalsParameters.cache.Add(message.Sender, String.Empty);
+                        GlobalsParameters.cache.Add(message.Sender, string.Empty);
                     }
                     GlobalsParameters.cache[message.Sender] += msg;
-                    if (!GlobalsParameters.openNotifications.Contains(message.Sender + "message"))
+                    if (!GlobalsParameters.openNotifications.Contains(message.Sender))
                     {
-                        this.NewNotificationWindow(message.Sender, args, "message");
-                        GlobalsParameters.notificationCache.Add(message.Sender + "message", msg);
+                        this.NewNotificationWindow(message.Sender, args, NotificationType.message);
+                        GlobalsParameters.notificationCache.Add(message.Sender, msg);
                     }
                     else
                     {
                         GlobalsParameters.notificationCache[message.Sender + "message"] += msg;
                     }
-                    //Testowe odpalenie okna powiadomień
-                    this.NewNotificationWindow(message.Sender, args, NotificationType.message);
                 }
 
                 if (message.Attachment != null)

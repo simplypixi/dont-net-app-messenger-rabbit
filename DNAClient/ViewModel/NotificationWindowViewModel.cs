@@ -78,10 +78,9 @@ namespace DNAClient.ViewModel
             this.sender = sender;
             this.NewConversationWindowCommand = new RelayCommand(this.NewConversationWindow);
 
-            this.type = type;
             this.messageTMP = mess;
             this.sender = sender;
-            GlobalsParameters.openNotifications.Add(sender+type);
+            GlobalsParameters.openNotifications.Add(sender);
             this.NewConversationWindowCommand = new RelayCommand(this.NewConversationWindow);
         }
 
@@ -99,6 +98,8 @@ namespace DNAClient.ViewModel
             {
                 this.GetFile();
             }
+
+            this.CloseWindow(parameter);
             
         }
 
