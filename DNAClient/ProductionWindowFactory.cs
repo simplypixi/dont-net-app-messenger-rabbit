@@ -31,11 +31,11 @@ namespace DNAClient
             return cvModel;
         }
 
-        public static void CreateNotificationWindow(string sender, BasicDeliverEventArgs mess, string type)
+        public static void CreateNotificationWindow(string sender, BasicDeliverEventArgs mess, NotificationType notificationType)
         {
             NotificationWindow window = new NotificationWindow
             {
-                DataContext = new NotificationWindowViewModel(sender, mess, type)
+                DataContext = new NotificationWindowViewModel(sender, mess, notificationType)
             };
             window.Show();
         }

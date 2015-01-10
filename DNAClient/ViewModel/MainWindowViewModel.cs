@@ -375,9 +375,9 @@ namespace DNAClient.ViewModel
                 }
             }
         }
-        private void NewNotificationWindow(string sender, BasicDeliverEventArgs mess, string type)
+        private void NewNotificationWindow(string sender, BasicDeliverEventArgs mess, NotificationType notificationType)
         {
-            ProductionWindowFactory.CreateNotificationWindow(sender, mess, type);
+            ProductionWindowFactory.CreateNotificationWindow(sender, mess, notificationType);
         }
 
 
@@ -422,12 +422,12 @@ namespace DNAClient.ViewModel
                 if (!ConversationWindowExist)
                 {
                     //Testowe odpalenie okna powiadomień
-                    this.NewNotificationWindow(message.Sender, args, "message");
+                    this.NewNotificationWindow(message.Sender, args, NotificationType.message);
                 }
 
                 if (message.Attachment != null)
                 {
-                    this.NewNotificationWindow(message.Sender, args, "file");
+                    this.NewNotificationWindow(message.Sender, args, NotificationType.file);
                 }
             }
         }

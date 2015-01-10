@@ -12,6 +12,7 @@ namespace DNAClient.ViewModel
 {
     using System;
     using System.Diagnostics;
+    using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
@@ -21,6 +22,8 @@ namespace DNAClient.ViewModel
     using DNAClient.View;
 
     using DTO;
+
+    using Microsoft.Win32;
 
     public class NotificationWindowViewModel : ViewModelBase
     {
@@ -57,18 +60,19 @@ namespace DNAClient.ViewModel
 
             switch (notificationType)
             {
-                    case NotificationType.message:
-                        this.Message = sender + " zmienił status...";
-                        break;
-                    case NotificationType.status:
+                case NotificationType.message:
+                    this.Message = sender + " przesyła wiadomość...";
+                    break;
+                case NotificationType.status:
+                    this.Message = sender + " zmienił status...";
+                    break;
+                case NotificationType.file:
+                    this.Message = sender + " przesyła plik...";
+                    break;
+                default:
+                    this.Message = sender + " ...";
+                    break;
             }
-
-            if (type == "status")
-                this.Message = sender + " zmienił status...";
-            if (type == "message")
-                this.Message = sender + " przesyła wiadomość...";
-            if(type == "file")
-                this.Message = sender + " przesyła plik...";
 
             this.messageTMP = mess;
             this.sender = sender;
@@ -78,11 +82,45 @@ namespace DNAClient.ViewModel
         public RelayCommand NewConversationWindowCommand { get; set; }
         private void NewConversationWindow(object parameter)
         {
-            ConversationViewModel cvModel = ProductionWindowFactory.CreateConversationWindow(sender);
-            GlobalsParameters.openWindows.Add(cvModel);
-            cvModel.Receive(this.messageTMP);
+            if (this.notificationType == NotificationType.message)
+            {
+                ConversationViewModel cvModel = ProductionWindowFactory.CreateConversationWindow(sender);
+                GlobalsParameters.openWindows.Add(cvModel);
+                cvModel.Receive(this.messageTMP);
+            }
+
+            if (this.notificationType == NotificationType.file)
+            {
+                this.GetFile();
+            }
+            
         }
-        
+
+        private void GetFile()
+        {
+            if (this.messageTMP != null)
+            {
+                var body = this.messageTMP.Body;
+                var message = body.DeserializeMessageNotification();
+                var attachment = message.Attachment;
+
+                if (attachment != null)
+                {
+                    var saveFileDialog = new SaveFileDialog
+                                             {
+                                                 FileName = attachment.Name,
+                                                 Filter = "Wszystkie pliki|*.*"
+                                             };
+
+                    if (saveFileDialog.ShowDialog().HasValue)
+                    {
+                        var fileName = saveFileDialog.FileName;
+
+                        File.WriteAllBytes(fileName, attachment.Data);
+                    }
+                }
+            }
+        }
 
         public RelayCommand CloseWindowCommand { get; set; }
 

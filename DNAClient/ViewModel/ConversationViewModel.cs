@@ -254,10 +254,11 @@ namespace DNAClient.ViewModel
         void AttachFile(object param)
         {
             Microsoft.Win32.OpenFileDialog win = new Microsoft.Win32.OpenFileDialog();
+            win.Multiselect = false;
 
             Nullable<bool> result = win.ShowDialog();
 
-            if (result != null)
+            if (result.HasValue && result.Value)
             {
                 string filePath = win.FileName;
                 Debug.Print(filePath);
@@ -267,10 +268,8 @@ namespace DNAClient.ViewModel
                 byte[] bytes = File.ReadAllBytes(filePath);
 
                 this.attachment.Data = bytes;
-                this.attachment.Name = "Nazwa pliku";
-                this.attachment.MimeType = "Nie wiem co to";
-
-                
+                this.attachment.Name = win.SafeFileName;
+                this.attachment.MimeType = string.Empty;
             }
         }
     }
