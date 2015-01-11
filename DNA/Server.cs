@@ -210,6 +210,7 @@ namespace DNA
                 var file = userPath + "//" + messageReq.Recipient + "_" + messageReq.Login;
                 var msg = messageReq.SendTime + " przez " + messageReq.Login + ":\n" + messageReq.Message;
                 Functions.saveFile(file, msg);
+                return;
             }
             using (var connection = factory.CreateConnection())
             {
@@ -223,7 +224,8 @@ namespace DNA
                         Message = messageReq.Message,
                         SendTime = dontDate ? new DateTime(2000, 1, 1) : DateTime.Now,
                         Sender = messageReq.Login,
-                        Recipient = messageReq.Recipient
+                        Recipient = messageReq.Recipient,
+                        Attachment = messageReq.Attachment
                     };
 
                     var body = message.Serialize();

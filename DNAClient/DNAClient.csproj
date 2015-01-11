@@ -73,6 +73,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Globals.cs" />
+    <Compile Include="NotificationType.cs" />
     <Compile Include="ProductionWindowFactory.cs" />
     <Compile Include="RabbitFunctions\RpcGetOldMessages.cs" />
     <Compile Include="RabbitFunctions\RpcLogin.cs" />

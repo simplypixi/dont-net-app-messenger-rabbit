@@ -394,9 +394,9 @@ namespace DNAClient.ViewModel
                 }
             }
         }
-        private void NewNotificationWindow(string sender, BasicDeliverEventArgs mess, string type)
+        private void NewNotificationWindow(string sender, BasicDeliverEventArgs mess, NotificationType notificationType)
         {
-            ProductionWindowFactory.CreateNotificationWindow(sender, mess, type);
+            ProductionWindowFactory.CreateNotificationWindow(sender, mess, notificationType);
         }
 
 
@@ -442,18 +442,23 @@ namespace DNAClient.ViewModel
                 {
                     if (!GlobalsParameters.cache.ContainsKey(message.Sender))
                     {
-                        GlobalsParameters.cache.Add(message.Sender, String.Empty);
+                        GlobalsParameters.cache.Add(message.Sender, string.Empty);
                     }
                     GlobalsParameters.cache[message.Sender] += msg;
-                    if (!GlobalsParameters.openNotifications.Contains(message.Sender + "message"))
+                    if (!GlobalsParameters.openNotifications.Contains(message.Sender))
                     {
-                        this.NewNotificationWindow(message.Sender, args, "message");
-                        GlobalsParameters.notificationCache.Add(message.Sender + "message", msg);
+                        this.NewNotificationWindow(message.Sender, args, NotificationType.message);
+                        GlobalsParameters.notificationCache.Add(message.Sender, msg);
                     }
                     else
                     {
-                        GlobalsParameters.notificationCache[message.Sender + "message"] += msg;
+                        GlobalsParameters.notificationCache[message.Sender] += msg;
                     }
+                }
+
+                if (message.Attachment != null)
+                {
+                    this.NewNotificationWindow(message.Sender, args, NotificationType.file);
                 }
             }
         }
