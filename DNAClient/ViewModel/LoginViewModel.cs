@@ -174,6 +174,9 @@ namespace DNAClient.ViewModel
                 {
                     loginWindow.Close();
                 }
+            } else
+            {
+                MessageBox.Show("Błąd logowania", "Wpisano błędne dane logowania. Upewnij się czy wpisałeś poprawne dane, a następnie spróbuj ponownie.");
             }
         }
 
@@ -201,6 +204,10 @@ namespace DNAClient.ViewModel
                 {
                     loginWindow.Close();
                 }
+            }
+            else
+            {
+                MessageBox.Show("Błąd rejestracji", "Wpisano błędne dane rejestracji lub istnieje już użytkownik o nazwie:" + this.Login +".\nUpewnij się czy hasło i jego potwierdzenie są identyczne lub spróbuj wybrać inną nazwę użytkownika.");
             }
         }
 

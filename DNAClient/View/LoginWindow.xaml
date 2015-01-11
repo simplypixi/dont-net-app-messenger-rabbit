@@ -22,7 +22,7 @@
             </Button>
             <Image Margin="108,10,108,0" Source="../Img/logo.png" Stretch="Fill" Height="110"/>
             <StackPanel Orientation="Vertical" Margin="0,35,0,0">
-                <TextBox HorizontalAlignment="Left" Height="40" Text="{Binding Login}" Padding="5,9,10,0" Margin="10,0,0,0" TextWrapping="Wrap"  Width="272" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
+                <TextBox x:Name="Login" HorizontalAlignment="Left" Height="40" Text="{Binding Login}" Padding="5,9,10,0" Margin="10,0,0,0" TextWrapping="Wrap"  Width="272" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
                 <PasswordBox HorizontalAlignment="Left" x:Name="Password" Height="40" Padding="5,9,10,0" Margin="10,5,0,0" Width="272" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
                 <PasswordBox HorizontalAlignment="Left" x:Name="repeatPassword" Visibility="Collapsed" Height="40" Padding="5,9,10,0" Margin="10,5,0,0" Width="272" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
             </StackPanel>
