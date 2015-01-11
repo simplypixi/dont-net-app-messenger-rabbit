@@ -193,5 +193,19 @@ namespace DNAClient.ViewModel
                 }
             }
         }
+
+        /// <summary>
+        /// Metoda rejestracji uzytkownika
+        /// </summary>
+        /// <param name="parameter">
+        /// Parametr funkcji
+        /// </param>
+        private void toRegistration(object parameter)
+        {
+            var loginWindow = parameter as LoginWindow;
+
+            loginWindow.Height = 365;
+
+        }
     }
 }
