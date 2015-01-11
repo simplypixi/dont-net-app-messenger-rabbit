@@ -12,6 +12,7 @@ namespace DNA
     using System;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Collections.Generic;
 
     using DTO;
     using RabbitMQ.Client;
@@ -61,6 +62,7 @@ namespace DNA
             {
                 using (var channel = connection.CreateModel())
                 {
+                    byte[] responseBytes = new Response().Serialize();
                     channel.QueueDeclare(Constants.Exchange, false, false, false, null);
                     channel.BasicQos(0, 1, false);
                     var consumer = new QueueingBasicConsumer(channel);
@@ -69,50 +71,112 @@ namespace DNA
 
                     while (true)
                     {
-                        AuthResponse response = new AuthResponse();
                         var ea = (BasicDeliverEventArgs)consumer.Queue.Dequeue();
 
                         var body = ea.Body;
                         var props = ea.BasicProperties;
                         var replyProps = channel.CreateBasicProperties();
                         replyProps.CorrelationId = props.CorrelationId;
-
                         try
                         {
-                            
-                            var request = body.DeserializeAuthRequest();
-                            if (request.Type == AuthRequest.AuthorizationType.Login)
+                            Request request = body.DeserializeRequest();
+                            // Logowanie
+                            if (request.RequestType == AuthRequest.Type.Login)
                             {
-                                if (db.Login(request.Login, request.Password))
+                                AuthResponse response = new AuthResponse();
+                                AuthRequest authRequest = body.DeserializeAuthRequest();
+                                if (db.Login(authRequest.Login, authRequest.Password))
                                 {
-                                    Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie sie zalogowal.", request.Login));
+                                    Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie sie zalogowal.", authRequest.Login));
                                     response.Status = Status.OK;
+                                    response.Message = "Udało się zalogować.";
                                 }
                                 else
                                 {
-                                    Console.WriteLine(string.Format("Nieudana proba zalogowania przez uzytkownika {0}.", request.Login));
+                                    Console.WriteLine(string.Format("Nieudana proba zalogowania przez uzytkownika {0}.", authRequest.Login));
                                     response.Status = Status.Error;
-                                    response.Message = "Nazwa użytkownika i hasło niepoprawne.";
+                                    response.Message = "Nie udało się zalogować.";
                                 }
+                                responseBytes = response.Serialize();
                             }
-                            else if(request.Type == AuthRequest.AuthorizationType.Register)
+                            // Rejestracja
+                            else if(request.RequestType == AuthRequest.Type.Register)
                             {
-                                Console.WriteLine(" RPC Login: {0}", request);
-                                if (db.Register(request.Login, request.Password))
+                                AuthResponse response = new AuthResponse();
+                                AuthRequest authRequest = body.DeserializeAuthRequest();
+                                if (db.Register(authRequest.Login, authRequest.Password))
                                 {
-                                    Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie sie zarejestrował.", request.Login));
+                                    Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie sie zarejestrował.", authRequest.Login));
                                     response.Status = Status.OK;
+                                    response.Message = "Udało się zarejestrować użytkownika.";
                                 }
                                 else
                                 {
-                                    Console.WriteLine(string.Format("Nieudana proba zarejestrowania uzytkownika {0}.", request.Login));
+                                    Console.WriteLine(string.Format("Nieudana proba zarejestrowania uzytkownika {0}.", authRequest.Login));
                                     response.Status = Status.Error;
-                                    response.Message = "Nazwa użytkownika i hasło niepoprawne.";
+                                    response.Message = "Nie udało się zarejestrować użytkownika.";
                                 }
-
-                                Console.WriteLine(" RPC Register: {0}", request);
-                                response.Status = Status.Error;
-                                response.Message = "Nie udało się zarejestrować użytkownika";
+                                responseBytes = response.Serialize();
+                            }
+                            // Dodawanie znajomych
+                            else if(request.RequestType == Request.Type.AddFriend)
+                            {
+                                FriendResponse response = new FriendResponse();
+                                FriendRequest friendRequest = body.DeserializeFriendRequest();
+                                if (db.AddFriend(friendRequest.Login, friendRequest.FriendLogin))
+                                {
+                                    Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie dodal kontakt {1}.", friendRequest.Login, friendRequest.FriendLogin));
+                                    response.Status = Status.OK;
+                                    response.Message = "Udało się dodać kontakt.";
+                                }
+                                else
+                                {
+                                    Console.WriteLine(string.Format("Nieudana proba dodania kontaktu {0} przez uzytkownika {1}.", friendRequest.FriendLogin, friendRequest.Login));
+                                    response.Status = Status.Error;
+                                    response.Message = "Nie udało się dodać kontaktu.";
+                                }
+                                responseBytes = response.Serialize();
+                            }
+                            // Usuwanie znajomych
+                            else if (request.RequestType == Request.Type.RemoveFriend)
+                            {
+                                FriendResponse response = new FriendResponse();
+                                FriendRequest friendRequest = body.DeserializeFriendRequest();
+                                if (db.RemoveFriend(friendRequest.Login, friendRequest.FriendLogin))
+                                {
+                                    Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie dodal kontakt {1}.", friendRequest.Login, friendRequest.FriendLogin));
+                                    response.Status = Status.OK;
+                                    response.Message = "Udało się dodać kontakt.";
+                                }
+                                else
+                                {
+                                    Console.WriteLine(string.Format("Nieudana proba dodania kontaktu {0} przez uzytkownika {1}.", friendRequest.FriendLogin, friendRequest.Login));
+                                    response.Status = Status.Error;
+                                    response.Message = "Nie udało się dodać kontaktu.";
+                                }
+                                responseBytes = response.Serialize();
+                            }
+                            // Pobieranie listy znajomych
+                            else if (request.RequestType == Request.Type.GetFriends)
+                            {
+                                FriendResponse response = new FriendResponse();
+                                FriendRequest friendRequest = body.DeserializeFriendRequest();
+                                List<string> friends = db.GetFriends(friendRequest.Login);
+                                if (friends.Count > 0)
+                                {
+                                    Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie pobral kontakty.", friendRequest.Login));
+                                    response.Status = Status.OK;
+                                    response.friendsList = friends;
+                                    response.Message = "Udało się pobrac kontakty.";
+                                }
+                                else
+                                {
+                                    Console.WriteLine(string.Format("Nie pobrano zadnych kontaktow dla uzytkownika {0}.", friendRequest.Login));
+                                    response.Status = Status.Error;
+                                    response.friendsList = friends;
+                                    response.Message = "Nie pobrano żadnych kontaków.";
+                                }
+                                responseBytes = response.Serialize();
                             }
                         }
                         catch (Exception e)
@@ -121,7 +185,6 @@ namespace DNA
                         }
                         finally
                         {
-                            var responseBytes = response.Serialize();
                             channel.BasicPublish("", props.ReplyTo, replyProps, responseBytes);
                             channel.BasicAck(ea.DeliveryTag, false);
                         }

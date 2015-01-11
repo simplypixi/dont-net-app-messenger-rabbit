@@ -1,26 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using DTO;
+using RabbitMQ.Client;
 
 namespace DNAClient.RabbitFunctions
 {
-    using DTO;
-
-    using RabbitMQ.Client;
-
-    class RpcRegistration
+    class RpcWay
     {
         private readonly IConnection connection;
         private readonly IModel channel;
         private readonly string replyQueueName;
         private readonly QueueingBasicConsumer consumer;
 
-        /// <summary>
-        /// Konstruktor inicjalizujący paramtery połączenia
-        /// </summary>
-        public RpcRegistration()
+        public RpcWay()
         {
             var factory = Constants.ConnectionFactory;
             this.connection = factory.CreateConnection();
@@ -30,39 +21,15 @@ namespace DNAClient.RabbitFunctions
             this.channel.BasicConsume(this.replyQueueName, true, this.consumer);
         }
 
-        /// <summary>
-        /// Metoda wywołująca próbę rejestracji
-        /// </summary>
-        /// <param name="login">
-        /// Login użytkownika
-        /// </param>
-        /// <param name="password">
-        /// Hasło użytkownika
-        /// </param>
-        /// <param name="confirmedPassword">
-        /// Potwierdzenie hasła
-        /// </param>
-        /// <returns>
-        /// True/False w zależności od tego,
-        /// czy logowanie na serwer się powiodło
-        /// </returns>
-        public AuthResponse Call(string login, string password, string confirmedPassword)
+        // Logowanie i rejestracja
+        public AuthResponse AuthCall(byte[] serializedRequest)
         {
             var corrId = Guid.NewGuid().ToString();
             var props = this.channel.CreateBasicProperties();
             props.ReplyTo = this.replyQueueName;
             props.CorrelationId = corrId;
 
-            var authRequest = new AuthRequest
-            {
-                Login = login,
-                Password = password,
-                ConfirmedPassword = confirmedPassword,
-                Type = AuthRequest.AuthorizationType.Register,
-            };
-
-            var body = authRequest.Serialize();
-            this.channel.BasicPublish("", Constants.Exchange, props, body);
+            this.channel.BasicPublish("", Constants.Exchange, props, serializedRequest);
 
             while (true)
             {
@@ -71,6 +38,27 @@ namespace DNAClient.RabbitFunctions
                 {
                     var authResponse = ea.Body.DeserializeAuthResponse();
                     return authResponse;
+                }
+            }
+        }
+
+        // Dodawanie / Usuwanie kontaktów + pobieranie kontaktów
+        public FriendResponse FriendCall(byte[] serializedRequest)
+        {
+            var corrId = Guid.NewGuid().ToString();
+            var props = this.channel.CreateBasicProperties();
+            props.ReplyTo = this.replyQueueName;
+            props.CorrelationId = corrId;
+
+            this.channel.BasicPublish("", Constants.Exchange, props, serializedRequest);
+
+            while (true)
+            {
+                var ea = this.consumer.Queue.Dequeue();
+                if (ea.BasicProperties.CorrelationId == corrId)
+                {
+                    var friendResponse = ea.Body.DeserializeFriendResponse();
+                    return friendResponse;
                 }
             }
         }

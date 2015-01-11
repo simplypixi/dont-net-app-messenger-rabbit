@@ -74,8 +74,7 @@
     </ApplicationDefinition>
     <Compile Include="Globals.cs" />
     <Compile Include="ProductionWindowFactory.cs" />
-    <Compile Include="RabbitFunctions\RpcLogin.cs" />
-    <Compile Include="RabbitFunctions\RpcRegistration.cs" />
+    <Compile Include="RabbitFunctions\RpcWay.cs" />
     <Compile Include="ViewModel\Base\RelayCommand.cs" />
     <Compile Include="ViewModel\Base\ViewModelBase.cs" />
     <Compile Include="ViewModel\ConversationViewModel.cs" />

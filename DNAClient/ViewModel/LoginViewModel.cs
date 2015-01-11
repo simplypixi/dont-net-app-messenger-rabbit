@@ -146,9 +146,16 @@ namespace DNAClient.ViewModel
             GlobalsParameters.openNotifications = new List<String>();
             GlobalsParameters.notificationCache = new Dictionary<string, string>();
 
-            var rpcClient = new RpcLogin();
+            var rpcClient = new RpcWay();
 
-            var response = rpcClient.Call(this.Login, this.Password);
+            var authRequest = new AuthRequest
+            {
+                Login = login,
+                Password = password,
+                RequestType = Request.Type.Login,
+            };
+
+            var response = rpcClient.AuthCall(authRequest.Serialize());
 
             rpcClient.Close();
 
@@ -174,9 +181,16 @@ namespace DNAClient.ViewModel
         {
             GlobalsParameters.Instance.CurrentUser = this.Login;
 
-            var rpcClient = new RpcRegistration();
+            var rpcClient = new RpcWay();
 
-            var response = rpcClient.Call(this.Login, this.Password, this.ConfirmedPassword);
+            var authRequest = new AuthRequest
+            {
+                Login = login,
+                Password = password,
+                RequestType = Request.Type.Register,
+            };
+
+            var response = rpcClient.AuthCall(authRequest.Serialize());
 
             rpcClient.Close();
 

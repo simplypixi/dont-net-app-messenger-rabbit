@@ -54,7 +54,7 @@ namespace DNA
             using (conn = new SqlConnection(this.connectionString))
             {
                 conn.Open();
-                String query = string.Format("INSERT INTO [DNA].[dbo].[User] (Login, Password) VALUES('{0}', '{1}')", login, password);
+                String query = string.Format("INSERT INTO [dbo].[User] (Login, Password) VALUES('{0}', '{1}')", login, password);
                 using (SqlCommand command = new SqlCommand(query, conn))
                 {
                     // TODO: DELETE THIS LINE
@@ -86,7 +86,7 @@ namespace DNA
             using (conn = new SqlConnection(this.connectionString))
             {
                 conn.Open();
-                String query = string.Format("INSERT INTO [DNA].[dbo].[Friend] (OwnerId, FriendId) VALUES('{0}', '{1}')", ownerId, friendId);
+                String query = string.Format("INSERT INTO [dbo].[Friend] (OwnerId, FriendId) VALUES('{0}', '{1}')", ownerId, friendId);
                 using (SqlCommand command = new SqlCommand(query, conn))
                 {
                     // TODO: DELETE THIS LINE
@@ -118,7 +118,7 @@ namespace DNA
             using (conn = new SqlConnection(this.connectionString))
             {
                 conn.Open();
-                String query = string.Format("DELETE FROM [DNA].[dbo].[Friend] WHERE OwnerId = '{0}' AND FriendId = '{1}'", ownerId, friendId);
+                String query = string.Format("DELETE FROM [dbo].[Friend] WHERE OwnerId = '{0}' AND FriendId = '{1}'", ownerId, friendId);
                 using (SqlCommand command = new SqlCommand(query, conn))
                 {
                     // TODO: DELETE THIS LINE
@@ -136,12 +136,45 @@ namespace DNA
             }
         }
 
+        public List<string> GetFriends(string ownerLogin)
+        {
+            List<string> friendsList = new List<string>();
+            int? ownerId;
+            ownerId = this.GetUserIdWithLogin(ownerLogin);
+
+            if (ownerId == null)
+            {
+                return friendsList;
+            }
+
+            using (conn = new SqlConnection(this.connectionString))
+            {
+                conn.Open();
+                String query = string.Format("SELECT FriendId FROM [dbo].[Friend] WHERE OwnerId = '{0}'", ownerId);
+                using (SqlCommand command = new SqlCommand(query, conn))
+                {
+                    // TODO: DELETE THIS LINE
+                    Console.WriteLine(command.CommandText);
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while(reader.Read())
+                        {
+                            int friendId = reader.GetInt32(0);
+                            friendsList.Add(this.GetUserLoginWithId(friendId));
+                        }
+                    }
+                }
+            }
+            return friendsList;
+        }
+
         private int? GetUserIdWithLogin(string login)
         {
             using (conn = new SqlConnection(this.connectionString))
             {
                 conn.Open();
-                String query = string.Format("SELECT Id FROM User WHERE Login = '{0}'", login);
+                String query = string.Format("SELECT Id FROM [dbo].[User] WHERE Login = '{0}'", login);
                 using (SqlCommand command = new SqlCommand(query, conn))
                 {
                     // TODO: DELETE THIS LINE
@@ -151,7 +184,27 @@ namespace DNA
                     {
                         if (reader.Read())
                         {
-                            return reader.GetInt32(1);
+                            return reader.GetInt32(0);
+                        }
+                    }
+                }
+                return null;
+            }
+        }
+
+        private string GetUserLoginWithId(int id)
+        {
+            using (conn = new SqlConnection(this.connectionString))
+            {
+                conn.Open();
+                String query = string.Format("SELECT Login FROM [dbo].[User] WHERE Id = '{0}'", id);
+                using (SqlCommand command = new SqlCommand(query, conn))
+                {
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return reader.GetString(0);
                         }
                     }
                 }
@@ -164,12 +217,9 @@ namespace DNA
             using (conn = new SqlConnection(this.connectionString))
             {
                 conn.Open();
-                String query = string.Format("SELECT 1 FROM User WHERE Login = '{0}'", login);
+                String query = string.Format("SELECT 1 FROM [dbo].[User] WHERE Login = '{0}'", login);
                 using (SqlCommand command = new SqlCommand(query, conn))
                 {
-                    // TODO: DELETE THIS LINE
-                    Console.WriteLine(command.CommandText);
-
                     using (var reader = command.ExecuteReader())
                     {
                         if (reader.HasRows)
