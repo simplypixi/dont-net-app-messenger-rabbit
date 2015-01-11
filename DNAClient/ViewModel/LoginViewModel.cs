@@ -158,7 +158,9 @@ namespace DNAClient.ViewModel
 
             var rpcClient = new RpcLogin();
 
-            var response = rpcClient.Call(this.Login, this.Password);
+            var loginWindow = parameter as LoginWindow;
+
+            var response = rpcClient.Call(this.Login, loginWindow.Password.Password);
 
             rpcClient.Close();
 
@@ -168,7 +170,6 @@ namespace DNAClient.ViewModel
             {
                 ProductionWindowFactory.CreateMainWindow();
 
-                var loginWindow = parameter as LoginWindow;
                 if (loginWindow != null)
                 {
                     loginWindow.Close();
@@ -188,15 +189,14 @@ namespace DNAClient.ViewModel
 
             var rpcClient = new RpcRegistration();
 
-            var response = rpcClient.Call(this.Login, this.Password, this.ConfirmedPassword);
+            var loginWindow = parameter as LoginWindow;
+            var response = rpcClient.Call(this.Login, loginWindow.Password.Password, loginWindow.repeatPassword.Password);
 
             rpcClient.Close();
 
             if (response.Status == Status.OK)
             {
                 ProductionWindowFactory.CreateMainWindow();
-
-                var loginWindow = parameter as LoginWindow;
                 if (loginWindow != null)
                 {
                     loginWindow.Close();
