@@ -196,6 +196,18 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="emots\e10_25.gif" />
+    <Resource Include="emots\e1_25.gif" />
+    <Resource Include="emots\e2_25.gif" />
+    <Resource Include="emots\e3_25.gif" />
+    <Resource Include="emots\e4_25.gif" />
+    <Resource Include="emots\e5_25.gif" />
+    <Resource Include="emots\e6_25.gif" />
+    <Resource Include="emots\e7_25.gif" />
+    <Resource Include="emots\e8_25.gif" />
+    <Resource Include="emots\e9_25.gif" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

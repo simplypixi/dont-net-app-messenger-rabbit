@@ -22,6 +22,7 @@ namespace DNAClient.View
         public ConversationWindow()
         {
             InitializeComponent();
+            CreateEmoticons();
         }
         private void ConversationWindow_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -54,5 +55,17 @@ namespace DNAClient.View
                 _scrollViewer.ScrollToVerticalOffset(_scrollViewer.ExtentHeight);
             }
         }
+
+        //EMOTIKONY
+
+        public void CreateEmoticons()
+        {
+
+        }
+
+   
+
+
+
     }
 }

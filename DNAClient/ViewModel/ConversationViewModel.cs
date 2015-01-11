@@ -52,6 +52,8 @@ namespace DNAClient.ViewModel
 
         private Attachment attachment;
 
+        public RichTextBox TalkWindow;
+
         // odebrane wiadomości (do przerobienia na listę lub coś w ten deseń)
         private string received;
         private static ConnectionFactory factory = Constants.ConnectionFactory;
@@ -185,7 +187,7 @@ namespace DNAClient.ViewModel
                     var msg = string.Empty;
                     if (!string.IsNullOrEmpty(this.Message))
                     {
-                        msg = DateTimeOffset.Now + " przez Ja:\n" + this.Message + "\n";
+                        msg = DateTimeOffset.Now.ToString("dd.MM.yyyy (hh:mm:ss)") + " przez Ja:\n" + this.Message + "";
                     }
                     if (this.attachment != null)
                     {
@@ -193,9 +195,14 @@ namespace DNAClient.ViewModel
                         {
                             msg += "\n";
                         }
-                        msg += DateTimeOffset.Now + ": WYSŁANO ZAŁĄCZNIK\n";
+                        msg += DateTimeOffset.Now + ": WYSŁANO ZAŁĄCZNIK";
                     }
-                    this.Received += msg + "\n";
+
+                    /* 
+                     * Obsługa dodawnia tekstu do RichTextBox 
+                     */
+                    TalkWindow.Document = this.toFlowDocument(msg);
+
                     if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
                     {
                         GlobalsParameters.cache.Add(this.Recipient, String.Empty);
@@ -223,7 +230,7 @@ namespace DNAClient.ViewModel
                     var message = new MessageReq
                                       {
                                           Login = this.User,
-                                          Message = !string.IsNullOrEmpty(this.Message) ? this.Message + "\n" : string.Empty,
+                                          Message = !string.IsNullOrEmpty(this.Message) ? this.Message : string.Empty,
                                           Recipient = this.Recipient,
                                           SendTime = DateTimeOffset.Now,
                                           Attachment = this.attachment
@@ -259,9 +266,14 @@ namespace DNAClient.ViewModel
                 var message = body.DeserializeMessageNotification();
                 if (!string.IsNullOrEmpty(message.Message))
                 {
-                    var msg = message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n";
+                    var msg = message.SendTime + " przez " + message.Sender + ":\n" + message.Message;
                     this.AddToHistory(msg);
-                    this.Received += msg;
+
+                    /* 
+                     * Obsługa dodawnia tekstu do RichTextBox 
+                     */
+                    TalkWindow.Document = this.toFlowDocument(msg);
+
                     if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
                     {
                         GlobalsParameters.cache.Add(this.Recipient, String.Empty);
@@ -269,6 +281,16 @@ namespace DNAClient.ViewModel
                     GlobalsParameters.cache[message.Sender] += msg;
                 }
             }
+        }
+
+        private FlowDocument toFlowDocument(string msg)
+        {
+            FlowDocument document = TalkWindow.Document;
+            Paragraph paragraph = new Paragraph();
+            paragraph.Inlines.Add(msg);
+            document.Blocks.Add(paragraph);
+
+            return document;
         }
 
         void AttachFile(object param)

@@ -28,6 +28,7 @@ namespace DNAClient
                 DataContext = cvModel,
             };
             window.Show();
+            cvModel.TalkWindow = window.talk;
             return cvModel;
         }
 
