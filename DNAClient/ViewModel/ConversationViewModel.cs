@@ -20,6 +20,7 @@ namespace DNAClient.ViewModel
     using System.Text;
     using System.Windows.Documents;
     using System.Windows.Media.Animation;
+    using System.Windows.Controls;
 
     using DNAClient.ViewModel.Base;
 
@@ -192,7 +193,7 @@ namespace DNAClient.ViewModel
                         {
                             msg += "\n";
                         }
-                        msg += DateTimeOffset.Now + "\n *** WYSŁANO ZAŁĄCZNIK ***\n";
+                        msg += DateTimeOffset.Now + ": WYSŁANO ZAŁĄCZNIK\n";
                     }
                     this.Received += msg + "\n";
                     if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
@@ -273,28 +274,36 @@ namespace DNAClient.ViewModel
         void AttachFile(object param)
         {
 
-            Microsoft.Win32.OpenFileDialog win = new Microsoft.Win32.OpenFileDialog();
-            win.Multiselect = false;
-
-            Nullable<bool> result = win.ShowDialog();
-
-            if (result.HasValue && result.Value)
+            var window = param as ConversationWindow;
+            string sendFileText = window.SendFile.Content.ToString();
+            if (sendFileText.Equals("Dodaj plik"))
             {
-                string filePath = win.FileName;
-                Debug.Print(filePath);
+                Microsoft.Win32.OpenFileDialog win = new Microsoft.Win32.OpenFileDialog();
+                win.Multiselect = false;
 
-                this.attachment = new Attachment();
+                Nullable<bool> result = win.ShowDialog();
 
-                byte[] bytes = File.ReadAllBytes(filePath);
+                if (result.HasValue && result.Value)
+                {
+                    string filePath = win.FileName;
+                    Debug.Print(filePath);
 
-                this.attachment.Data = bytes;
-                this.attachment.Name = win.SafeFileName;
-                this.attachment.MimeType = string.Empty;
+                    this.attachment = new Attachment();
 
-                var msg = "@@@\n Wczytano plik " + this.attachment.Name+"\n@@@\n";
-                
-                this.AddToHistory(msg);
-                this.Received += msg;
+                    byte[] bytes = File.ReadAllBytes(filePath);
+
+                    this.attachment.Data = bytes;
+                    this.attachment.Name = win.SafeFileName;
+                    this.attachment.MimeType = string.Empty;
+
+
+                }
+                window.SendFile.Content = "Usuń";
+            }
+            else if (sendFileText.Equals("Usuń"))
+            {
+                this.attachment = null;
+                window.SendFile.Content = "Dodaj plik";
             }
         }
     }
