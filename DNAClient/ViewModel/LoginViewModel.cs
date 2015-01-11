@@ -152,7 +152,7 @@ namespace DNAClient.ViewModel
 
             rpcClient.Close();
 
-            //response.Status = Status.OK;
+            response.Status = Status.OK;
 
             if (response.Status == Status.OK)
             {
