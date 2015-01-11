@@ -3,6 +3,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:DNAClient.ViewModel"
+        xmlns:toolkit="http://schemas.xceed.com/wpf/xaml/toolkit"
         MouseDown="LoginWindow_MouseDown"
         DataContext="{DynamicResource LoginViewModel}"
         WindowStyle="None"
@@ -22,19 +23,19 @@
             <Image Margin="108,10,108,0" Source="../Img/logo.png" Stretch="Fill" Height="110"/>
             <StackPanel Orientation="Vertical" Margin="0,35,0,0">
                 <TextBox HorizontalAlignment="Left" Height="40" Text="{Binding Login}" Padding="5,9,10,0" Margin="10,0,0,0" TextWrapping="Wrap"  Width="272" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
-                <TextBox HorizontalAlignment="Left" Height="40" Text="{Binding Password}" Padding="5,9,10,0" Margin="10,5,0,0" TextWrapping="Wrap"  Width="272" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
-                <TextBox HorizontalAlignment="Left" x:Name="repeatPassword" Visibility="Collapsed" Height="40" Text="{Binding ConfirmedPassword}" Padding="5,9,10,0" Margin="10,5,0,0" TextWrapping="Wrap"  Width="272" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
+                <toolkit:MaskedTextBox Mask="*"  HorizontalAlignment="Left" Height="40" Text="{Binding Password}" Padding="5,9,10,0" Margin="10,5,0,0" Width="272" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
+                <toolkit:MaskedTextBox HorizontalAlignment="Left" x:Name="repeatPassword" Visibility="Collapsed" Height="40" Text="{Binding ConfirmedPassword}" Padding="5,9,10,0" Margin="10,5,0,0" Width="272" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
             </StackPanel>
             <Grid Height="45" Margin="0,5">
                 <Button x:Name="buttonRegister" Content="UTWÓRZ KONTO" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" Height="40" Background="#FF0091B5" BorderBrush="#FF0091B5" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="14.667" Foreground="White" ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="12,3,0,0"
-                        Command="{Binding RegistrationCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="{Binding ElementName=Window}" ToolTip="Kliknij, aby utworzyć nowe konto." Cursor="Hand"/>
+                        Command="{Binding ToRegistrationCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="{Binding ElementName=Window}" ToolTip="Kliknij, aby utworzyć nowe konto." Cursor="Hand"/>
                <Button x:Name="buttonLogin" Content="ZALOGUJ" HorizontalAlignment="Left" Margin="152,3,0,0" VerticalAlignment="Top" Width="129" Height="40" Background="#FF02B6E3" BorderBrush="White" FontSize="14.667" Foreground="White" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" ScrollViewer.VerticalScrollBarVisibility="Disabled"                
                         Command="{Binding LoginCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="{Binding ElementName=Window}" Cursor="Hand"/>
 
 
-                <Button x:Name="buttonLog" Content="ZALOGUJ SIĘ" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" Height="40" Background="#FF0091B5" BorderBrush="#FF0091B5" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="14.667" Foreground="White" ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="12,3,0,0"
-                        Command="{Binding RegistrationCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="{Binding ElementName=Window}" ToolTip="Kliknij, aby utworzyć nowe konto." Cursor="Hand"/>
-                <Button x:Name="buttonCreate" Content="UTWÓRZ KONTO" HorizontalAlignment="Left" Margin="152,3,0,0" VerticalAlignment="Top" Width="129" Height="40" Background="#FF02B6E3" BorderBrush="White" FontSize="14.667" Foreground="White" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" ScrollViewer.VerticalScrollBarVisibility="Disabled"                
+                <Button x:Name="buttonLog" Content="ZALOGUJ SIĘ" Visibility="Collapsed" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" Height="40" Background="#FF0091B5" BorderBrush="#FF0091B5" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="14.667" Foreground="White" ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="12,3,0,0"
+                        Command="{Binding ToLogCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="{Binding ElementName=Window}" ToolTip="Kliknij, aby utworzyć nowe konto." Cursor="Hand"/>
+                <Button x:Name="buttonCreate" Content="UTWÓRZ" Visibility="Collapsed" HorizontalAlignment="Left" Margin="152,3,0,0" VerticalAlignment="Top" Width="129" Height="40" Background="#FF02B6E3" BorderBrush="White" FontSize="14.667" Foreground="White" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" ScrollViewer.VerticalScrollBarVisibility="Disabled"                
                         Command="{Binding RegistrationCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="{Binding ElementName=Window}" Cursor="Hand"/>
 
             </Grid>
