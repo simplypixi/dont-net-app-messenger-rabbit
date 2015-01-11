@@ -444,13 +444,16 @@ namespace DNAClient.ViewModel
                     {
                         GlobalsParameters.cache.Add(message.Sender, string.Empty);
                     }
-                    GlobalsParameters.cache[message.Sender] += msg;
-                    if (!GlobalsParameters.openNotifications.Contains(message.Sender))
+                    if (!string.IsNullOrEmpty(message.Message))
+                    {
+                        GlobalsParameters.cache[message.Sender] += msg;
+                    }
+                    if (!GlobalsParameters.openNotifications.Contains(message.Sender) && !string.IsNullOrEmpty(message.Message))
                     {
                         this.NewNotificationWindow(message.Sender, args, NotificationType.message);
                         GlobalsParameters.notificationCache.Add(message.Sender, msg);
                     }
-                    else
+                    else if (!string.IsNullOrEmpty(message.Message))
                     {
                         GlobalsParameters.notificationCache[message.Sender] += msg;
                     }

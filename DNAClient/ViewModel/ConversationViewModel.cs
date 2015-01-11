@@ -11,6 +11,7 @@ namespace DNAClient.ViewModel
 {
     using System;
     using System.Collections.Generic;
+    using System.Configuration;
     using System.Diagnostics;
     using System.Threading;
     using System.Threading.Tasks;
@@ -18,6 +19,7 @@ namespace DNAClient.ViewModel
     using System.IO;
     using System.Text;
     using System.Windows.Documents;
+    using System.Windows.Media.Animation;
 
     using DNAClient.ViewModel.Base;
 
@@ -171,23 +173,37 @@ namespace DNAClient.ViewModel
 
         private void SendMessage(object parameter)
         {
-            if (this.Message != null)
+            if (this.Message != null || this.attachment != null)
             {
-                this.Message = this.Message.Trim();
-            }
-
-            if (this.Message != String.Empty)
-            {
-                var msg = DateTimeOffset.Now + " przez Ja:\n" + this.Message + "\n";
-                this.Received += msg + "\n";
-                if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
+                if (this.Message != null)
                 {
-                    GlobalsParameters.cache.Add(this.Recipient, String.Empty);
+                    this.Message = this.Message.Trim();
                 }
-                GlobalsParameters.cache[this.Recipient] += msg + "\n";
-                this.SendMessageToQueue();
-                AddToHistory(msg);
-                this.Message = String.Empty;
+                if (this.attachment != null || !string.IsNullOrEmpty(this.Message))
+                {
+                    var msg = string.Empty;
+                    if (!string.IsNullOrEmpty(this.Message))
+                    {
+                        msg = DateTimeOffset.Now + " przez Ja:\n" + this.Message + "\n";
+                    }
+                    if (this.attachment != null)
+                    {
+                        if (!string.IsNullOrEmpty(this.Message))
+                        {
+                            msg += "\n";
+                        }
+                        msg += DateTimeOffset.Now + "\n *** WYSŁANO ZAŁĄCZNIK ***\n";
+                    }
+                    this.Received += msg + "\n";
+                    if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
+                    {
+                        GlobalsParameters.cache.Add(this.Recipient, String.Empty);
+                    }
+                    GlobalsParameters.cache[this.Recipient] += msg + "\n";
+                    this.SendMessageToQueue();
+                    AddToHistory(msg);
+                    this.Message = String.Empty;
+                }
             }
         }
 
@@ -206,7 +222,7 @@ namespace DNAClient.ViewModel
                     var message = new MessageReq
                                       {
                                           Login = this.User,
-                                          Message = this.Message + "\n",
+                                          Message = !string.IsNullOrEmpty(this.Message) ? this.Message + "\n" : string.Empty,
                                           Recipient = this.Recipient,
                                           SendTime = DateTimeOffset.Now,
                                           Attachment = this.attachment
@@ -240,11 +256,17 @@ namespace DNAClient.ViewModel
             if (routingKey.StartsWith(Constants.keyClientNotification + ".message"))
             {
                 var message = body.DeserializeMessageNotification();
-                var msg = message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n";
-                this.AddToHistory(msg);
-                this.Received += msg;
-                GlobalsParameters.cache[message.Sender] += msg;
-
+                if (!string.IsNullOrEmpty(message.Message))
+                {
+                    var msg = message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n";
+                    this.AddToHistory(msg);
+                    this.Received += msg;
+                    if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
+                    {
+                        GlobalsParameters.cache.Add(this.Recipient, String.Empty);
+                    }
+                    GlobalsParameters.cache[message.Sender] += msg;
+                }
             }
         }
 
