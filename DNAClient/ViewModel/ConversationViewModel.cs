@@ -272,6 +272,7 @@ namespace DNAClient.ViewModel
 
         void AttachFile(object param)
         {
+
             Microsoft.Win32.OpenFileDialog win = new Microsoft.Win32.OpenFileDialog();
             win.Multiselect = false;
 
@@ -289,6 +290,11 @@ namespace DNAClient.ViewModel
                 this.attachment.Data = bytes;
                 this.attachment.Name = win.SafeFileName;
                 this.attachment.MimeType = string.Empty;
+
+                var msg = "@@@\n Wczytano plik " + this.attachment.Name+"\n@@@\n";
+                
+                this.AddToHistory(msg);
+                this.Received += msg;
             }
         }
     }
