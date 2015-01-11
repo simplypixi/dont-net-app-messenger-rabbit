@@ -91,6 +91,7 @@ namespace DNAClient.ViewModel
                 ConversationViewModel cvModel = ProductionWindowFactory.CreateConversationWindow(sender);
                 GlobalsParameters.openWindows.Add(cvModel);
                 var msg = this.messageTMP.Body.DeserializeMessageNotification();
+                cvModel.TalkWindow.Document = cvModel.toFlowDocument(GlobalsParameters.cache[msg.Sender].Substring(0, GlobalsParameters.cache[msg.Sender].Length-2));
                 cvModel.AddToHistory(GlobalsParameters.notificationCache[msg.Sender]);
             }
 

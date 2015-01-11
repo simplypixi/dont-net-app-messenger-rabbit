@@ -65,6 +65,7 @@ namespace DNAClient.ViewModel
             this.SendMessageCommand = new RelayCommand(this.SendMessage);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
             this.AttachFileCommand = new RelayCommand(this.AttachFile);
+
         }
 
         /// <summary>
@@ -79,7 +80,7 @@ namespace DNAClient.ViewModel
             this.Recipient = recipient;
             if (GlobalsParameters.cache.ContainsKey(this.Recipient))
             {
-                this.Received = GlobalsParameters.cache[this.Recipient];
+                this.Received = GlobalsParameters.cache[this.Recipient].Substring(0, GlobalsParameters.cache[this.Recipient].Length - 2);
             }
         }
 
@@ -187,7 +188,7 @@ namespace DNAClient.ViewModel
                     var msg = string.Empty;
                     if (!string.IsNullOrEmpty(this.Message))
                     {
-                        msg = DateTimeOffset.Now.ToString("dd.MM.yyyy (hh:mm:ss)") + " przez Ja:\n" + this.Message + "";
+                        msg = DateTimeOffset.Now.ToString("dd.MM.yyyy (hh:mm:ss)") + " przez Ja:\n" + this.Message;
                     }
                     if (this.attachment != null)
                     {
@@ -195,7 +196,7 @@ namespace DNAClient.ViewModel
                         {
                             msg += "\n";
                         }
-                        msg += DateTimeOffset.Now + ": WYSŁANO ZAŁĄCZNIK";
+                        msg += DateTimeOffset.Now.ToString("dd.MM.yyyy (hh:mm:ss)") + ": WYSŁANO ZAŁĄCZNIK";
                     }
 
                     /* 
@@ -207,7 +208,7 @@ namespace DNAClient.ViewModel
                     {
                         GlobalsParameters.cache.Add(this.Recipient, String.Empty);
                     }
-                    GlobalsParameters.cache[this.Recipient] += msg + "\n";
+                    GlobalsParameters.cache[this.Recipient] += "\n\n"+msg;
                     this.SendMessageToQueue();
                     AddToHistory(msg);
                     this.Message = String.Empty;
@@ -266,7 +267,7 @@ namespace DNAClient.ViewModel
                 var message = body.DeserializeMessageNotification();
                 if (!string.IsNullOrEmpty(message.Message))
                 {
-                    var msg = message.SendTime + " przez " + message.Sender + ":\n" + message.Message;
+                    var msg = message.SendTime.ToString("dd.MM.yyyy (hh:mm:ss)") + " przez " + message.Sender + ":\n" + message.Message;
                     this.AddToHistory(msg);
 
                     /* 
@@ -278,12 +279,12 @@ namespace DNAClient.ViewModel
                     {
                         GlobalsParameters.cache.Add(this.Recipient, String.Empty);
                     }
-                    GlobalsParameters.cache[message.Sender] += msg;
+                    GlobalsParameters.cache[message.Sender] += ("\n\n"+msg);
                 }
             }
         }
 
-        private FlowDocument toFlowDocument(string msg)
+        public FlowDocument toFlowDocument(string msg)
         {
             FlowDocument document = TalkWindow.Document;
             Paragraph paragraph = new Paragraph();

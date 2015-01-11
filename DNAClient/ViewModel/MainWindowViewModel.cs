@@ -399,7 +399,7 @@ namespace DNAClient.ViewModel
             ProductionWindowFactory.CreateNotificationWindow(sender, mess, notificationType);
         }
 
-
+        bool check = true;
         // Zmienia status użytkownika na liście kontaktów
         private void Receive(BasicDeliverEventArgs args)
         {
@@ -427,9 +427,10 @@ namespace DNAClient.ViewModel
             {
                 bool ConversationWindowExist = false;
                 var message = body.DeserializeMessageNotification();
-                var msg = (message.SendTime == new DateTime(2000, 1, 1)) ? String.Empty : message.SendTime.ToString() +" przez " + message.Sender + ":\n";
-                msg += message.Message + "\n";
+                var msg = (message.SendTime == new DateTime(2000, 1, 1)) ? String.Empty : message.SendTime.ToString("dd.MM.yyyy (hh:mm:ss)") + " przez " + message.Sender + ":\n";
+                msg += message.Message;
 
+          
                 foreach (ConversationViewModel cvModel in GlobalsParameters.openWindows)
                 {
                     if (cvModel.Recipient == message.Sender)
@@ -446,16 +447,16 @@ namespace DNAClient.ViewModel
                     }
                     if (!string.IsNullOrEmpty(message.Message))
                     {
-                        GlobalsParameters.cache[message.Sender] += msg;
+                        GlobalsParameters.cache[message.Sender] += msg + "\n\n";
                     }
                     if (!GlobalsParameters.openNotifications.Contains(message.Sender) && !string.IsNullOrEmpty(message.Message))
                     {
                         this.NewNotificationWindow(message.Sender, args, NotificationType.message);
-                        GlobalsParameters.notificationCache.Add(message.Sender, msg);
+                        GlobalsParameters.notificationCache.Add(message.Sender, msg + "\n\n");
                     }
                     else if (!string.IsNullOrEmpty(message.Message))
                     {
-                        GlobalsParameters.notificationCache[message.Sender] += msg;
+                        GlobalsParameters.notificationCache[message.Sender] += msg + "\n\n";
                     }
                 }
 
