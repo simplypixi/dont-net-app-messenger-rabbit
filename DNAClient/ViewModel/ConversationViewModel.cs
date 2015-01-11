@@ -193,7 +193,7 @@ namespace DNAClient.ViewModel
 
             if (this.Message != String.Empty)
             {
-                var msg = DateTimeOffset.Now + " przez Ja:\n" + this.Message + "\n";
+                var msg = DateTimeOffset.Now.ToString("dd.MM.yyyy (HH:mm:ss)") + " przez Ja:\n" + this.Message + "\n";
                 this.Received += msg + "\n";
                 if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
                 {
@@ -265,6 +265,7 @@ namespace DNAClient.ViewModel
 
         void AttachFile(object param)
         {
+
             Microsoft.Win32.OpenFileDialog win = new Microsoft.Win32.OpenFileDialog();
             win.Multiselect = false;
 
@@ -282,6 +283,11 @@ namespace DNAClient.ViewModel
                 this.attachment.Data = bytes;
                 this.attachment.Name = win.SafeFileName;
                 this.attachment.MimeType = string.Empty;
+
+                var msg = "@@@\n Wczytano plik " + this.attachment.Name+"\n@@@\n";
+                
+                this.AddToHistory(msg);
+                this.Received += msg;
             }
         }
     }
