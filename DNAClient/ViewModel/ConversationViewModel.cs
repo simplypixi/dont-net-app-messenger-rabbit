@@ -20,6 +20,8 @@ namespace DNAClient.ViewModel
     using System.Text;
     using System.Windows.Documents;
     using System.Windows.Media.Animation;
+    using System.Windows.Controls;
+    using System.Windows.Markup;
 
     using DNAClient.ViewModel.Base;
 
@@ -34,7 +36,7 @@ namespace DNAClient.ViewModel
     /// <summary>
     /// View model okna konwersacji
     /// </summary>
-    public class ConversationViewModel : ViewModelBase
+ public class ConversationViewModel : ViewModelBase
     {
         /// <summary>
         /// Coś od zarządzania eventami i taskami, jeszcze nie ogarnąłem do końca
@@ -51,8 +53,11 @@ namespace DNAClient.ViewModel
 
         private Attachment attachment;
 
+        private ConversationWindow talkWindowGUI;
+        private RichTextBox talkWindow;
+
         // odebrane wiadomości (do przerobienia na listę lub coś w ten deseń)
-        private string received;
+        private FlowDocument received;
         private static ConnectionFactory factory = Constants.ConnectionFactory;
         private string userPath;
         public ConversationViewModel()
@@ -70,13 +75,29 @@ namespace DNAClient.ViewModel
         /// <param name="recipient">
         /// Odbiorca
         /// </param>
-        public ConversationViewModel(string recipient)
+        public ConversationViewModel(string recipient, ConversationWindow flowD)
             : this()
         {
+            this.talkWindowGUI = flowD;
+            this.talkWindow = this.talkWindowGUI.talk;
+            this.talkWindow.Document = new FlowDocument();
+
             this.Recipient = recipient;
             if (GlobalsParameters.cache.ContainsKey(this.Recipient))
             {
-                this.Received = GlobalsParameters.cache[this.Recipient];
+                //this.talkWindow.Document = GlobalsParameters.cache[this.Recipient];
+
+                MemoryStream ms = new MemoryStream();
+
+                XamlWriter.Save(GlobalsParameters.cache[this.Recipient], ms);
+
+                ms.Seek(0, SeekOrigin.Begin);
+
+                this.talkWindow.Document = XamlReader.Load(ms) as FlowDocument;
+            }
+            else
+            {
+
             }
         }
 
@@ -122,7 +143,7 @@ namespace DNAClient.ViewModel
             }
         }
 
-        public string Received
+        public FlowDocument Received
         {
             get
             {
@@ -145,7 +166,7 @@ namespace DNAClient.ViewModel
         private void CloseWindow(object parameter)
         {
             var window = parameter as Window;
-
+            this.talkWindow = null;
             if (window != null)
             {
                 foreach (ConversationViewModel cvModel in GlobalsParameters.openWindows)
@@ -184,7 +205,7 @@ namespace DNAClient.ViewModel
                     var msg = string.Empty;
                     if (!string.IsNullOrEmpty(this.Message))
                     {
-                        msg = DateTimeOffset.Now + " przez Ja:\n" + this.Message + "\n";
+                        msg = DateTimeOffset.Now.ToString("dd.MM.yyyy (HH:mm:ss)") + " przez Ja:\n" + this.Message;
                     }
                     if (this.attachment != null)
                     {
@@ -192,14 +213,34 @@ namespace DNAClient.ViewModel
                         {
                             msg += "\n";
                         }
-                        msg += DateTimeOffset.Now + "\n *** WYSŁANO ZAŁĄCZNIK ***\n";
+                        msg += DateTimeOffset.Now.ToString("dd.MM.yyyy (HH:mm:ss)") + ": WYSŁANO ZAŁĄCZNIK";
                     }
-                    this.Received += msg + "\n";
+                    FlowDocument flowD = new FlowDocument();
+                    flowD = this.talkWindow.Document;
+                    Paragraph para = new Paragraph();
+                    para.Inlines.Add(msg);
+                    flowD.Blocks.Add(para);
+                    //this.Received = flowD;
+                    this.talkWindow.Document = flowD;
                     if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
                     {
-                        GlobalsParameters.cache.Add(this.Recipient, String.Empty);
+                        GlobalsParameters.cache.Add(this.Recipient, new FlowDocument());
                     }
-                    GlobalsParameters.cache[this.Recipient] += msg + "\n";
+                    GlobalsParameters.cache[this.Recipient].Blocks.Add(para);
+                    try
+                    {
+                        this.talkWindow.Document = GlobalsParameters.cache[this.Recipient];
+                    }
+                    catch
+                    {
+                        MemoryStream ms = new MemoryStream();
+
+                        XamlWriter.Save(GlobalsParameters.cache[this.Recipient], ms);
+
+                        ms.Seek(0, SeekOrigin.Begin);
+
+                        this.talkWindow.Document = XamlReader.Load(ms) as FlowDocument;
+                    }
                     this.SendMessageToQueue();
                     AddToHistory(msg);
                     this.Message = String.Empty;
@@ -222,7 +263,7 @@ namespace DNAClient.ViewModel
                     var message = new MessageReq
                                       {
                                           Login = this.User,
-                                          Message = !string.IsNullOrEmpty(this.Message) ? this.Message + "\n" : string.Empty,
+                                          Message = !string.IsNullOrEmpty(this.Message) ? this.Message : string.Empty,
                                           Recipient = this.Recipient,
                                           SendTime = DateTimeOffset.Now,
                                           Attachment = this.attachment
@@ -258,14 +299,35 @@ namespace DNAClient.ViewModel
                 var message = body.DeserializeMessageNotification();
                 if (!string.IsNullOrEmpty(message.Message))
                 {
-                    var msg = message.SendTime + " przez " + message.Sender + ":\n" + message.Message + "\n";
+                    DateTimeOffset date = message.SendTime;
+                    var msg = date.ToString("dd.MM.yyyy (HH:mm:ss)") + " przez " + message.Sender + ":\n" + message.Message;
                     this.AddToHistory(msg);
-                    this.Received += msg;
+                    FlowDocument flowD = new FlowDocument();
+                    flowD = this.talkWindow.Document;
+                    Paragraph para = new Paragraph();
+                    para.Inlines.Add(msg);
+                    flowD.Blocks.Add(para);
+                    this.talkWindow.Document = flowD;
+                    GlobalsParameters.cache[message.Sender].Blocks.Add(para);
                     if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
                     {
-                        GlobalsParameters.cache.Add(this.Recipient, String.Empty);
+                        GlobalsParameters.cache.Add(this.Recipient, new FlowDocument());
                     }
-                    GlobalsParameters.cache[message.Sender] += msg;
+                    GlobalsParameters.cache[message.Sender].Blocks.Add(para);
+                    try
+                    {
+                        this.talkWindow.Document = GlobalsParameters.cache[this.Recipient];
+                    }
+                    catch
+                    {
+                        MemoryStream ms = new MemoryStream();
+
+                        XamlWriter.Save(GlobalsParameters.cache[this.Recipient], ms);
+
+                        ms.Seek(0, SeekOrigin.Begin);
+
+                        this.talkWindow.Document = XamlReader.Load(ms) as FlowDocument;
+                    }
                 }
             }
         }
@@ -273,28 +335,36 @@ namespace DNAClient.ViewModel
         void AttachFile(object param)
         {
 
-            Microsoft.Win32.OpenFileDialog win = new Microsoft.Win32.OpenFileDialog();
-            win.Multiselect = false;
-
-            Nullable<bool> result = win.ShowDialog();
-
-            if (result.HasValue && result.Value)
+            var window = param as ConversationWindow;
+            string sendFileText = window.SendFile.Content.ToString();
+            if (sendFileText.Equals("Dodaj plik"))
             {
-                string filePath = win.FileName;
-                Debug.Print(filePath);
+                Microsoft.Win32.OpenFileDialog win = new Microsoft.Win32.OpenFileDialog();
+                win.Multiselect = false;
 
-                this.attachment = new Attachment();
+                Nullable<bool> result = win.ShowDialog();
 
-                byte[] bytes = File.ReadAllBytes(filePath);
+                if (result.HasValue && result.Value)
+                {
+                    string filePath = win.FileName;
+                    Debug.Print(filePath);
 
-                this.attachment.Data = bytes;
-                this.attachment.Name = win.SafeFileName;
-                this.attachment.MimeType = string.Empty;
+                    this.attachment = new Attachment();
 
-                var msg = "@@@\n Wczytano plik " + this.attachment.Name+"\n@@@\n";
-                
-                this.AddToHistory(msg);
-                this.Received += msg;
+                    byte[] bytes = File.ReadAllBytes(filePath);
+
+                    this.attachment.Data = bytes;
+                    this.attachment.Name = win.SafeFileName;
+                    this.attachment.MimeType = string.Empty;
+
+
+                }
+                window.SendFile.Content = "Usuń";
+            }
+            else if (sendFileText.Equals("Usuń"))
+            {
+                this.attachment = null;
+                window.SendFile.Content = "Dodaj plik";
             }
         }
     }

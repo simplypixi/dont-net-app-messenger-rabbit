@@ -11,6 +11,7 @@ namespace DNAClient
 {
     using System;
     using System.Collections.Generic;
+    using System.Windows.Documents;
 
     using DNAClient.View;
     using DNAClient.ViewModel;
@@ -54,7 +55,7 @@ namespace DNAClient
         /// <summary>
         /// 'Pamięć cache' dla rozmów, przechowująca tekst rozmów od czasu zalogowania do czasy wyłączenia komunikatora
         /// </summary>
-        public static IDictionary<String, String> cache { get; set; }
+        public static IDictionary<String, FlowDocument> cache { get; set; }
 
         /// <summary>
         /// 'Pamięć cache' do trzymania wszystkich wiadomości od utowrzenia danego notification do jego zamknięcia

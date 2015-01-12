@@ -15,6 +15,7 @@ namespace DNAClient.ViewModel
     using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
+    using System.Windows.Documents;
 
     using DNAClient.RabbitFunctions;
     using DNAClient.View;
@@ -52,6 +53,8 @@ namespace DNAClient.ViewModel
             this.LoginCommand = new RelayCommand(this.LoginToServer);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
             this.RegistrationCommand = new RelayCommand(this.RegistrationOnServer);
+            this.ToLogCommand = new RelayCommand(this.ToLog);
+            this.ToRegistrationCommand = new RelayCommand(this.ToRegistration);
         }
 
         /// <summary>
@@ -121,6 +124,14 @@ namespace DNAClient.ViewModel
                 this.RaisePropertyChanged("ConfirmedPassword");
             }
         }
+        /// <summary>
+        /// Komenda zmiany okna na logowanie
+        /// </summary>
+        public RelayCommand ToLogCommand { get; set; }
+        /// <summary>
+        /// Komenda zmiany okna na rejestrację
+        /// </summary>
+        public RelayCommand ToRegistrationCommand { get; set; }
 
         /// <summary>
         /// Komenda logowania użytkownika, do zbindowania w xamlu
@@ -142,13 +153,15 @@ namespace DNAClient.ViewModel
         {
             GlobalsParameters.Instance.CurrentUser = this.Login;
             GlobalsParameters.openWindows = new List<ConversationViewModel>();
-            GlobalsParameters.cache = new Dictionary<string, string>();
+            GlobalsParameters.cache = new Dictionary<string, FlowDocument>();
             GlobalsParameters.openNotifications = new List<String>();
             GlobalsParameters.notificationCache = new Dictionary<string, string>();
 
             var rpcClient = new RpcLogin();
 
-            var response = rpcClient.Call(this.Login, this.Password);
+            var loginWindow = parameter as LoginWindow;
+
+            var response = rpcClient.Call(this.Login, loginWindow.Password.Password);
 
             rpcClient.Close();
 
@@ -158,11 +171,13 @@ namespace DNAClient.ViewModel
             {
                 ProductionWindowFactory.CreateMainWindow();
 
-                var loginWindow = parameter as LoginWindow;
                 if (loginWindow != null)
                 {
                     loginWindow.Close();
                 }
+            } else
+            {
+                MessageBox.Show("Błąd logowania", "Wpisano błędne dane logowania. Upewnij się czy wpisałeś poprawne dane, a następnie spróbuj ponownie.");
             }
         }
 
@@ -178,20 +193,63 @@ namespace DNAClient.ViewModel
 
             var rpcClient = new RpcRegistration();
 
-            var response = rpcClient.Call(this.Login, this.Password, this.ConfirmedPassword);
+            var loginWindow = parameter as LoginWindow;
+            var response = rpcClient.Call(this.Login, loginWindow.Password.Password, loginWindow.repeatPassword.Password);
 
             rpcClient.Close();
 
             if (response.Status == Status.OK)
             {
                 ProductionWindowFactory.CreateMainWindow();
-
-                var loginWindow = parameter as LoginWindow;
                 if (loginWindow != null)
                 {
                     loginWindow.Close();
                 }
             }
+            else
+            {
+                MessageBox.Show("Błąd rejestracji", "Wpisano błędne dane rejestracji lub istnieje już użytkownik o nazwie:" + this.Login +".\nUpewnij się czy hasło i jego potwierdzenie są identyczne lub spróbuj wybrać inną nazwę użytkownika.");
+            }
+        }
+
+        /// <summary>
+        /// Metoda zmiany na rejestrację
+        /// </summary>
+        /// <param name="parameter">
+        /// Parametr funkcji
+        /// </param>
+        private void ToRegistration(object parameter)
+        {
+            var loginWindow = parameter as LoginWindow;
+            loginWindow.Hide();
+            loginWindow.Height = 365;
+            loginWindow.repeatPassword.Visibility = Visibility.Visible;
+            loginWindow.buttonCreate.Visibility = Visibility.Visible;
+            loginWindow.buttonLog.Visibility = Visibility.Visible;
+            loginWindow.buttonRegister.Visibility = Visibility.Collapsed;
+            loginWindow.buttonLogin.Visibility = Visibility.Collapsed;
+            loginWindow.Show();
+
+        }
+
+        /// <summary>
+        /// Metoda zmiany na logowanie
+        /// </summary>
+        /// <param name="parameter">
+        /// Parametr funkcji
+        /// </param>
+        private void ToLog(object parameter)
+        {
+            var loginWindow = parameter as LoginWindow;
+            loginWindow.Hide();
+            loginWindow.Height = 323;
+            loginWindow.repeatPassword.Visibility = Visibility.Collapsed;
+            loginWindow.buttonCreate.Visibility = Visibility.Collapsed;
+            loginWindow.buttonLog.Visibility = Visibility.Collapsed;
+            loginWindow.buttonRegister.Visibility = Visibility.Visible;
+            loginWindow.buttonLogin.Visibility = Visibility.Visible;
+            loginWindow.Show();
+
         }
     }
 }

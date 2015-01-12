@@ -17,6 +17,7 @@ namespace DNAClient.ViewModel
     using System.Threading.Tasks;
     using System.Windows;
     using System.Linq;
+    using System.Windows.Documents;
 
     using DNAClient.RabbitFunctions;
     using DNAClient.ViewModel.Base;
@@ -399,7 +400,7 @@ namespace DNAClient.ViewModel
             ProductionWindowFactory.CreateNotificationWindow(sender, mess, notificationType);
         }
 
-
+        bool check = true;
         // Zmienia status użytkownika na liście kontaktów
         private void Receive(BasicDeliverEventArgs args)
         {
@@ -427,8 +428,10 @@ namespace DNAClient.ViewModel
             {
                 bool ConversationWindowExist = false;
                 var message = body.DeserializeMessageNotification();
-                var msg = (message.SendTime == new DateTime(2000, 1, 1)) ? String.Empty : message.SendTime.ToString() +" przez " + message.Sender + ":\n";
-                msg += message.Message + "\n";
+                var msg = (message.SendTime == new DateTime(2000, 1, 1)) ? String.Empty : message.SendTime.ToString("dd.MM.yyyy (hh:mm:ss)") + " przez " + message.Sender + ":\n";
+                msg += message.Message;
+
+                Paragraph para = new Paragraph();
 
                 foreach (ConversationViewModel cvModel in GlobalsParameters.openWindows)
                 {
@@ -442,15 +445,17 @@ namespace DNAClient.ViewModel
                 {
                     if (!GlobalsParameters.cache.ContainsKey(message.Sender))
                     {
-                        GlobalsParameters.cache.Add(message.Sender, string.Empty);
+                        FlowDocument flowD = new FlowDocument();
+                        GlobalsParameters.cache.Add(message.Sender, flowD);
                     }
                     if (!string.IsNullOrEmpty(message.Message))
                     {
-                        GlobalsParameters.cache[message.Sender] += msg;
+                        para.Inlines.Add(msg);
+                        GlobalsParameters.cache[message.Sender].Blocks.Add(para);
                     }
                     if (!GlobalsParameters.openNotifications.Contains(message.Sender) && !string.IsNullOrEmpty(message.Message))
                     {
-                        this.NewNotificationWindow(message.Sender, args, NotificationType.message);
+                        this.NewNotificationWindow(message.Sender, args, NotificationType.message);   
                         GlobalsParameters.notificationCache.Add(message.Sender, msg);
                     }
                     else if (!string.IsNullOrEmpty(message.Message))
