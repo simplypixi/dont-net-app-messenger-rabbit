@@ -15,6 +15,7 @@ namespace DNAClient.ViewModel
     using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
+    using System.Windows.Documents;
 
     using DNAClient.RabbitFunctions;
     using DNAClient.View;
@@ -152,7 +153,7 @@ namespace DNAClient.ViewModel
         {
             GlobalsParameters.Instance.CurrentUser = this.Login;
             GlobalsParameters.openWindows = new List<ConversationViewModel>();
-            GlobalsParameters.cache = new Dictionary<string, string>();
+            GlobalsParameters.cache = new Dictionary<string, FlowDocument>();
             GlobalsParameters.openNotifications = new List<String>();
             GlobalsParameters.notificationCache = new Dictionary<string, string>();
 
@@ -164,7 +165,7 @@ namespace DNAClient.ViewModel
 
             rpcClient.Close();
 
-            //response.Status = Status.OK;
+            response.Status = Status.OK;
 
             if (response.Status == Status.OK)
             {

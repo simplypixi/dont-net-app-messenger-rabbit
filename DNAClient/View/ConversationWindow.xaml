@@ -30,7 +30,6 @@
                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                     ScrollViewer.VerticalScrollBarVisibility="Auto" Width="506"  Foreground="White" Background="#FF08A4CB" Focusable="False" IsHitTestVisible="False"  AllowDrop="False"  Padding="5" 
                     ScrollViewer.CanContentScroll="True" BorderBrush="{x:Null}">
-                        <!--<Run Text="{Binding Received}"/>-->
                         <FlowDocument ></FlowDocument>
                     </RichTextBox>
                 </ScrollViewer>

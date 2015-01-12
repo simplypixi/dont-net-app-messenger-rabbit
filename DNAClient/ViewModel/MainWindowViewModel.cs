@@ -17,6 +17,7 @@ namespace DNAClient.ViewModel
     using System.Threading.Tasks;
     using System.Windows;
     using System.Linq;
+    using System.Windows.Documents;
 
     using DNAClient.RabbitFunctions;
     using DNAClient.ViewModel.Base;
@@ -430,7 +431,8 @@ namespace DNAClient.ViewModel
                 var msg = (message.SendTime == new DateTime(2000, 1, 1)) ? String.Empty : message.SendTime.ToString("dd.MM.yyyy (hh:mm:ss)") + " przez " + message.Sender + ":\n";
                 msg += message.Message;
 
-          
+                Paragraph para = new Paragraph();
+
                 foreach (ConversationViewModel cvModel in GlobalsParameters.openWindows)
                 {
                     if (cvModel.Recipient == message.Sender)
@@ -443,20 +445,22 @@ namespace DNAClient.ViewModel
                 {
                     if (!GlobalsParameters.cache.ContainsKey(message.Sender))
                     {
-                        GlobalsParameters.cache.Add(message.Sender, string.Empty);
+                        FlowDocument flowD = new FlowDocument();
+                        GlobalsParameters.cache.Add(message.Sender, flowD);
                     }
                     if (!string.IsNullOrEmpty(message.Message))
                     {
-                        GlobalsParameters.cache[message.Sender] += msg + "\n\n";
+                        para.Inlines.Add(msg);
+                        GlobalsParameters.cache[message.Sender].Blocks.Add(para);
                     }
                     if (!GlobalsParameters.openNotifications.Contains(message.Sender) && !string.IsNullOrEmpty(message.Message))
                     {
-                        this.NewNotificationWindow(message.Sender, args, NotificationType.message);
-                        GlobalsParameters.notificationCache.Add(message.Sender, msg + "\n\n");
+                        this.NewNotificationWindow(message.Sender, args, NotificationType.message);   
+                        GlobalsParameters.notificationCache.Add(message.Sender, msg);
                     }
                     else if (!string.IsNullOrEmpty(message.Message))
                     {
-                        GlobalsParameters.notificationCache[message.Sender] += msg + "\n\n";
+                        GlobalsParameters.notificationCache[message.Sender] += msg;
                     }
                 }
 

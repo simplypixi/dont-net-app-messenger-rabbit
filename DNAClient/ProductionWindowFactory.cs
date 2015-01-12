@@ -14,6 +14,8 @@ namespace DNAClient
 
     using RabbitMQ.Client;
     using RabbitMQ.Client.Events;
+    using System.Windows.Documents;
+    using System.Windows.Controls;
 
     /// <summary>
     /// Fabryka nowych okien
@@ -22,13 +24,11 @@ namespace DNAClient
     {
         public static ConversationViewModel CreateConversationWindow(string recipient)
         {
-            ConversationViewModel cvModel = new ConversationViewModel(recipient);
-            ConversationWindow window = new ConversationWindow
-            {
-                DataContext = cvModel,
-            };
+            ConversationWindow window = new ConversationWindow();
+
+            ConversationViewModel cvModel = new ConversationViewModel(recipient, window);
+            window.DataContext = cvModel;
             window.Show();
-            cvModel.TalkWindow = window.talk;
             return cvModel;
         }
 

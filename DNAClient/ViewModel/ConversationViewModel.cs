@@ -21,6 +21,7 @@ namespace DNAClient.ViewModel
     using System.Windows.Documents;
     using System.Windows.Media.Animation;
     using System.Windows.Controls;
+    using System.Windows.Markup;
 
     using DNAClient.ViewModel.Base;
 
@@ -35,7 +36,7 @@ namespace DNAClient.ViewModel
     /// <summary>
     /// View model okna konwersacji
     /// </summary>
-    public class ConversationViewModel : ViewModelBase
+ public class ConversationViewModel : ViewModelBase
     {
         /// <summary>
         /// Coś od zarządzania eventami i taskami, jeszcze nie ogarnąłem do końca
@@ -52,10 +53,11 @@ namespace DNAClient.ViewModel
 
         private Attachment attachment;
 
-        public RichTextBox TalkWindow;
+        private ConversationWindow talkWindowGUI;
+        private RichTextBox talkWindow;
 
         // odebrane wiadomości (do przerobienia na listę lub coś w ten deseń)
-        private string received;
+        private FlowDocument received;
         private static ConnectionFactory factory = Constants.ConnectionFactory;
         private string userPath;
         public ConversationViewModel()
@@ -65,7 +67,6 @@ namespace DNAClient.ViewModel
             this.SendMessageCommand = new RelayCommand(this.SendMessage);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
             this.AttachFileCommand = new RelayCommand(this.AttachFile);
-
         }
 
         /// <summary>
@@ -74,13 +75,29 @@ namespace DNAClient.ViewModel
         /// <param name="recipient">
         /// Odbiorca
         /// </param>
-        public ConversationViewModel(string recipient)
+        public ConversationViewModel(string recipient, ConversationWindow flowD)
             : this()
         {
+            this.talkWindowGUI = flowD;
+            this.talkWindow = this.talkWindowGUI.talk;
+            this.talkWindow.Document = new FlowDocument();
+
             this.Recipient = recipient;
             if (GlobalsParameters.cache.ContainsKey(this.Recipient))
             {
-                this.Received = GlobalsParameters.cache[this.Recipient].Substring(0, GlobalsParameters.cache[this.Recipient].Length - 2);
+                //this.talkWindow.Document = GlobalsParameters.cache[this.Recipient];
+
+                MemoryStream ms = new MemoryStream();
+
+                XamlWriter.Save(GlobalsParameters.cache[this.Recipient], ms);
+
+                ms.Seek(0, SeekOrigin.Begin);
+
+                this.talkWindow.Document = XamlReader.Load(ms) as FlowDocument;
+            }
+            else
+            {
+
             }
         }
 
@@ -126,7 +143,7 @@ namespace DNAClient.ViewModel
             }
         }
 
-        public string Received
+        public FlowDocument Received
         {
             get
             {
@@ -149,7 +166,7 @@ namespace DNAClient.ViewModel
         private void CloseWindow(object parameter)
         {
             var window = parameter as Window;
-
+            this.talkWindow = null;
             if (window != null)
             {
                 foreach (ConversationViewModel cvModel in GlobalsParameters.openWindows)
@@ -188,7 +205,7 @@ namespace DNAClient.ViewModel
                     var msg = string.Empty;
                     if (!string.IsNullOrEmpty(this.Message))
                     {
-                        msg = DateTimeOffset.Now.ToString("dd.MM.yyyy (hh:mm:ss)") + " przez Ja:\n" + this.Message;
+                        msg = DateTimeOffset.Now.ToString("dd.MM.yyyy (HH:mm:ss)") + " przez Ja:\n" + this.Message;
                     }
                     if (this.attachment != null)
                     {
@@ -196,19 +213,34 @@ namespace DNAClient.ViewModel
                         {
                             msg += "\n";
                         }
-                        msg += DateTimeOffset.Now.ToString("dd.MM.yyyy (hh:mm:ss)") + ": WYSŁANO ZAŁĄCZNIK";
+                        msg += DateTimeOffset.Now.ToString("dd.MM.yyyy (HH:mm:ss)") + ": WYSŁANO ZAŁĄCZNIK";
                     }
-
-                    /* 
-                     * Obsługa dodawnia tekstu do RichTextBox 
-                     */
-                    TalkWindow.Document = this.toFlowDocument(msg);
-
+                    FlowDocument flowD = new FlowDocument();
+                    flowD = this.talkWindow.Document;
+                    Paragraph para = new Paragraph();
+                    para.Inlines.Add(msg);
+                    flowD.Blocks.Add(para);
+                    //this.Received = flowD;
+                    this.talkWindow.Document = flowD;
                     if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
                     {
-                        GlobalsParameters.cache.Add(this.Recipient, String.Empty);
+                        GlobalsParameters.cache.Add(this.Recipient, new FlowDocument());
                     }
-                    GlobalsParameters.cache[this.Recipient] += "\n\n"+msg;
+                    GlobalsParameters.cache[this.Recipient].Blocks.Add(para);
+                    try
+                    {
+                        this.talkWindow.Document = GlobalsParameters.cache[this.Recipient];
+                    }
+                    catch
+                    {
+                        MemoryStream ms = new MemoryStream();
+
+                        XamlWriter.Save(GlobalsParameters.cache[this.Recipient], ms);
+
+                        ms.Seek(0, SeekOrigin.Begin);
+
+                        this.talkWindow.Document = XamlReader.Load(ms) as FlowDocument;
+                    }
                     this.SendMessageToQueue();
                     AddToHistory(msg);
                     this.Message = String.Empty;
@@ -267,31 +299,37 @@ namespace DNAClient.ViewModel
                 var message = body.DeserializeMessageNotification();
                 if (!string.IsNullOrEmpty(message.Message))
                 {
-                    var msg = message.SendTime.ToString("dd.MM.yyyy (hh:mm:ss)") + " przez " + message.Sender + ":\n" + message.Message;
+                    DateTimeOffset date = message.SendTime;
+                    var msg = date.ToString("dd.MM.yyyy (HH:mm:ss)") + " przez " + message.Sender + ":\n" + message.Message;
                     this.AddToHistory(msg);
-
-                    /* 
-                     * Obsługa dodawnia tekstu do RichTextBox 
-                     */
-                    TalkWindow.Document = this.toFlowDocument(msg);
-
+                    FlowDocument flowD = new FlowDocument();
+                    flowD = this.talkWindow.Document;
+                    Paragraph para = new Paragraph();
+                    para.Inlines.Add(msg);
+                    flowD.Blocks.Add(para);
+                    this.talkWindow.Document = flowD;
+                    GlobalsParameters.cache[message.Sender].Blocks.Add(para);
                     if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
                     {
-                        GlobalsParameters.cache.Add(this.Recipient, String.Empty);
+                        GlobalsParameters.cache.Add(this.Recipient, new FlowDocument());
                     }
-                    GlobalsParameters.cache[message.Sender] += ("\n\n"+msg);
+                    GlobalsParameters.cache[message.Sender].Blocks.Add(para);
+                    try
+                    {
+                        this.talkWindow.Document = GlobalsParameters.cache[this.Recipient];
+                    }
+                    catch
+                    {
+                        MemoryStream ms = new MemoryStream();
+
+                        XamlWriter.Save(GlobalsParameters.cache[this.Recipient], ms);
+
+                        ms.Seek(0, SeekOrigin.Begin);
+
+                        this.talkWindow.Document = XamlReader.Load(ms) as FlowDocument;
+                    }
                 }
             }
-        }
-
-        public FlowDocument toFlowDocument(string msg)
-        {
-            FlowDocument document = TalkWindow.Document;
-            Paragraph paragraph = new Paragraph();
-            paragraph.Inlines.Add(msg);
-            document.Blocks.Add(paragraph);
-
-            return document;
         }
 
         void AttachFile(object param)
