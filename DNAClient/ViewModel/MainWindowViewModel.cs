@@ -428,7 +428,8 @@ namespace DNAClient.ViewModel
             {
                 bool ConversationWindowExist = false;
                 var message = body.DeserializeMessageNotification();
-                var msg = (message.SendTime == new DateTime(2000, 1, 1)) ? String.Empty : message.SendTime.ToString("dd.MM.yyyy (hh:mm:ss)") + " przez " + message.Sender + ":\n";
+                DateTimeOffset date = message.SendTime;
+                var msg = (date == new DateTime(2000, 1, 1)) ? String.Empty : date.ToString("dd.MM.yyyy (HH:mm:ss)") + " przez " + message.Sender + ":\n";
                 msg += message.Message;
 
                 Paragraph para = new Paragraph();
