@@ -23,7 +23,6 @@ namespace DNAClient.ViewModel
     using DNAClient.ViewModel.Base;
 
     using DNAClient.View;
-
     using DTO;
 
     using RabbitMQ.Client;
@@ -58,11 +57,18 @@ namespace DNAClient.ViewModel
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
             this.DeleteContactCommand = new RelayCommand(this.DeleteContact);
 
+            List<string> friends = new List<string>();
+            friends = this.GetFriends();
+            foreach (string friend in friends)
+            {
+                this.Contacts.Add(new Contact() { Name = friend });
+            }
+
             //Dodanie na sztywno kontaktów; Później trzeba dodać wczytywanie kontaktów z bazy lokalnej lub zdalnej MSSQL
-            this.Contacts.Add(new Contact() { Name = "Maciek" });
-            this.Contacts.Add(new Contact() { Name = "Maciej" });
-            this.Contacts.Add(new Contact() { Name = "Mariusz" });
-            this.Contacts.Add(new Contact() { Name = "Darek" });
+            //this.Contacts.Add(new Contact() { Name = "Maciek" });
+            //this.Contacts.Add(new Contact() { Name = "Maciej" });
+            //this.Contacts.Add(new Contact() { Name = "Mariusz" });
+            //this.Contacts.Add(new Contact() { Name = "Darek" });
 
             var contact = Contacts.Where(X => X.Name == this.CurrentUser).FirstOrDefault();
             Contacts.Remove(contact);
@@ -72,8 +78,18 @@ namespace DNAClient.ViewModel
             Task.Factory.StartNew(() => this.GetChannel(ctx));
 
             this.SelectedStatus = "Zalogowany";
-            RpcGetOldMessages rpcGet = new RpcGetOldMessages();
-            rpcGet.Call(this.CurrentUser);
+
+            var rpcClient = new RpcWay();
+
+            var request = new Request
+            {
+                Login = this.CurrentUser,
+                RequestType = Request.Type.OldMessages
+            };
+
+            rpcClient.OldMessagesCall(request.Serialize());
+            rpcClient.Close();
+
         }
 
 
@@ -141,7 +157,6 @@ namespace DNAClient.ViewModel
 
         }
 
-
         /// <summary>
         /// Komenda usunięcia kontaktu z listy
         /// </summary>
@@ -157,7 +172,28 @@ namespace DNAClient.ViewModel
         {
             var tmp = parameter as Contact;
             var contact = Contacts.Where(X => X.Name == tmp.Name).FirstOrDefault();
-            this.Contacts.Remove(contact);
+
+            var rpcClient = new RpcWay();
+
+            var friendRequest = new FriendRequest
+            {
+                Login = currentUser,
+                FriendLogin = contact.Name,
+                RequestType = Request.Type.RemoveFriend,
+            };
+
+            var friendResponse = rpcClient.FriendCall(friendRequest.Serialize());
+            rpcClient.Close();
+
+            if (friendResponse.Status == Status.OK)
+            {
+                
+                this.Contacts.Remove(contact);
+            }
+            else
+            {
+                MessageBox.Show("Nie udało się usunąć kontaktu!", "Błąd usuwania kontaktu");
+            }
         }
         /// <summary>
         /// Komenda otwarcia historii rozmowy
@@ -277,20 +313,49 @@ namespace DNAClient.ViewModel
             }
             else
             {
-                bool check = false;
+                bool isContactAlreadyOnList = false;
                 foreach (Contact element in this.Contacts)
                 {
-                    if (element.Name == this.Friend) check = true;
+                    if (element.Name == this.Friend)
+                    {
+                        isContactAlreadyOnList = true;
+                    }
                 }
 
-                if (!check)
+                if (this.Friend.Equals(currentUser))
                 {
-                    Contacts.Add(new Contact() { Name = this.Friend });
+                    MessageBox.Show("Nie możesz dodać siebie do znajomych!", "Znajdź sobie znajomych");
                 }
-                else
+                else if (isContactAlreadyOnList)
                 {
                     MessageBox.Show("Taki kontakt już istnieje!", "Błąd dodawania użytkowika");
                 }
+                else
+                {
+                    var rpcClient = new RpcWay();
+
+                    var friendRequest = new FriendRequest
+                    {
+                        Login = currentUser,
+                        FriendLogin = this.Friend,
+                        RequestType = Request.Type.AddFriend,
+                    };
+
+                    var friendResponse = rpcClient.FriendCall(friendRequest.Serialize());
+                    rpcClient.Close();
+
+                    if (friendResponse.Status == Status.OK)
+                    {
+                        Contacts.Add(new Contact() { Name = this.Friend });
+                    }
+                    else
+                    {
+                        MessageBox.Show(
+                    "Dodanie użytkownika nie powiodło się!",
+                    "Błąd dodawania użytkowika");
+                    }
+                }
+
             }
 
         }
@@ -471,5 +536,29 @@ namespace DNAClient.ViewModel
                 }
             }
         }
+
+        // pobieranie listy znajomych
+        private List<string> GetFriends()
+        {
+            List<string> friends = new List<string>();
+            var rpcClient = new RpcWay();
+
+            var friendRequest = new FriendRequest
+            {
+                Login = currentUser,
+                RequestType = Request.Type.GetFriends,
+            };
+
+            var friendResponse = rpcClient.FriendCall(friendRequest.Serialize());
+            rpcClient.Close();
+
+            if (friendResponse.friendsList != null && friendResponse.Status == Status.OK)
+            {
+                friends = friendResponse.friendsList;
+            }
+
+            return friends;
+        }
+
     }
 }

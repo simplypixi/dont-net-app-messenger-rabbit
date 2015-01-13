@@ -118,5 +118,23 @@ namespace DTO
                 return JsonSerializer.DeserializeFromStream<PresenceStatusNotification>(stream);
             }
         }
+
+        // AddFriend Request/Response
+        public static FriendResponse DeserializeFriendResponse(this byte[] data)
+        {
+            using (var stream = new MemoryStream(data))
+            {
+                return JsonSerializer.DeserializeFromStream<FriendResponse>(stream);
+            }
+        }
+
+        public static FriendRequest DeserializeFriendRequest(this byte[] data)
+        {
+            using (var stream = new MemoryStream(data))
+            {
+                return JsonSerializer.DeserializeFromStream<FriendRequest>(stream);
+            }
+        }
+        
     }
 }

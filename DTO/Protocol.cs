@@ -26,7 +26,17 @@ namespace DTO
 
     public class Request
     {
+        public enum Type
+        {
+            Login,
+            Register,
+            AddFriend,
+            RemoveFriend,
+            GetFriends,
+            OldMessages
+        }
         public string Login { get; set; }
+        public Type RequestType { get; set; }
     }
 
     public class Notification
@@ -36,19 +46,23 @@ namespace DTO
 
     public class AuthRequest : Request
     {
-        public enum AuthorizationType
-        {
-            Login,
-            Register,
-            GetOldMessages
-        }
+  
         public string Password { get; set; }
-        public string ConfirmedPassword { get; set; }
-        public AuthorizationType Type { get; set; }
     }
+
+    public class FriendRequest : Request
+    {
+        public string FriendLogin { get; set; }
+    }
+
 
     public class AuthResponse : Response
     {
+    }
+
+    public class FriendResponse : Response
+    {
+        public List<string> friendsList { get; set; }
     }
 
     public class UserListReq : Request

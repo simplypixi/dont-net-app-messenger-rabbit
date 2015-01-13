@@ -50,6 +50,11 @@ namespace DNAClient.ViewModel
         /// </summary>
         public LoginViewModel()
         {
+            GlobalsParameters.Instance.CurrentUser = this.Login;
+            GlobalsParameters.openWindows = new List<ConversationViewModel>();
+            GlobalsParameters.cache = new Dictionary<string, FlowDocument>();
+            GlobalsParameters.openNotifications = new List<String>();
+            GlobalsParameters.notificationCache = new Dictionary<string, string>();
             this.LoginCommand = new RelayCommand(this.LoginToServer);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
             this.RegistrationCommand = new RelayCommand(this.RegistrationOnServer);
@@ -152,16 +157,18 @@ namespace DNAClient.ViewModel
         private void LoginToServer(object parameter)
         {
             GlobalsParameters.Instance.CurrentUser = this.Login;
-            GlobalsParameters.openWindows = new List<ConversationViewModel>();
-            GlobalsParameters.cache = new Dictionary<string, FlowDocument>();
-            GlobalsParameters.openNotifications = new List<String>();
-            GlobalsParameters.notificationCache = new Dictionary<string, string>();
-
-            var rpcClient = new RpcLogin();
+            var rpcClient = new RpcWay();
 
             var loginWindow = parameter as LoginWindow;
 
-            var response = rpcClient.Call(this.Login, loginWindow.Password.Password);
+            var authRequest = new AuthRequest
+            {
+                Login = this.login,
+                Password = this.password,
+                RequestType = Request.Type.Login,
+            };
+
+            var response = rpcClient.AuthCall(authRequest.Serialize());
 
             rpcClient.Close();
 
@@ -175,7 +182,8 @@ namespace DNAClient.ViewModel
                 {
                     loginWindow.Close();
                 }
-            } else
+            }
+            else
             {
                 MessageBox.Show("Błąd logowania", "Wpisano błędne dane logowania. Upewnij się czy wpisałeś poprawne dane, a następnie spróbuj ponownie.");
             }
@@ -191,10 +199,17 @@ namespace DNAClient.ViewModel
         {
             GlobalsParameters.Instance.CurrentUser = this.Login;
 
-            var rpcClient = new RpcRegistration();
+            var rpcClient = new RpcWay();
 
             var loginWindow = parameter as LoginWindow;
-            var response = rpcClient.Call(this.Login, loginWindow.Password.Password, loginWindow.repeatPassword.Password);
+            var authRequest = new AuthRequest
+            {
+                Login = login,
+                Password = password,
+                RequestType = Request.Type.Register,
+            };
+
+            var response = rpcClient.AuthCall(authRequest.Serialize());
 
             rpcClient.Close();
 
@@ -208,7 +223,7 @@ namespace DNAClient.ViewModel
             }
             else
             {
-                MessageBox.Show("Błąd rejestracji", "Wpisano błędne dane rejestracji lub istnieje już użytkownik o nazwie:" + this.Login +".\nUpewnij się czy hasło i jego potwierdzenie są identyczne lub spróbuj wybrać inną nazwę użytkownika.");
+                MessageBox.Show("Błąd rejestracji", "Wpisano błędne dane rejestracji lub istnieje już użytkownik o nazwie:" + this.Login + ".\nUpewnij się czy hasło i jego potwierdzenie są identyczne lub spróbuj wybrać inną nazwę użytkownika.");
             }
         }
 
