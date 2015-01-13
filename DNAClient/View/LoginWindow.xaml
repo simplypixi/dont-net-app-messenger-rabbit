@@ -24,7 +24,7 @@
             <StackPanel Orientation="Vertical" Margin="0,35,0,0">
                 <TextBox x:Name="Login" HorizontalAlignment="Left" Height="40" Text="{Binding Login}" Padding="5,9,10,0" Margin="10,0,0,0" TextWrapping="Wrap"  Width="272" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
                 <PasswordBox HorizontalAlignment="Left" x:Name="Password" Height="40" Padding="5,9,10,0" Margin="10,5,0,0" Width="272" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
-                <PasswordBox HorizontalAlignment="Left" x:Name="repeatPassword" Visibility="Collapsed" Height="40" Padding="5,9,10,0" Margin="10,5,0,0" Width="272" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
+                <PasswordBox HorizontalAlignment="Left" x:Name="RepeatPassword" Visibility="Collapsed" Height="40" Padding="5,9,10,0" Margin="10,5,0,0" Width="272" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="18.667" BorderThickness="1"/>
             </StackPanel>
             <Grid Height="45" Margin="0,5">
                 <Button x:Name="buttonRegister" Content="UTWÓRZ KONTO" HorizontalAlignment="Left" VerticalAlignment="Top" Width="130" Height="40" Background="#FF0091B5" BorderBrush="#FF0091B5" FontFamily="/WpfApplication2;component/Fonts/#Segoe UI Light" FontSize="14.667" Foreground="White" ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="12,3,0,0"

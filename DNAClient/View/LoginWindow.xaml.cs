@@ -1,29 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="LoginWindow.xaml.cs" company="">
+//   
+// </copyright>
+// <summary>
+//   Okno logowania
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace DNAClient.View
 {
+    using System.Windows.Input;
+
     /// <summary>
-    /// Interaction logic for LoginWindow.xaml
+    /// Okno logowania
     /// </summary>
-    public partial class LoginWindow : Window
+    public partial class LoginWindow
     {
         public LoginWindow()
         {
             InitializeComponent();
 
-            repeatPassword.Password = "Powtórz hasło";
+            RepeatPassword.Password = "Powtórz hasło";
             Password.Password = "Wpisz hasło";
             Login.Text = "Wpisz login";
         }

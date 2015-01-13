@@ -316,7 +316,7 @@ namespace DNAClient.ViewModel
                 bool isContactAlreadyOnList = false;
                 foreach (Contact element in this.Contacts)
                 {
-                    if (element.Name == this.Friend)
+                    if (element.Name.ToLower() == this.Friend.ToLower())
                     {
                         isContactAlreadyOnList = true;
                     }
