@@ -64,12 +64,6 @@ namespace DNAClient.ViewModel
                 this.Contacts.Add(new Contact() { Name = friend });
             }
 
-            //Dodanie na sztywno kontaktów; Później trzeba dodać wczytywanie kontaktów z bazy lokalnej lub zdalnej MSSQL
-            //this.Contacts.Add(new Contact() { Name = "Maciek" });
-            //this.Contacts.Add(new Contact() { Name = "Maciej" });
-            //this.Contacts.Add(new Contact() { Name = "Mariusz" });
-            //this.Contacts.Add(new Contact() { Name = "Darek" });
-
             var contact = Contacts.Where(X => X.Name == this.CurrentUser).FirstOrDefault();
             Contacts.Remove(contact);
 
@@ -316,7 +310,7 @@ namespace DNAClient.ViewModel
                 bool isContactAlreadyOnList = false;
                 foreach (Contact element in this.Contacts)
                 {
-                    if (element.Name == this.Friend)
+                    if (element.Name.ToLower() == this.Friend.ToLower())
                     {
                         isContactAlreadyOnList = true;
                     }

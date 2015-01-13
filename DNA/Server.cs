@@ -115,6 +115,7 @@ namespace DNA
                                 AuthRequest authRequest = body.DeserializeAuthRequest();
                                 if (db.Register(authRequest.Login, authRequest.Password))
                                 {
+                                    GlobalsParameters.Instance.status.Add(request.Login, PresenceStatus.Online);
                                     Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie sie zarejestrował.", authRequest.Login));
                                     response.Status = Status.OK;
                                     response.Message = "Udało się zarejestrować użytkownika.";
@@ -311,6 +312,13 @@ namespace DNA
 
         private static void SendStatusNotification(PresenceStatusNotification statusChange)
         {
+            if (GlobalsParameters.Instance.status.ContainsKey(statusChange.Login)
+                && GlobalsParameters.Instance.status[statusChange.Login] == PresenceStatus.Offline
+                && statusChange.PresenceStatus != PresenceStatus.Offline)
+            {
+                GlobalsParameters.Instance.status[statusChange.Login] = statusChange.PresenceStatus;
+                sendOldMessages(statusChange.Login);
+            }
             using (var connection = factory.CreateConnection())
             {
                 using (var channel = connection.CreateModel())

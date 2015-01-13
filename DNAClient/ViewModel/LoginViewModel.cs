@@ -9,11 +9,8 @@
 
 namespace DNAClient.ViewModel
 {
-    using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Threading;
-    using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Documents;
 
@@ -28,17 +25,14 @@ namespace DNAClient.ViewModel
     public class LoginViewModel : ViewModelBase
     {
         /// <summary>
-        /// Login użytkownika
+        /// Manual reset event
         /// </summary>
-        /// 
-        private string login;
-
         private static readonly ManualResetEvent FinishEvent = new ManualResetEvent(false);
 
         /// <summary>
-        /// Hasło użytkownika
+        /// Login użytkownika
         /// </summary>
-        private string password;
+        private string login;
 
         /// <summary>
         /// Potwierdzenie hasła użytkownika
@@ -53,7 +47,7 @@ namespace DNAClient.ViewModel
             GlobalsParameters.Instance.CurrentUser = this.Login;
             GlobalsParameters.openWindows = new List<ConversationViewModel>();
             GlobalsParameters.cache = new Dictionary<string, FlowDocument>();
-            GlobalsParameters.openNotifications = new List<String>();
+            GlobalsParameters.openNotifications = new List<string>();
             GlobalsParameters.notificationCache = new Dictionary<string, string>();
             this.LoginCommand = new RelayCommand(this.LoginToServer);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
@@ -80,39 +74,10 @@ namespace DNAClient.ViewModel
         }
 
         /// <summary>
-        /// Property z hasłem użytkownika
-        /// </summary>
-        public string Password
-        {
-            get
-            {
-                return this.password;
-            }
-
-            set
-            {
-                this.password = value;
-                this.RaisePropertyChanged("Password");
-            }
-        }
-        /// <summary>
         /// Komenda zamykania okna, do zbindowania w xamlu
         /// </summary>
         public RelayCommand CloseWindowCommand { get; set; }
 
-        /// <summary>
-        /// Metoda zamykania okna
-        /// </summary>
-        private void CloseWindow(object parameter)
-        {
-            var window = parameter as Window;
-
-            if (window != null)
-            {
-                FinishEvent.Set();
-                window.Close();
-            }
-        }
         /// <summary>
         /// Property z potwierdzeniem hasła
         /// </summary>
@@ -129,10 +94,12 @@ namespace DNAClient.ViewModel
                 this.RaisePropertyChanged("ConfirmedPassword");
             }
         }
+
         /// <summary>
         /// Komenda zmiany okna na logowanie
         /// </summary>
         public RelayCommand ToLogCommand { get; set; }
+        
         /// <summary>
         /// Komenda zmiany okna na rejestrację
         /// </summary>
@@ -161,31 +128,30 @@ namespace DNAClient.ViewModel
 
             var loginWindow = parameter as LoginWindow;
 
-            var authRequest = new AuthRequest
+            if (loginWindow != null)
             {
-                Login = this.login,
-                Password = this.password,
-                RequestType = Request.Type.Login,
-            };
+                var authRequest = new AuthRequest
+                                      {
+                                          Login = this.login,
+                                          Password = loginWindow.Password.Password,
+                                          RequestType = Request.Type.Login,
+                                      };
 
-            var response = rpcClient.AuthCall(authRequest.Serialize());
+                var response = rpcClient.AuthCall(authRequest.Serialize());
 
-            rpcClient.Close();
+                rpcClient.Close();
 
-            response.Status = Status.OK;
-
-            if (response.Status == Status.OK)
-            {
-                ProductionWindowFactory.CreateMainWindow();
-
-                if (loginWindow != null)
+                if (response.Status == Status.OK)
                 {
+                    ProductionWindowFactory.CreateMainWindow();
                     loginWindow.Close();
                 }
-            }
-            else
-            {
-                MessageBox.Show("Błąd logowania", "Wpisano błędne dane logowania. Upewnij się czy wpisałeś poprawne dane, a następnie spróbuj ponownie.");
+                else
+                {
+                    MessageBox.Show(
+                        "Błąd logowania",
+                        "Wpisano błędne dane logowania. Upewnij się czy wpisałeś poprawne dane, a następnie spróbuj ponownie.");
+                }
             }
         }
 
@@ -202,28 +168,41 @@ namespace DNAClient.ViewModel
             var rpcClient = new RpcWay();
 
             var loginWindow = parameter as LoginWindow;
-            var authRequest = new AuthRequest
+
+            if (loginWindow != null)
             {
-                Login = login,
-                Password = password,
-                RequestType = Request.Type.Register,
-            };
-
-            var response = rpcClient.AuthCall(authRequest.Serialize());
-
-            rpcClient.Close();
-
-            if (response.Status == Status.OK)
-            {
-                ProductionWindowFactory.CreateMainWindow();
-                if (loginWindow != null)
+                if (loginWindow.Password.Password.Equals(loginWindow.RepeatPassword.Password))
                 {
-                    loginWindow.Close();
+                    var authRequest = new AuthRequest
+                                          {
+                                              Login = this.Login,
+                                              Password = loginWindow.Password.Password,
+                                              RequestType = Request.Type.Register,
+                                          };
+
+                    var response = rpcClient.AuthCall(authRequest.Serialize());
+
+                    rpcClient.Close();
+
+                    if (response.Status == Status.OK)
+                    {
+                        ProductionWindowFactory.CreateMainWindow();
+                        loginWindow.Close();
+                    }
+                    else
+                    {
+                        MessageBox.Show(
+                            "Wpisano błędne dane rejestracji lub istnieje już użytkownik o nazwie:" + this.Login
+                            + ".\nUpewnij się czy hasło i jego potwierdzenie są identyczne lub spróbuj wybrać inną nazwę użytkownika.",
+                            "Błąd rejestracji");
+                    }
                 }
-            }
-            else
-            {
-                MessageBox.Show("Błąd rejestracji", "Wpisano błędne dane rejestracji lub istnieje już użytkownik o nazwie:" + this.Login + ".\nUpewnij się czy hasło i jego potwierdzenie są identyczne lub spróbuj wybrać inną nazwę użytkownika.");
+                else
+                {
+                    MessageBox.Show(
+                            "Wprowadzone hasło i jego potwierdzenie są różne.",
+                            "Błąd rejestracji");
+                }
             }
         }
 
@@ -236,15 +215,17 @@ namespace DNAClient.ViewModel
         private void ToRegistration(object parameter)
         {
             var loginWindow = parameter as LoginWindow;
-            loginWindow.Hide();
-            loginWindow.Height = 365;
-            loginWindow.repeatPassword.Visibility = Visibility.Visible;
-            loginWindow.buttonCreate.Visibility = Visibility.Visible;
-            loginWindow.buttonLog.Visibility = Visibility.Visible;
-            loginWindow.buttonRegister.Visibility = Visibility.Collapsed;
-            loginWindow.buttonLogin.Visibility = Visibility.Collapsed;
-            loginWindow.Show();
-
+            if (loginWindow != null)
+            {
+                loginWindow.Hide();
+                loginWindow.Height = 365;
+                loginWindow.RepeatPassword.Visibility = Visibility.Visible;
+                loginWindow.buttonCreate.Visibility = Visibility.Visible;
+                loginWindow.buttonLog.Visibility = Visibility.Visible;
+                loginWindow.buttonRegister.Visibility = Visibility.Collapsed;
+                loginWindow.buttonLogin.Visibility = Visibility.Collapsed;
+                loginWindow.Show();
+            }
         }
 
         /// <summary>
@@ -256,15 +237,34 @@ namespace DNAClient.ViewModel
         private void ToLog(object parameter)
         {
             var loginWindow = parameter as LoginWindow;
-            loginWindow.Hide();
-            loginWindow.Height = 323;
-            loginWindow.repeatPassword.Visibility = Visibility.Collapsed;
-            loginWindow.buttonCreate.Visibility = Visibility.Collapsed;
-            loginWindow.buttonLog.Visibility = Visibility.Collapsed;
-            loginWindow.buttonRegister.Visibility = Visibility.Visible;
-            loginWindow.buttonLogin.Visibility = Visibility.Visible;
-            loginWindow.Show();
+            if (loginWindow != null)
+            {
+                loginWindow.Hide();
+                loginWindow.Height = 323;
+                loginWindow.RepeatPassword.Visibility = Visibility.Collapsed;
+                loginWindow.buttonCreate.Visibility = Visibility.Collapsed;
+                loginWindow.buttonLog.Visibility = Visibility.Collapsed;
+                loginWindow.buttonRegister.Visibility = Visibility.Visible;
+                loginWindow.buttonLogin.Visibility = Visibility.Visible;
+                loginWindow.Show();
+            }
+        }
 
+        /// <summary>
+        /// Metoda zamykania okna
+        /// </summary>
+        /// <param name="parameter">
+        /// Parametr przekazany z xamla
+        /// </param>
+        private void CloseWindow(object parameter)
+        {
+            var window = parameter as Window;
+
+            if (window != null)
+            {
+                FinishEvent.Set();
+                window.Close();
+            }
         }
     }
 }
