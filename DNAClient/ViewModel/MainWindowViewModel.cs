@@ -57,6 +57,9 @@ namespace DNAClient.ViewModel
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
             this.DeleteContactCommand = new RelayCommand(this.DeleteContact);
 
+            Contacts.Add(new Contact() { Name = "Mariusz" });
+            Contacts.Add(new Contact() { Name = "Darek" });
+
             List<string> friends = new List<string>();
             friends = this.GetFriends();
             foreach (string friend in friends)

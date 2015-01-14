@@ -10,13 +10,17 @@
 namespace DNAClient.ViewModel
 {
     using System;
+    using System.Collections.Generic;
+    using System.Configuration;
     using System.Diagnostics;
     using System.IO;
     using System.Threading;
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Documents;
+    using System.Windows.Media.Animation;
     using System.Windows.Markup;
+    using System.Text;
 
     using DNAClient.View;
     using DNAClient.ViewModel.Base;
@@ -259,8 +263,36 @@ namespace DNAClient.ViewModel
                     flowD = this.talkWindow.Document;
                     Paragraph para = new Paragraph();
                     para.Inlines.Add(msg);
+
+                   
                     flowD.Blocks.Add(para);
-                    
+                    /* tutaj obsługa emotek */
+                    RichTextBox rtb = this.myRichTextBox;
+                    Paragraph p = rtb.Document.Blocks.FirstBlock as Paragraph;
+                    TextRange tr = new TextRange(p.ContentStart, p.ContentEnd);
+                    if (tr.Text.Contains(":)"))
+                    {
+                        foreach (Inline inline in p.Inlines)
+                        {
+                            tr = new TextRange(inline.ContentStart, inline.ContentEnd);
+                            if (tr.Text.Contains(":)")) //Smiley Face ....  :)   ....
+                            {
+                                TextPointer tp = inline.ContentStart;
+                                while (!tp.GetTextInRun(LogicalDirection.Forward).StartsWith(":)"))
+                                    tp = tp.GetNextInsertionPosition(LogicalDirection.Forward);
+                                tr = new TextRange(tp, tp.GetNextInsertionPosition(LogicalDirection.Forward).GetNextInsertionPosition(LogicalDirection.Forward));
+                                tr.Text = "";
+                                Image img = new Image();
+                                img.Source = new BitmapImage(new Uri(@"../../smiley.png", UriKind.RelativeOrAbsolute));
+                                img.Stretch = Stretch.Fill;
+                                img.Width = img.Height = 20;
+                                new InlineUIContainer(img, tp);
+                                rtb.Focus();
+                                break;
+                            }
+                        }
+                    }
+                    /* koniec tutaj obsługa emotek */
                     this.talkWindow.Document = flowD;
                     if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
                     {
