@@ -63,7 +63,11 @@ namespace DNAClient.ViewModel
         {
             get
             {
-                return this.login;
+                if (this.login != null)
+                {
+                    return this.login.ToLower();
+                }
+                return string.Empty;
             }
 
             set
@@ -132,7 +136,7 @@ namespace DNAClient.ViewModel
             {
                 var authRequest = new AuthRequest
                                       {
-                                          Login = this.login,
+                                          Login = this.Login,
                                           Password = loginWindow.Password.Password,
                                           RequestType = Request.Type.Login,
                                       };

@@ -40,7 +40,11 @@ namespace DNAClient
         /// <summary>
         /// Aktualnie zalogowany użytkownik
         /// </summary>
-        public string CurrentUser { get; set; }
+        public string CurrentUser
+        {
+            get;
+            set;
+        }
 
         /// <summary>
         /// Lista aktualnie otwartych okienek rozmów
