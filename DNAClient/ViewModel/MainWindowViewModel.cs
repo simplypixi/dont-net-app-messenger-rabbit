@@ -96,7 +96,7 @@ namespace DNAClient.ViewModel
         {
             get
             {
-                return this.currentUser;
+                return this.currentUser.ToLower();
             }
 
             set
@@ -110,7 +110,7 @@ namespace DNAClient.ViewModel
         {
             get
             {
-                return this.recipient;
+                return this.recipient.ToLower();
             }
 
             set
@@ -171,7 +171,7 @@ namespace DNAClient.ViewModel
 
             var friendRequest = new FriendRequest
             {
-                Login = currentUser,
+                Login = this.currentUser,
                 FriendLogin = contact.Name,
                 RequestType = Request.Type.RemoveFriend,
             };
@@ -241,7 +241,7 @@ namespace DNAClient.ViewModel
         {
             foreach (ConversationViewModel cvModel in GlobalsParameters.openWindows)
             {
-                if (this.SelectedContact.Name == cvModel.Recipient)
+                if (this.SelectedContact.Name.ToLower() == cvModel.Recipient)
                 {
                     return;
                 }
@@ -379,7 +379,7 @@ namespace DNAClient.ViewModel
                 foreach (Contact element in this.Contacts)
                 {
 
-                    this.SendStatusToQueue(element.Name);
+                    this.SendStatusToQueue(element.Name.ToLower());
                 }
             }
             if (this.SelectedStatus == "Zalogowany")
@@ -470,7 +470,7 @@ namespace DNAClient.ViewModel
             if (routingKey.StartsWith(Constants.keyClientNotification + ".status"))
             {
                 var message = body.DeserializePresenceStatusNotification();
-                var contact = Contacts.Where(X => X.Name == message.Login).FirstOrDefault();
+                var contact = Contacts.Where(X => X.Name.ToLower() == message.Login).FirstOrDefault();
                 if (contact != null)
                 {
                     if (message.PresenceStatus.Equals(PresenceStatus.Offline)) contact.State = "#FFD1D1D1";
@@ -539,7 +539,7 @@ namespace DNAClient.ViewModel
 
             var friendRequest = new FriendRequest
             {
-                Login = currentUser,
+                Login = this.currentUser,
                 RequestType = Request.Type.GetFriends,
             };
 

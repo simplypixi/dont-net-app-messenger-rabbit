@@ -86,7 +86,7 @@ namespace DNA
             using (conn = new SqlConnection(this.connectionString))
             {
                 conn.Open();
-                String query = string.Format("INSERT INTO [dbo].[Friend] (OwnerId, FriendId) VALUES('{0}', '{1}')", ownerId, friendId);
+                string query = string.Format("INSERT INTO [dbo].[Friend] (OwnerId, FriendId, FriendLabel) VALUES('{0}', '{1}', '{2}')", ownerId, friendId, friendLogin);
                 using (SqlCommand command = new SqlCommand(query, conn))
                 {
                     // TODO: DELETE THIS LINE
@@ -150,7 +150,7 @@ namespace DNA
             using (conn = new SqlConnection(this.connectionString))
             {
                 conn.Open();
-                String query = string.Format("SELECT FriendId FROM [dbo].[Friend] WHERE OwnerId = '{0}'", ownerId);
+                String query = string.Format("SELECT FriendLabel FROM [dbo].[Friend] WHERE OwnerId = '{0}'", ownerId);
                 using (SqlCommand command = new SqlCommand(query, conn))
                 {
                     // TODO: DELETE THIS LINE
@@ -160,8 +160,7 @@ namespace DNA
                     {
                         while(reader.Read())
                         {
-                            int friendId = reader.GetInt32(0);
-                            friendsList.Add(this.GetUserLoginWithId(friendId));
+                            friendsList.Add(reader.GetString(0));
                         }
                     }
                 }
