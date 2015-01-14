@@ -19,6 +19,12 @@ namespace DNAClient.ViewModel
     using System.Linq;
     using System.Windows.Documents;
 
+    using System.Windows.Controls;
+    using System.Windows.Media.Animation;
+    using System.Windows.Markup;
+    using System.Windows.Media.Imaging;
+    using System.Windows.Media;
+
     using DNAClient.RabbitFunctions;
     using DNAClient.ViewModel.Base;
 
@@ -46,6 +52,8 @@ namespace DNAClient.ViewModel
 
         private static ConnectionFactory factory = Constants.ConnectionFactory;
 
+        private Dictionary<string, string> _mappings = new Dictionary<string, string>();
+
         public MainWindowViewModel()
         {
             this.userPath = Constants.userPath;
@@ -57,8 +65,7 @@ namespace DNAClient.ViewModel
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
             this.DeleteContactCommand = new RelayCommand(this.DeleteContact);
 
-            Contacts.Add(new Contact() { Name = "Mariusz" });
-            Contacts.Add(new Contact() { Name = "Darek" });
+            LoadEmoticons();
 
             List<string> friends = new List<string>();
             friends = this.GetFriends();
@@ -462,7 +469,6 @@ namespace DNAClient.ViewModel
             ProductionWindowFactory.CreateNotificationWindow(sender, mess, notificationType);
         }
 
-        bool check = true;
         // Zmienia status użytkownika na liście kontaktów
         private void Receive(BasicDeliverEventArgs args)
         {
@@ -513,7 +519,7 @@ namespace DNAClient.ViewModel
                     }
                     if (!string.IsNullOrEmpty(message.Message))
                     {
-                        para.Inlines.Add(msg);
+                        para = Emoticons(msg);
                         GlobalsParameters.cache[message.Sender].Blocks.Add(para);
                     }
                     if (!GlobalsParameters.openNotifications.Contains(message.Sender) && !string.IsNullOrEmpty(message.Message))
@@ -555,6 +561,109 @@ namespace DNAClient.ViewModel
             }
 
             return friends;
+        }
+
+        /* 
+        * Metoda sprawdzająca czy dany ciąg znaków znajduje się w słowniku emotikon 
+        */
+        private string GetEmoticonText(string text)
+        {
+            string match = string.Empty;
+            int lowestPosition = text.Length;
+
+            foreach (KeyValuePair<string, string> pair in _mappings)
+            {
+                if (text.Contains(pair.Key))
+                {
+                    int newPosition = text.IndexOf(pair.Key);
+                    if (newPosition < lowestPosition)
+                    {
+                        match = pair.Key;
+                        lowestPosition = newPosition;
+                    }
+                }
+            }
+
+            return match;
+
+        }
+
+        /* 
+         * Metoda konwertująca ciągn znaków na emotikonę 
+        */
+        private Paragraph Emoticons(string msg)
+        {
+            Paragraph paragraph = new Paragraph();
+
+            Run r = new Run(msg);
+
+            paragraph.Inlines.Add(r);
+
+            string emoticonText = GetEmoticonText(r.Text);
+
+            if (string.IsNullOrEmpty(emoticonText))
+            {
+                return paragraph;
+            }
+            else
+            {
+                while (!string.IsNullOrEmpty(emoticonText))
+                {
+
+                    TextPointer tp = r.ContentStart;
+                    if (emoticonText != null)
+                        while (!tp.GetTextInRun(LogicalDirection.Forward).StartsWith(emoticonText))
+
+                            tp = tp.GetNextInsertionPosition(LogicalDirection.Forward);
+                    var tr = new TextRange(tp, tp.GetPositionAtOffset(emoticonText.Length)) { Text = " " };
+
+                    //relative path to image smile file
+                    Console.WriteLine(emoticonText);
+                    string path = _mappings[emoticonText];
+
+                    Image image = new Image
+                    {
+                        Source =
+                            new BitmapImage(new Uri(path, UriKind.RelativeOrAbsolute)),
+                        Width = 25,
+                        Height = 25,
+                    };
+
+                    new InlineUIContainer(image, tp);
+
+                    if (paragraph != null)
+                    {
+                        var endRun = paragraph.Inlines.LastInline as Run;
+
+                        if (endRun == null)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            emoticonText = GetEmoticonText(endRun.Text);
+                        }
+
+                    }
+
+                }
+
+            }
+            return paragraph;
+        }
+
+        /* 
+         * Metoda wczytująca bazę emotikon 
+        */
+        public void LoadEmoticons()
+        {
+            _mappings.Add(@"-.-", @"../../emots/e1_25.gif");
+            _mappings.Add(@"xD", @"../../emots/e2_25.gif");
+            _mappings.Add(@"o.O", @"../../emots/e6_25.gif");
+            _mappings.Add(@"oO", @"../../emots/e6_25.gif");
+            _mappings.Add(@":(", @"../../emots/e7_25.gif");
+            _mappings.Add(@":<", @"../../emots/e8_25.gif");
+            _mappings.Add(@":O", @"../../emots/e5_25.gif");
         }
 
     }

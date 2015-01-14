@@ -20,7 +20,8 @@ namespace DNAClient.ViewModel
     using System.Windows.Documents;
     using System.Windows.Media.Animation;
     using System.Windows.Markup;
-    using System.Text;
+    using System.Windows.Media.Imaging;
+    using System.Windows.Media;
 
     using DNAClient.View;
     using DNAClient.ViewModel.Base;
@@ -58,6 +59,9 @@ namespace DNAClient.ViewModel
         private FlowDocument received;
         private static ConnectionFactory factory = Constants.ConnectionFactory;
         private string userPath;
+
+        
+        private Dictionary<string, string> _mappings = new Dictionary<string, string>();
 
         /// <summary>
         /// Kontruktor klasy <see cref="ConversationViewModel"/>
@@ -178,12 +182,12 @@ namespace DNAClient.ViewModel
                     DateTimeOffset date = message.SendTime;
                     var msg = date.ToString("dd.MM.yyyy (HH:mm:ss)") + " przez " + message.Sender + ":\n" + message.Message;
                     this.AddToHistory(msg);
-                    FlowDocument flowD = new FlowDocument();
-                    flowD = this.talkWindow.Document;
+
                     Paragraph para = new Paragraph();
-                    para.Inlines.Add(msg);
-                    flowD.Blocks.Add(para);
-                    this.talkWindow.Document = flowD;
+
+                    /* Konwertowanie tekstu na emotki */
+                    para = Emoticons(this.talkWindow.Document, msg);
+
                     GlobalsParameters.cache[message.Sender].Blocks.Add(para);
                     if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
                     {
@@ -259,41 +263,11 @@ namespace DNAClient.ViewModel
                         msg += DateTimeOffset.Now.ToString("dd.MM.yyyy (HH:mm:ss)") + ": WYSŁANO ZAŁĄCZNIK";
                     }
 
-                    FlowDocument flowD = new FlowDocument();
-                    flowD = this.talkWindow.Document;
                     Paragraph para = new Paragraph();
-                    para.Inlines.Add(msg);
 
-                   
-                    flowD.Blocks.Add(para);
-                    /* tutaj obsługa emotek */
-                    RichTextBox rtb = this.myRichTextBox;
-                    Paragraph p = rtb.Document.Blocks.FirstBlock as Paragraph;
-                    TextRange tr = new TextRange(p.ContentStart, p.ContentEnd);
-                    if (tr.Text.Contains(":)"))
-                    {
-                        foreach (Inline inline in p.Inlines)
-                        {
-                            tr = new TextRange(inline.ContentStart, inline.ContentEnd);
-                            if (tr.Text.Contains(":)")) //Smiley Face ....  :)   ....
-                            {
-                                TextPointer tp = inline.ContentStart;
-                                while (!tp.GetTextInRun(LogicalDirection.Forward).StartsWith(":)"))
-                                    tp = tp.GetNextInsertionPosition(LogicalDirection.Forward);
-                                tr = new TextRange(tp, tp.GetNextInsertionPosition(LogicalDirection.Forward).GetNextInsertionPosition(LogicalDirection.Forward));
-                                tr.Text = "";
-                                Image img = new Image();
-                                img.Source = new BitmapImage(new Uri(@"../../smiley.png", UriKind.RelativeOrAbsolute));
-                                img.Stretch = Stretch.Fill;
-                                img.Width = img.Height = 20;
-                                new InlineUIContainer(img, tp);
-                                rtb.Focus();
-                                break;
-                            }
-                        }
-                    }
-                    /* koniec tutaj obsługa emotek */
-                    this.talkWindow.Document = flowD;
+                    /* Konwertowanie tekstu na emotki */
+                    para = Emoticons(this.talkWindow.Document, msg);
+
                     if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
                     {
                         GlobalsParameters.cache.Add(this.Recipient, new FlowDocument());
@@ -414,5 +388,110 @@ namespace DNAClient.ViewModel
                 window.Close();
             }
         }
+
+        /* 
+         * Metoda sprawdzająca czy dany ciąg znaków znajduje się w słowniku emotikon 
+         */
+        private string GetEmoticonText(string text)
+        {
+            string match = string.Empty;
+            int lowestPosition = text.Length;
+
+            foreach (KeyValuePair<string, string> pair in _mappings)
+            {
+                if (text.Contains(pair.Key))
+                {
+                    int newPosition = text.IndexOf(pair.Key);
+                    if (newPosition < lowestPosition)
+                    {
+                        match = pair.Key;
+                        lowestPosition = newPosition;
+                    }
+                }
+            }
+
+            return match;
+
+        }
+
+        /* 
+         * Metoda konwertująca ciągn znaków na emotikonę 
+        */
+        private Paragraph Emoticons(FlowDocument mainDoc, string msg)
+        {
+            FlowDocument flowD = mainDoc;
+            Paragraph paragraph = new Paragraph();
+
+            Run r = new Run(msg);
+
+            paragraph.Inlines.Add(r);
+
+            string emoticonText = GetEmoticonText(r.Text);
+
+            if (string.IsNullOrEmpty(emoticonText))
+            {
+                return paragraph;
+            }
+            else
+            {
+                while (!string.IsNullOrEmpty(emoticonText))
+                {
+
+                    TextPointer tp = r.ContentStart;
+                    if(emoticonText!=null)
+                    while (!tp.GetTextInRun(LogicalDirection.Forward).StartsWith(emoticonText))
+
+                        tp = tp.GetNextInsertionPosition(LogicalDirection.Forward);
+                    var tr = new TextRange(tp, tp.GetPositionAtOffset(emoticonText.Length)) { Text = " " };
+
+                    //relative path to image smile file
+                    Console.WriteLine(emoticonText);
+                    string path = _mappings[emoticonText];
+
+                    Image image = new Image
+                    {
+                        Source =
+                            new BitmapImage(new Uri(path, UriKind.RelativeOrAbsolute)),
+                        Width = 25,
+                        Height = 25,
+                    };
+
+                    new InlineUIContainer(image, tp);
+
+                    if (paragraph != null)
+                    {
+                        var endRun = paragraph.Inlines.LastInline as Run;
+
+                        if (endRun == null)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            emoticonText = GetEmoticonText(endRun.Text);
+                        }
+
+                    }
+
+                }
+               
+            }
+            return paragraph;
+        }
+
+        /* 
+         * Metoda wczytująca bazę emotikon 
+        */
+        public void LoadEmoticons()
+        {
+            _mappings.Add(@"-.-", @"../../emots/e1_25.gif");
+            _mappings.Add(@"xD", @"../../emots/e2_25.gif");
+            _mappings.Add(@"o.O", @"../../emots/e6_25.gif");
+            _mappings.Add(@"oO", @"../../emots/e6_25.gif");
+            _mappings.Add(@":(", @"../../emots/e7_25.gif");
+            _mappings.Add(@":<", @"../../emots/e8_25.gif");
+            _mappings.Add(@":O", @"../../emots/e5_25.gif");
+        }
+
     }
 }
