@@ -133,6 +133,10 @@ namespace DNAClient.ViewModel
         {
             get
             {
+                if (this.recipient != null)
+                {
+                    return this.recipient.ToLower();
+                }
                 return this.recipient;
             }
 
