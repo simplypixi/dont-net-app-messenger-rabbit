@@ -27,6 +27,7 @@ namespace DNAClient
             ConversationWindow window = new ConversationWindow();
 
             ConversationViewModel cvModel = new ConversationViewModel(recipient, window);
+            cvModel.LoadEmoticons();
             window.DataContext = cvModel;
             window.Show();
             return cvModel;
