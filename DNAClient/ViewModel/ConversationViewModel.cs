@@ -192,7 +192,6 @@ namespace DNAClient.ViewModel
                     /* Konwertowanie tekstu na emotki */
                     para = Emoticons(this.talkWindow.Document, msg);
 
-                    GlobalsParameters.cache[message.Sender].Blocks.Add(para);
                     if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
                     {
                         GlobalsParameters.cache.Add(this.Recipient, new FlowDocument());
@@ -231,7 +230,7 @@ namespace DNAClient.ViewModel
             }
 
             var historyFile = this.userPath + "//" + this.Recipient;
-            Functions.saveFile(historyFile, historyMessage);
+            Functions.saveFile(historyFile, historyMessage + "\n");
         }
 
         public void CloseConversationWindow()
@@ -266,7 +265,7 @@ namespace DNAClient.ViewModel
                     {
                         if (!string.IsNullOrEmpty(this.Message))
                         {
-                            msg += "\n";
+                            msg += "\n\n";
                         }
 
                         msg += DateTimeOffset.Now.ToString("dd.MM.yyyy (HH:mm:ss)") + ": WYSŁANO ZAŁĄCZNIK";

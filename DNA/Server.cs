@@ -277,7 +277,7 @@ namespace DNA
                 && GlobalsParameters.Instance.status[messageReq.Recipient] != PresenceStatus.Offline))
             {
                 var file = userPath + "//" + messageReq.Recipient + "_" + messageReq.Login;
-                var msg = messageReq.SendTime + " przez " + messageReq.Login + ":\n" + messageReq.Message;
+                var msg = messageReq.SendTime + " przez " + messageReq.Login + ":\n" + messageReq.Message + "\n";
                 Functions.saveFile(file, msg);
                 return;
             }
