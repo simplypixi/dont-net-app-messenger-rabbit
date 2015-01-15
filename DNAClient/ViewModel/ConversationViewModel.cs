@@ -222,6 +222,11 @@ namespace DNAClient.ViewModel
             Functions.saveFile(historyFile, historyMessage);
         }
 
+        public void CloseConversationWindow()
+        {
+            this.CloseWindow(this.talkWindowGUI);
+        }
+
         /// <summary>
         /// Główna metoda wysyłania wiadomości
         /// </summary>

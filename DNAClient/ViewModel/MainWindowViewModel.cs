@@ -306,6 +306,13 @@ namespace DNAClient.ViewModel
                 FinishEvent.Set();
                 Console.WriteLine(this.SelectedStatus);
                 this.SelectedStatus = "Niedostępny";
+
+                var openWindows = GlobalsParameters.openWindows;
+                foreach (var openWindow in openWindows.ToList())
+                {
+                    openWindow.CloseConversationWindow();    
+                }
+
                 window.Close();
             }
         }
