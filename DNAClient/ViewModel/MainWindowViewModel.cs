@@ -6,29 +6,24 @@
 //   View model głównego okna
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
-using System.Collections.ObjectModel;
 
 namespace DNAClient.ViewModel
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Diagnostics;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
-    using System.Linq;
-    using System.Windows.Documents;
-
     using System.Windows.Controls;
-    using System.Windows.Media.Animation;
-    using System.Windows.Markup;
+    using System.Windows.Documents;
     using System.Windows.Media.Imaging;
-    using System.Windows.Media;
 
     using DNAClient.RabbitFunctions;
     using DNAClient.ViewModel.Base;
 
-    using DNAClient.View;
     using DTO;
 
     using RabbitMQ.Client;
@@ -65,17 +60,13 @@ namespace DNAClient.ViewModel
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
             this.DeleteContactCommand = new RelayCommand(this.DeleteContact);
 
-            LoadEmoticons();
+            this.LoadEmoticons();
 
-            List<string> friends = new List<string>();
-            friends = this.GetFriends();
+            List<string> friends = this.GetFriends();
             foreach (string friend in friends)
             {
                 this.Contacts.Add(new Contact() { Name = friend });
             }
-
-            var contact = Contacts.Where(X => X.Name == this.CurrentUser).FirstOrDefault();
-            Contacts.Remove(contact);
 
             // Uruchomienie zadania, które w tle będzie nasłuchiwać wiadomości przychodzących z serwera
             var ctx = SynchronizationContext.Current;
@@ -85,6 +76,7 @@ namespace DNAClient.ViewModel
 
             var rpcClient = new RpcWay();
 
+            // Podbranie z serwera wiadomości, które zostały wysłane, gdy użytkownik był offline
             var request = new Request
             {
                 Login = this.CurrentUser,
@@ -93,15 +85,11 @@ namespace DNAClient.ViewModel
 
             rpcClient.OldMessagesCall(request.Serialize());
             rpcClient.Close();
-
         }
-
-
 
         /// <summary>
         /// Property odbiorcy do zbindowania w xamlu
         /// </summary>
-        /// 
         public string CurrentUser
         {
             get
@@ -158,8 +146,22 @@ namespace DNAClient.ViewModel
                 this.RaisePropertyChanged("SelectedStatus");
                 this.SendStatus();
             }
-
         }
+
+        /// <summary>
+        /// Komenda otwarcia nowego okna konweracji
+        /// </summary>
+        public RelayCommand NewConversationWindowCommand { get; set; }
+
+        /// <summary>
+        /// Komenda otwarcia nowego okna konweracji
+        /// </summary>
+        public RelayCommand ContactRightClickCommand { get; set; }
+
+        /// <summary>
+        /// Komenda otwarcia historii rozmowy
+        /// </summary>
+        public RelayCommand OpenHistoryCommand { get; set; }
 
         /// <summary>
         /// Komenda usunięcia kontaktu z listy
@@ -175,34 +177,31 @@ namespace DNAClient.ViewModel
         private void DeleteContact(object parameter)
         {
             var tmp = parameter as Contact;
-            var contact = Contacts.Where(X => X.Name == tmp.Name).FirstOrDefault();
+            var contact = this.Contacts.FirstOrDefault(c => c.Name == tmp.Name);
 
-            var rpcClient = new RpcWay();
-
-            var friendRequest = new FriendRequest
+            if (contact != null)
             {
-                Login = this.currentUser,
-                FriendLogin = contact.Name,
-                RequestType = Request.Type.RemoveFriend,
-            };
+                var rpcClient = new RpcWay();
+                var friendRequest = new FriendRequest
+                                        {
+                                            Login = this.currentUser,
+                                            FriendLogin = contact.Name,
+                                            RequestType = Request.Type.RemoveFriend,
+                                        };
 
-            var friendResponse = rpcClient.FriendCall(friendRequest.Serialize());
-            rpcClient.Close();
+                var friendResponse = rpcClient.FriendCall(friendRequest.Serialize());
+                rpcClient.Close();
 
-            if (friendResponse.Status == Status.OK)
-            {
-                
-                this.Contacts.Remove(contact);
-            }
-            else
-            {
-                MessageBox.Show("Nie udało się usunąć kontaktu!", "Błąd usuwania kontaktu");
+                if (friendResponse.Status == Status.OK)
+                {
+                    this.Contacts.Remove(contact);
+                }
+                else
+                {
+                    MessageBox.Show("Nie udało się usunąć kontaktu!", "Błąd usuwania kontaktu");
+                }
             }
         }
-        /// <summary>
-        /// Komenda otwarcia historii rozmowy
-        /// </summary>
-        public RelayCommand OpenHistoryCommand { get; set; }
 
         /// <summary>
         /// Metoda otwierająca historię rozmowy
@@ -213,13 +212,8 @@ namespace DNAClient.ViewModel
         private void OpenHistory(object parameter)
         {
             var historyFile = this.userPath + "//" + this.SelectedContact.Name;
-            System.Diagnostics.Process.Start(@historyFile);
+            Process.Start(@historyFile);
         }
-
-        /// <summary>
-        /// Komenda otwarcia nowego okna konweracji
-        /// </summary>
-        public RelayCommand ContactRightClickCommand { get; set; }
 
         /// <summary>
         /// Metoda otwierająca nowe okno konwersacji
@@ -235,11 +229,6 @@ namespace DNAClient.ViewModel
                 Console.WriteLine("dupa");
             }
         }
-
-        /// <summary>
-        /// Komenda otwarcia nowego okna konweracji
-        /// </summary>
-        public RelayCommand NewConversationWindowCommand { get; set; }
 
         /// <summary>
         /// Metoda otwierająca nowe okno konwersacji
@@ -265,31 +254,31 @@ namespace DNAClient.ViewModel
             }
         }
 
-
-        /// <summary>
-        /// Metoda otwierająca nowe okno powiadomień
-        /// </summary>
-        /// <param name="parameter">
-        /// The parameter.
-        /// </param>
-
-
         public RelayCommand addFriendCommand { get; set; }
 
         private string friendName;
 
         public ObservableCollection<Contact> contacts = new ObservableCollection<Contact>();
 
+        /// <summary>
+        /// Kontakty zalogowanego użytkownika - property do bindowania w xaml
+        /// </summary>
         public ObservableCollection<Contact> Contacts
         {
             get
             {
-                return contacts;
+                if (GlobalsParameters.Instance.Contacts != null)
+                {
+                    return GlobalsParameters.Instance.Contacts;
+                }
+                
+                return new ObservableCollection<Contact>();
             }
+
             set
             {
-                contacts = value;
-                RaisePropertyChanged("Contacts");
+                GlobalsParameters.Instance.Contacts = value;
+                this.RaisePropertyChanged("Contacts");
             }
         }
 
@@ -489,12 +478,9 @@ namespace DNAClient.ViewModel
                 var contact = Contacts.Where(X => X.Name.ToLower() == message.Login).FirstOrDefault();
                 if (contact != null)
                 {
-                    if (message.PresenceStatus.Equals(PresenceStatus.Offline)) contact.State = "#FFD1D1D1";
-                    if (message.PresenceStatus.Equals(PresenceStatus.Online)) contact.State = "Green";
-                    if (message.PresenceStatus.Equals(PresenceStatus.Afk)) contact.State = "Red";
+                    contact.PresenceStatus = message.PresenceStatus;
                     if (message.PresenceStatus.Equals(PresenceStatus.Login))
                     {
-                        contact.State = "Green";
                         this.SelectedStatus = "Dostępny";
                     }
                 }
@@ -550,6 +536,7 @@ namespace DNAClient.ViewModel
         // pobieranie listy znajomych
         private List<string> GetFriends()
         {
+            GlobalsParameters.Instance.Contacts = new ObservableCollection<Contact>();
             List<string> friends = new List<string>();
             var rpcClient = new RpcWay();
 

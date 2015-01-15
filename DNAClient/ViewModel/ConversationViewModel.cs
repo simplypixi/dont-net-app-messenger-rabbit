@@ -14,6 +14,7 @@ namespace DNAClient.ViewModel
     using System.Configuration;
     using System.Diagnostics;
     using System.IO;
+    using System.Linq;
     using System.Threading;
     using System.Windows;
     using System.Windows.Controls;
@@ -350,25 +351,40 @@ namespace DNAClient.ViewModel
                 string sendFileText = conversationWindow.SendFile.Content.ToString();
                 if (sendFileText.Equals("Dodaj plik"))
                 {
-                    var win = new Microsoft.Win32.OpenFileDialog { Multiselect = false };
+                    var contactPresenceStatus =
+                        GlobalsParameters.Instance.Contacts
+                            .Where(c => c.Name.ToLower().Equals(this.Recipient))
+                            .Select(c => c.PresenceStatus)
+                            .FirstOrDefault();
 
-                    var result = win.ShowDialog();
-
-                    if (result.HasValue && result.Value)
+                    if (contactPresenceStatus == PresenceStatus.Online)
                     {
-                        string filePath = win.FileName;
-                        Debug.Print(filePath);
+                        var win = new Microsoft.Win32.OpenFileDialog { Multiselect = false };
 
-                        this.attachment = new Attachment();
+                        var result = win.ShowDialog();
 
-                        byte[] bytes = File.ReadAllBytes(filePath);
+                        if (result.HasValue && result.Value)
+                        {
+                            string filePath = win.FileName;
+                            Debug.Print(filePath);
 
-                        this.attachment.Data = bytes;
-                        this.attachment.Name = win.SafeFileName;
-                        this.attachment.MimeType = string.Empty;
+                            this.attachment = new Attachment();
+
+                            byte[] bytes = File.ReadAllBytes(filePath);
+
+                            this.attachment.Data = bytes;
+                            this.attachment.Name = win.SafeFileName;
+                            this.attachment.MimeType = string.Empty;
+
+                            conversationWindow.SendFile.Content = "Usuń";
+                        }
+
                     }
-
-                    conversationWindow.SendFile.Content = "Usuń";
+                    else
+                    {
+                        MessageBox.Show("Pliki można wysyłać tylko do dostępnych użytkowników!", "Błąd dodawania pliku");
+                    }
+                    
                 }
                 else if (sendFileText.Equals("Usuń"))
                 {

@@ -1,28 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Contact.cs" company="">
+//   
+// </copyright>
+// <summary>
+//   Klasa reprezentująca kontakt z listy znajomych użytkownika
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace DNAClient.ViewModel
 {
     using DNAClient.ViewModel.Base;
+
+    using DTO;
+
+    /// <summary>
+    /// Klasa reprezentująca kontakt z listy znajomych użytkownika
+    /// </summary>
     public class Contact : ViewModelBase
     {
         public Contact()
         {
-            this.State = "#FFD1D1D1"; 
+            this.PresenceStatus = PresenceStatus.Offline;
         }
 
         protected string name;
-        protected string state;
         protected bool log;
+        private PresenceStatus presenceStatus;
 
         public string Name
         {
@@ -37,26 +40,39 @@ namespace DNAClient.ViewModel
             }
         }
 
-
-
         public string State
         {
-            get { return state;  }
-            set
+            get
             {
-                    state = value;
-                    RaisePropertyChanged("State");
+                switch (this.PresenceStatus)
+                {
+                    case PresenceStatus.Afk:
+                        return "Red";
+                    case PresenceStatus.Online:
+                    case PresenceStatus.Login:
+                        return "Green";
+                    case PresenceStatus.Offline:
+                        return "#FFD1D1D1";
+                    default:
+                        return "#FFD1D1D1";
+                }
             }
-        }
-        public bool Log
-        {
-            get { return log; }
-            set
-            {
-                    log = value;
-                    RaisePropertyChanged("Log");
-            }
+            
         }
 
+        public PresenceStatus PresenceStatus
+        {
+            get
+            {
+                return this.presenceStatus;
+            }
+
+            set
+            {
+                this.presenceStatus = value;
+                this.RaisePropertyChanged("PresenceStatus");
+                this.RaisePropertyChanged("State");
+            }
+        }
     }
 }

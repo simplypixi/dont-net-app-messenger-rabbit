@@ -11,6 +11,7 @@ namespace DNAClient
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Windows.Documents;
 
     using DNAClient.View;
@@ -65,6 +66,8 @@ namespace DNAClient
         /// 'Pamięć cache' do trzymania wszystkich wiadomości od utowrzenia danego notification do jego zamknięcia
         /// </summary>
         public static IDictionary<String, String> notificationCache { get; set; }
+
+        public ObservableCollection<Contact> Contacts { get; set; }
 
         private GlobalsParameters()
         {
