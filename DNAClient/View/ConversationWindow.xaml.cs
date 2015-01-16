@@ -35,7 +35,7 @@ namespace DNAClient.View
             // User scroll event : set or unset autoscroll mode
             if (e.ExtentHeightChange == 0)
             {   // Content unchanged : user scroll event
-                if (_scrollViewer.VerticalOffset == _scrollViewer.ScrollableHeight)
+                if (ScrollViewer.VerticalOffset == ScrollViewer.ScrollableHeight)
                 {   // Scroll bar is in bottom
                     // Set autoscroll mode
                     AutoScroll = true;
@@ -51,7 +51,7 @@ namespace DNAClient.View
             if (AutoScroll && e.ExtentHeightChange != 0)
             {   // Content changed and autoscroll mode set
                 // Autoscroll
-                _scrollViewer.ScrollToVerticalOffset(_scrollViewer.ExtentHeight);
+                ScrollViewer.ScrollToVerticalOffset(ScrollViewer.ExtentHeight);
             }
         }
 

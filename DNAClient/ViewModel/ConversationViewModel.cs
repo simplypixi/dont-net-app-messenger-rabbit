@@ -18,6 +18,7 @@ namespace DNAClient.ViewModel
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Documents;
+    using System.Windows.Input;
     using System.Windows.Media.Animation;
     using System.Windows.Markup;
     using System.Windows.Media.Imaging;
@@ -85,7 +86,7 @@ namespace DNAClient.ViewModel
             : this()
         {
             this.talkWindowGUI = flowD;
-            this.talkWindow = this.talkWindowGUI.talk;
+            this.talkWindow = this.talkWindowGUI.Talk;
             this.talkWindow.Document = new FlowDocument();
 
             this.Recipient = recipient;
@@ -246,6 +247,11 @@ namespace DNAClient.ViewModel
         /// </param>
         private void SendMessage(object parameter)
         {
+            if (string.IsNullOrEmpty(this.Message) && parameter.GetType().Name != "ConversationWindow")
+            {
+                this.Message = parameter.ToString();
+            }
+
             if (this.Message != null || this.attachment != null)
             {
                 if (this.Message != null)

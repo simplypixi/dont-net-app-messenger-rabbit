@@ -9,6 +9,7 @@
 	    WindowStyle="None"
 		ResizeMode="NoResize"
         Title="Rozmowa z" Background="#FF02B6E3" BorderBrush="#FF02B6E3">
+    
 
     <Window.Resources>
         <vm:ConversationViewModel x:Key="ConversationViewModel"/>
@@ -25,8 +26,8 @@
                 <TextBlock TextWrapping="Wrap" Name="Recipient" Margin="89,1,3,10" Foreground="#FF0882A0" FontSize="16"><Run Text="{Binding Recipient}"/></TextBlock>
             </Grid>
             <Grid Height="259">
-                <ScrollViewer Name="_scrollViewer" ScrollChanged="ScrollViewer_ScrollChanged">
-                    <RichTextBox x:Name="talk"
+                <ScrollViewer Name="ScrollViewer" ScrollChanged="ScrollViewer_ScrollChanged">
+                    <RichTextBox x:Name="Talk"
                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                     ScrollViewer.VerticalScrollBarVisibility="Auto" Width="506"  Foreground="White" Background="#FF08A4CB" Focusable="False" IsHitTestVisible="False"  AllowDrop="False"  Padding="5" 
                     ScrollViewer.CanContentScroll="True" BorderBrush="{x:Null}">
@@ -35,8 +36,13 @@
                 </ScrollViewer>
             </Grid>
             <Grid Height="51">
-                <TextBox TextWrapping="Wrap" Text="{Binding Message}" Margin="0,10,83,-7" SelectionBrush="{x:Null}" Foreground="#FF485C61" Padding="5,5,0,0" FontSize="13.333" BorderBrush="White" BorderThickness="0"/>
-                <Button Command="{Binding SendMessageCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="{Binding ElementName=Conversation}" Content="Wyślij" HorizontalAlignment="Left" VerticalAlignment="Top" Width="78" Margin="427,10,0,0" Height="24" BorderBrush="{x:Null}" Background="White" Padding="0" IsDefault="True" ToolTip="Kliknij, aby wysłać wiadomość." FontStretch="Condensed" FontWeight="Bold"/>
+                <TextBox AcceptsReturn="False" TextWrapping="Wrap" Text="{Binding Message}" Margin="0,10,83,-7" SelectionBrush="{x:Null}" Foreground="#FF485C61" Padding="5,5,0,0" FontSize="13.333" BorderBrush="White" BorderThickness="0">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Enter" Command="{Binding SendMessageCommand, UpdateSourceTrigger=PropertyChanged}" 
+                        CommandParameter="{Binding Path=Text, RelativeSource={RelativeSource AncestorType={x:Type TextBox}}}" />
+                    </TextBox.InputBindings>
+                </TextBox>
+                <Button x:Name="SendMessage" Command="{Binding SendMessageCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="{Binding ElementName=Conversation}" Content="Wyślij" HorizontalAlignment="Left" VerticalAlignment="Top" Width="78" Margin="427,10,0,0" Height="24" BorderBrush="{x:Null}" Background="White" Padding="0" IsDefault="True" ToolTip="Kliknij, aby wysłać wiadomość." FontStretch="Condensed" FontWeight="Bold"/>
                 <Button x:Name="SendFile" Command="{Binding AttachFileCommand, UpdateSourceTrigger=PropertyChanged}" CommandParameter="{Binding ElementName=Conversation}" Content="Dodaj plik" HorizontalAlignment="Left" VerticalAlignment="Top" Width="78" Margin="427,35,0,-8" Height="24" BorderBrush="{x:Null}" Background="White" Padding="0" IsDefault="True" FontStretch="Condensed" FontWeight="Bold">
                     <Button.ToolTip>
                         <ToolTip>
