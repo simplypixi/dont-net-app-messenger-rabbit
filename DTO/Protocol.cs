@@ -22,6 +22,12 @@ namespace DTO
     {
         public Status Status { get; set; }
         public string Message { get; set; }
+
+        public Response()
+        {
+            this.Status = DTO.Status.Error;
+            this.Message = "Cos poszlo nie tak.";
+        }
     }
 
     public class Request

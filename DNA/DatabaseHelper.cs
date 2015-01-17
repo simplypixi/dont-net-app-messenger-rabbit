@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System.Data.Sql;
 using System.Data;
+using System.Configuration;
 
 namespace DNA
 {
@@ -16,7 +17,19 @@ namespace DNA
 
         public DatabaseHelper()
         {
-            this.connectionString = @"Data Source=.;Initial Catalog=DNA; User Id=dna; Password=dna;";
+            try
+            {
+                this.connectionString = ConfigurationManager.ConnectionStrings["dnaDB"].ConnectionString;
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            if (string.IsNullOrEmpty(this.connectionString))
+            {
+                Console.WriteLine("Brak connection stringa w app.config.");
+            }
         }
 
         public bool Login(string login, string password)
