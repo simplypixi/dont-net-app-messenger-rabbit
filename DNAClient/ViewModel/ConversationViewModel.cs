@@ -248,61 +248,64 @@ namespace DNAClient.ViewModel
         /// </param>
         private void SendMessage(object parameter)
         {
-            if (this.Message != null || this.attachment != null)
+            if (!string.IsNullOrEmpty(this.Message))
             {
-                if (this.Message != null)
+                var attachmentInfo = string.Empty;
+                if (this.attachment != null)
                 {
-                    this.Message = this.Message.Trim();
+                    var contactPresenceStatus =
+                        GlobalsParameters.Instance.Contacts
+                            .Where(c => c.Name.ToLower().Equals(this.Recipient))
+                            .Select(c => c.PresenceStatus)
+                            .FirstOrDefault();
+
+                    if (contactPresenceStatus != PresenceStatus.Online)
+                    {
+                        MessageBox.Show(
+                            "Pliki można wysyłać tylko do dostępnych użytkowników!",
+                            "Błąd wysyłania wiadomości");
+                        return;
+                    }
+                    
+                    attachmentInfo = string.Format(
+                        "\n{0}: WYSŁANO ZAŁĄCZNIK",
+                        DateTimeOffset.Now.ToString("dd.MM.yyyy (HH:mm:ss)"));
                 }
 
-                if (this.attachment != null || !string.IsNullOrEmpty(this.Message))
+                this.Message = this.Message.Trim();
+                var messageInfo = string.Format(
+                    "{0} przez Ja:\n{1} {2}",
+                    DateTimeOffset.Now.ToString("dd.MM.yyyy (HH:mm:ss)"),
+                    this.Message,
+                    attachmentInfo);
+
+                /* Konwertowanie tekstu na emotki */
+                Paragraph paragraph = this.Emoticons(this.talkWindow.Document, messageInfo);
+
+                if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
                 {
-                    var msg = string.Empty;
-                    if (!string.IsNullOrEmpty(this.Message))
-                    {
-                        msg = DateTimeOffset.Now.ToString("dd.MM.yyyy (HH:mm:ss)") + " przez Ja:\n" + this.Message;
-                    }
-
-                    if (this.attachment != null)
-                    {
-                        if (!string.IsNullOrEmpty(this.Message))
-                        {
-                            msg += "\n";
-                        }
-
-                        msg += DateTimeOffset.Now.ToString("dd.MM.yyyy (HH:mm:ss)") + ": WYSŁANO ZAŁĄCZNIK";
-                    }
-
-                    Paragraph para = new Paragraph();
-
-                    /* Konwertowanie tekstu na emotki */
-                    para = Emoticons(this.talkWindow.Document, msg);
-
-                    if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
-                    {
-                        GlobalsParameters.cache.Add(this.Recipient, new FlowDocument());
-                    }
-
-                    GlobalsParameters.cache[this.Recipient].Blocks.Add(para);
-                    try
-                    {
-                        this.talkWindow.Document = GlobalsParameters.cache[this.Recipient];
-                    }
-                    catch
-                    {
-                        MemoryStream ms = new MemoryStream();
-
-                        XamlWriter.Save(GlobalsParameters.cache[this.Recipient], ms);
-
-                        ms.Seek(0, SeekOrigin.Begin);
-
-                        this.talkWindow.Document = XamlReader.Load(ms) as FlowDocument;
-                    }
-
-                    this.SendMessageToQueue();
-                    this.AddToHistory(msg);
-                    this.Message = string.Empty;
+                    GlobalsParameters.cache.Add(this.Recipient, new FlowDocument());
                 }
+
+                GlobalsParameters.cache[this.Recipient].Blocks.Add(paragraph);
+                try
+                {
+                    this.talkWindow.Document = GlobalsParameters.cache[this.Recipient];
+                }
+                catch
+                {
+                    MemoryStream ms = new MemoryStream();
+
+                    XamlWriter.Save(GlobalsParameters.cache[this.Recipient], ms);
+
+                    ms.Seek(0, SeekOrigin.Begin);
+
+                    this.talkWindow.Document = XamlReader.Load(ms) as FlowDocument;
+                }
+
+                this.SendMessageToQueue();
+                this.AddToHistory(messageInfo);
+                this.Message = string.Empty;
             }
         }
 
@@ -357,34 +360,30 @@ namespace DNAClient.ViewModel
                             .Select(c => c.PresenceStatus)
                             .FirstOrDefault();
 
-                    if (contactPresenceStatus == PresenceStatus.Online)
-                    {
-                        var win = new Microsoft.Win32.OpenFileDialog { Multiselect = false };
-
-                        var result = win.ShowDialog();
-
-                        if (result.HasValue && result.Value)
-                        {
-                            string filePath = win.FileName;
-                            Debug.Print(filePath);
-
-                            this.attachment = new Attachment();
-
-                            byte[] bytes = File.ReadAllBytes(filePath);
-
-                            this.attachment.Data = bytes;
-                            this.attachment.Name = win.SafeFileName;
-                            this.attachment.MimeType = string.Empty;
-
-                            conversationWindow.SendFile.Content = "Usuń";
-                        }
-
-                    }
-                    else
+                    if (contactPresenceStatus != PresenceStatus.Online)
                     {
                         MessageBox.Show("Pliki można wysyłać tylko do dostępnych użytkowników!", "Błąd dodawania pliku");
+                        return;
                     }
-                    
+
+                    var win = new Microsoft.Win32.OpenFileDialog { Multiselect = false };
+
+                    var result = win.ShowDialog();
+
+                    if (result.HasValue && result.Value)
+                    {
+                        string filePath = win.FileName;
+                        Debug.Print(filePath);
+
+                        this.attachment = new Attachment();
+
+                        byte[] bytes = File.ReadAllBytes(filePath);
+
+                        this.attachment.Data = bytes;
+                        this.attachment.Name = win.SafeFileName;
+                        this.attachment.MimeType = string.Empty;
+                        conversationWindow.SendFile.Content = "Usuń";
+                    }
                 }
                 else if (sendFileText.Equals("Usuń"))
                 {
@@ -414,9 +413,15 @@ namespace DNAClient.ViewModel
             }
         }
 
-        /* 
-         * Metoda sprawdzająca czy dany ciąg znaków znajduje się w słowniku emotikon 
-         */
+        /// <summary>
+        /// Metoda sprawdzająca czy dany ciąg znaków znajduje się w słowniku emotikon 
+        /// </summary>
+        /// <param name="text">
+        /// Tekst do sprawdzenia
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
         private string GetEmoticonText(string text)
         {
             string match = string.Empty;
@@ -436,12 +441,20 @@ namespace DNAClient.ViewModel
             }
 
             return match;
-
         }
 
-        /* 
-         * Metoda konwertująca ciągn znaków na emotikonę 
-        */
+        /// <summary>
+        /// Metoda konwertująca ciągn znaków na emotikonę
+        /// </summary>
+        /// <param name="mainDoc">
+        /// The main doc.
+        /// </param>
+        /// <param name="msg">
+        /// The msg.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Paragraph"/>.
+        /// </returns>
         private Paragraph Emoticons(FlowDocument mainDoc, string msg)
         {
             FlowDocument flowD = mainDoc;
