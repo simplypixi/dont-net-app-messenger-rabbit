@@ -108,7 +108,7 @@ namespace DNA
                                 responseBytes = response.Serialize();
                             }
                             // Rejestracja
-                            else if(request.RequestType == AuthRequest.Type.Register)
+                            else if (request.RequestType == AuthRequest.Type.Register)
                             {
                                 AuthResponse response = new AuthResponse();
                                 AuthRequest authRequest = body.DeserializeAuthRequest();
@@ -128,7 +128,7 @@ namespace DNA
                                 responseBytes = response.Serialize();
                             }
                             // Dodawanie znajomych
-                            else if(request.RequestType == Request.Type.AddFriend)
+                            else if (request.RequestType == Request.Type.AddFriend)
                             {
                                 FriendResponse response = new FriendResponse();
                                 FriendRequest friendRequest = body.DeserializeFriendRequest();
@@ -138,7 +138,6 @@ namespace DNA
                                     Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie dodal kontakt {1}.", friendRequest.Login, friendRequest.FriendLogin));
                                     response.Status = Status.OK;
                                     response.Message = "Udało się dodać kontakt.";
-                                    ForceUserStatusChange(friendRequest.FriendLogin, friendRequest.Login);
                                 }
                                 else
                                 {
@@ -272,22 +271,9 @@ namespace DNA
             }
         }
 
-        private static void ForceUserStatusChange(string Login, string recipient)
-        {
-            PresenceStatusNotification message = new PresenceStatusNotification();
-            message.Login = Login;
-            message.Recipient = recipient;
-            message.PresenceStatus = PresenceStatus.Offline;
-            if (GlobalsParameters.Instance.status.ContainsKey(Login))
-            {
-                message.PresenceStatus = GlobalsParameters.Instance.status[Login];
-            }
-            SendStatusNotification(message);
-        }
-
         private static void SendMessageNotification(MessageReq messageReq, bool dontDate = false)
         {
-            if (! (GlobalsParameters.Instance.status.ContainsKey(messageReq.Recipient)
+            if (!(GlobalsParameters.Instance.status.ContainsKey(messageReq.Recipient)
                 && GlobalsParameters.Instance.status[messageReq.Recipient] != PresenceStatus.Offline))
             {
                 var file = userPath + "//" + messageReq.Recipient + "_" + messageReq.Login;

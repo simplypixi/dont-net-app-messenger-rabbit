@@ -80,7 +80,8 @@ namespace DTO
         Online,
         Offline,
         Afk,
-        Login
+        Login,
+        Demand
     }
 
     public class User
