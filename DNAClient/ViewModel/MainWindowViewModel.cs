@@ -317,7 +317,7 @@ namespace DNAClient.ViewModel
                     }
                 }
 
-                if (this.Friend.Equals(currentUser))
+                if (this.Friend.ToLower().Equals(currentUser))
                 {
                     MessageBox.Show("Nie możesz dodać siebie do znajomych!", "Znajdź sobie znajomych");
                 }
