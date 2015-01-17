@@ -30,5 +30,27 @@ namespace DNAClient.View
             if (e.ChangedButton == MouseButton.Left)
                 this.DragMove();
         }
+
+
+        private void Login_GotFocus(object sender, System.Windows.RoutedEventArgs e)
+        {
+            System.Console.WriteLine(sender.GetType().ToString());
+            if (sender.GetType() == typeof(System.Windows.Controls.TextBox))
+            {
+                var field = sender as System.Windows.Controls.TextBox;
+
+                if (field.Text == "Wpisz login")
+                {
+                    field.Text = "";
+                }
+            } else if (sender.GetType() == typeof(System.Windows.Controls.PasswordBox)){
+                var field = sender as System.Windows.Controls.PasswordBox;
+
+                if (field.Password == "Wpisz hasło" || field.Password == "Powtórz hasło")
+                {
+                    field.Password = "";
+                }
+            }
+        }
     }
 }
