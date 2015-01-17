@@ -194,6 +194,7 @@ namespace DNAClient.ViewModel
 
                 if (friendResponse.Status == Status.OK)
                 {
+                    this.SendStatusToQueue(contact.Name.ToLower(), "Niedostępny");
                     this.Contacts.Remove(contact);
                 }
                 else
@@ -341,7 +342,8 @@ namespace DNAClient.ViewModel
                     if (friendResponse.Status == Status.OK)
                     {
                         Contacts.Add(new Contact() { Name = this.Friend });
-                        this.GetFriends();
+                        this.SendStatusToQueue(this.Friend.ToLower(), "Zwroc");
+                        this.SendStatus();
                         this.Friend = string.Empty;
                     }
                     else
@@ -386,7 +388,7 @@ namespace DNAClient.ViewModel
                 foreach (Contact element in this.Contacts)
                 {
 
-                    this.SendStatusToQueue(element.Name.ToLower());
+                    this.SendStatusToQueue(element.Name.ToLower(), null);
                 }
             }
             if (this.SelectedStatus == "Zalogowany")
@@ -398,7 +400,7 @@ namespace DNAClient.ViewModel
         /// <summary>
         /// Metoda tworząca informację o zmianie stanu i wysyłająca ją do rabbita
         /// </summary>
-        private void SendStatusToQueue(string recip)
+        private void SendStatusToQueue(string recip, string status_to_send)
         {
             using (var connection = factory.CreateConnection())
             {
@@ -407,13 +409,21 @@ namespace DNAClient.ViewModel
                     channel.ExchangeDeclare(Constants.Exchange, "topic");
                     PresenceStatus status = PresenceStatus.Login;
 
-                    if (this.SelectedStatus == "Zajęty") status = PresenceStatus.Afk;
-                    if (this.SelectedStatus == "Dostępny") status = PresenceStatus.Online;
-                    if (this.SelectedStatus == "Niedostępny") status = PresenceStatus.Offline;
-
-                    if (this.SelectedStatus == "Zalogowany")
+                    if (!string.IsNullOrEmpty(status_to_send))
                     {
-                        status = PresenceStatus.Login;
+                        if (status_to_send == "Zwroc")  status = PresenceStatus.Demand;
+                        if (status_to_send == "Niedostępny") status = PresenceStatus.Offline;
+                    }
+                    else
+                    {
+                        if (this.SelectedStatus == "Zajęty") status = PresenceStatus.Afk;
+                        if (this.SelectedStatus == "Dostępny") status = PresenceStatus.Online;
+                        if (this.SelectedStatus == "Niedostępny") status = PresenceStatus.Offline;
+
+                        if (this.SelectedStatus == "Zalogowany")
+                        {
+                            status = PresenceStatus.Login;
+                        }
                     }
 
                     Console.WriteLine("Dodano w takcie wysyłanie" + status);
@@ -479,6 +489,10 @@ namespace DNAClient.ViewModel
                 var contact = Contacts.Where(X => X.Name.ToLower() == message.Login).FirstOrDefault();
                 if (contact != null)
                 {
+                    if (message.PresenceStatus.Equals((PresenceStatus.Demand)))
+                    {
+                        this.SendStatusToQueue(contact.Name, null);
+                    }
                     contact.PresenceStatus = message.PresenceStatus;
                     if (message.PresenceStatus.Equals(PresenceStatus.Login))
                     {

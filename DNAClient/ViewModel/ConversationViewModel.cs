@@ -253,9 +253,11 @@ namespace DNAClient.ViewModel
                 this.Message = parameter.ToString();   
             }
 
-            if (!string.IsNullOrEmpty(this.Message))
+            if (!string.IsNullOrEmpty(this.Message) || this.attachment != null)
             {
                 var attachmentInfo = string.Empty;
+                var messageInfo = string.Empty;
+                this.Message = this.Message.Trim();
                 if (this.attachment != null)
                 {
                     var contactPresenceStatus =
@@ -273,17 +275,22 @@ namespace DNAClient.ViewModel
                     }
                     
                     attachmentInfo = string.Format(
-                        "\n{0}: WYSŁANO ZAŁĄCZNIK",
+                        "{0}: WYSŁANO ZAŁĄCZNIK",
                         DateTimeOffset.Now.ToString("dd.MM.yyyy (HH:mm:ss)"));
+                    if (!string.IsNullOrEmpty(this.Message))
+                    {
+                        attachmentInfo = "\n\n" + attachmentInfo;
+                    }
+                    messageInfo = attachmentInfo;
                 }
-
-                this.Message = this.Message.Trim();
-                var messageInfo = string.Format(
-                    "{0} przez Ja:\n{1} {2}",
-                    DateTimeOffset.Now.ToString("dd.MM.yyyy (HH:mm:ss)"),
-                    this.Message,
-                    attachmentInfo);
-
+                if (!string.IsNullOrEmpty(this.Message))
+                {
+                    messageInfo = string.Format(
+                        "{0} przez Ja:\n{1} {2}",
+                        DateTimeOffset.Now.ToString("dd.MM.yyyy (HH:mm:ss)"),
+                        this.Message,
+                        attachmentInfo);
+                }
                 /* Konwertowanie tekstu na emotki */
                 Paragraph paragraph = this.Emoticons(this.talkWindow.Document, messageInfo);
 
