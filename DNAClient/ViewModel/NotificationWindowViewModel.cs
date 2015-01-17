@@ -61,13 +61,10 @@ namespace DNAClient.ViewModel
 
             switch (notificationType)
             {
-                case NotificationType.message:
+                case NotificationType.Message:
                     this.Message = sender + " przesyła wiadomość...";
                     break;
-                case NotificationType.status:
-                    this.Message = sender + " zmienił status...";
-                    break;
-                case NotificationType.file:
+                case NotificationType.File:
                     this.Message = sender + " przesyła plik...";
                     break;
                 default:
@@ -78,25 +75,25 @@ namespace DNAClient.ViewModel
             this.messageTMP = mess;
             this.sender = sender;
             this.NewConversationWindowCommand = new RelayCommand(this.NewConversationWindow);
-            if (this.notificationType == NotificationType.message)
+            if (this.notificationType == NotificationType.Message)
             {
-                GlobalsParameters.openNotifications.Add(this.sender);
+                GlobalsParameters.OpenNotifications.Add(this.sender);
             }
         }
 
         public RelayCommand NewConversationWindowCommand { get; set; }
         private void NewConversationWindow(object parameter)
         {
-            if (this.notificationType == NotificationType.message)
+            if (this.notificationType == NotificationType.Message)
             {
                 ConversationViewModel cvModel = ProductionWindowFactory.CreateConversationWindow(sender);
-                GlobalsParameters.openWindows.Add(cvModel);
+                GlobalsParameters.OpenWindows.Add(cvModel);
                 var msg = this.messageTMP.Body.DeserializeMessageNotification();
                
-                cvModel.AddToHistory(GlobalsParameters.notificationCache[msg.Sender]);
+                cvModel.AddToHistory(GlobalsParameters.NotificationCache[msg.Sender]);
             }
 
-            if (this.notificationType == NotificationType.file)
+            if (this.notificationType == NotificationType.File)
             {
                 this.GetFile();
             }
@@ -135,16 +132,16 @@ namespace DNAClient.ViewModel
 
         private void CloseWindow(object parameter)
         {
-            if (this.notificationType == NotificationType.message)
+            if (this.notificationType == NotificationType.Message)
             {
-                if (!GlobalsParameters.cache.ContainsKey(this.sender))
+                if (!GlobalsParameters.TextCache.ContainsKey(this.sender))
                 {
-                    GlobalsParameters.cache.Add(this.sender, new FlowDocument());
+                    GlobalsParameters.TextCache.Add(this.sender, new FlowDocument());
                 }
 
                 var msg = this.messageTMP.Body.DeserializeMessageNotification();
-                GlobalsParameters.notificationCache.Remove(msg.Sender);
-                GlobalsParameters.openNotifications.Remove(msg.Sender);
+                GlobalsParameters.NotificationCache.Remove(msg.Sender);
+                GlobalsParameters.OpenNotifications.Remove(msg.Sender);
             }
             
             var window = parameter as Window;

@@ -91,11 +91,11 @@ namespace DNAClient.ViewModel
             this.talkWindow.Document = new FlowDocument();
 
             this.Recipient = recipient;
-            if (GlobalsParameters.cache.ContainsKey(this.Recipient))
+            if (GlobalsParameters.TextCache.ContainsKey(this.Recipient))
             {
                 MemoryStream ms = new MemoryStream();
 
-                XamlWriter.Save(GlobalsParameters.cache[this.Recipient], ms);
+                XamlWriter.Save(GlobalsParameters.TextCache[this.Recipient], ms);
 
                 ms.Seek(0, SeekOrigin.Begin);
 
@@ -194,21 +194,21 @@ namespace DNAClient.ViewModel
                     /* Konwertowanie tekstu na emotki */
                     para = Emoticons(this.talkWindow.Document, msg);
 
-                    if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
+                    if (!GlobalsParameters.TextCache.ContainsKey(this.Recipient))
                     {
-                        GlobalsParameters.cache.Add(this.Recipient, new FlowDocument());
+                        GlobalsParameters.TextCache.Add(this.Recipient, new FlowDocument());
                     }
 
-                    GlobalsParameters.cache[message.Sender].Blocks.Add(para);
+                    GlobalsParameters.TextCache[message.Sender].Blocks.Add(para);
                     try
                     {
-                        this.talkWindow.Document = GlobalsParameters.cache[this.Recipient];
+                        this.talkWindow.Document = GlobalsParameters.TextCache[this.Recipient];
                     }
                     catch
                     {
                         MemoryStream ms = new MemoryStream();
 
-                        XamlWriter.Save(GlobalsParameters.cache[this.Recipient], ms);
+                        XamlWriter.Save(GlobalsParameters.TextCache[this.Recipient], ms);
 
                         ms.Seek(0, SeekOrigin.Begin);
 
@@ -294,21 +294,21 @@ namespace DNAClient.ViewModel
                 /* Konwertowanie tekstu na emotki */
                 Paragraph paragraph = this.Emoticons(this.talkWindow.Document, messageInfo);
 
-                if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
+                if (!GlobalsParameters.TextCache.ContainsKey(this.Recipient))
                 {
-                    GlobalsParameters.cache.Add(this.Recipient, new FlowDocument());
+                    GlobalsParameters.TextCache.Add(this.Recipient, new FlowDocument());
                 }
 
-                GlobalsParameters.cache[this.Recipient].Blocks.Add(paragraph);
+                GlobalsParameters.TextCache[this.Recipient].Blocks.Add(paragraph);
                 try
                 {
-                    this.talkWindow.Document = GlobalsParameters.cache[this.Recipient];
+                    this.talkWindow.Document = GlobalsParameters.TextCache[this.Recipient];
                 }
                 catch
                 {
                     MemoryStream ms = new MemoryStream();
 
-                    XamlWriter.Save(GlobalsParameters.cache[this.Recipient], ms);
+                    XamlWriter.Save(GlobalsParameters.TextCache[this.Recipient], ms);
 
                     ms.Seek(0, SeekOrigin.Begin);
 
@@ -411,11 +411,11 @@ namespace DNAClient.ViewModel
             this.talkWindow = null;
             if (window != null)
             {
-                foreach (ConversationViewModel conversationViewModel in GlobalsParameters.openWindows)
+                foreach (ConversationViewModel conversationViewModel in GlobalsParameters.OpenWindows)
                 {
                     if (conversationViewModel.Recipient == this.Recipient)
                     {
-                        GlobalsParameters.openWindows.Remove(conversationViewModel);
+                        GlobalsParameters.OpenWindows.Remove(conversationViewModel);
                         break;
                     }
                 }

@@ -12,27 +12,46 @@ namespace DNAClient
     using DNAClient.View;
     using DNAClient.ViewModel;
 
-    using RabbitMQ.Client;
     using RabbitMQ.Client.Events;
-    using System.Windows.Documents;
-    using System.Windows.Controls;
 
     /// <summary>
     /// Fabryka nowych okien
     /// </summary>
     public class ProductionWindowFactory
     {
+        /// <summary>
+        /// Metoda tworząca nowe okno rozmowy. ViewModel jest zwracany, po to by
+        /// dodać go do listy otwartych okien rozmowy
+        /// </summary>
+        /// <param name="recipient">
+        /// Odbiorca z listy znajomych
+        /// </param>
+        /// <returns>
+        /// The <see cref="ConversationViewModel"/>.
+        /// </returns>
         public static ConversationViewModel CreateConversationWindow(string recipient)
         {
             ConversationWindow window = new ConversationWindow();
 
-            ConversationViewModel cvModel = new ConversationViewModel(recipient, window);
-            cvModel.LoadEmoticons();
-            window.DataContext = cvModel;
+            ConversationViewModel conversationViewModelModel = new ConversationViewModel(recipient, window);
+            conversationViewModelModel.LoadEmoticons();
+            window.DataContext = conversationViewModelModel;
             window.Show();
-            return cvModel;
+            return conversationViewModelModel;
         }
 
+        /// <summary>
+        /// Metoda tworząca okno powiadomień
+        /// </summary>
+        /// <param name="sender">
+        /// Nazwa wysyłającego notyfikację
+        /// </param>
+        /// <param name="mess">
+        /// Dane o wiadoności z rabbita
+        /// </param>
+        /// <param name="notificationType">
+        /// Typ notyfikacji
+        /// </param>
         public static void CreateNotificationWindow(string sender, BasicDeliverEventArgs mess, NotificationType notificationType)
         {
             NotificationWindow window = new NotificationWindow
@@ -42,6 +61,9 @@ namespace DNAClient
             window.Show();
         }
 
+        /// <summary>
+        /// Metoda tworząca główne okno programu
+        /// </summary>
         public static void CreateMainWindow()
         {
             MainWindow window = new MainWindow();

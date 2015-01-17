@@ -74,7 +74,7 @@ namespace DNAClient.ViewModel
 
             this.SelectedStatus = "Zalogowany";
 
-            var rpcClient = new RpcWay();
+            var rpcClient = new RabbitRpcConnection();
 
             // Podbranie z serwera wiadomości, które zostały wysłane, gdy użytkownik był offline
             var request = new Request
@@ -181,7 +181,7 @@ namespace DNAClient.ViewModel
 
             if (contact != null)
             {
-                var rpcClient = new RpcWay();
+                var rpcClient = new RabbitRpcConnection();
                 var friendRequest = new FriendRequest
                                         {
                                             Login = this.currentUser,
@@ -239,7 +239,7 @@ namespace DNAClient.ViewModel
         /// </param>
         private void NewConversationWindow(object parameter)
         {
-            foreach (ConversationViewModel cvModel in GlobalsParameters.openWindows)
+            foreach (ConversationViewModel cvModel in GlobalsParameters.OpenWindows)
             {
                 if (this.SelectedContact.Name.ToLower() == cvModel.Recipient)
                 {
@@ -251,7 +251,7 @@ namespace DNAClient.ViewModel
                 ConversationViewModel cvModel =
                     ProductionWindowFactory.CreateConversationWindow(this.SelectedContact.Name);
 
-                GlobalsParameters.openWindows.Add(cvModel);
+                GlobalsParameters.OpenWindows.Add(cvModel);
             }
         }
 
@@ -327,7 +327,7 @@ namespace DNAClient.ViewModel
                 }
                 else
                 {
-                    var rpcClient = new RpcWay();
+                    var rpcClient = new RabbitRpcConnection();
 
                     var friendRequest = new FriendRequest
                     {
@@ -368,7 +368,7 @@ namespace DNAClient.ViewModel
                 Console.WriteLine(this.SelectedStatus);
                 this.SelectedStatus = "Niedostępny";
 
-                var openWindows = GlobalsParameters.openWindows;
+                var openWindows = GlobalsParameters.OpenWindows;
                 foreach (var openWindow in openWindows.ToList())
                 {
                     openWindow.CloseConversationWindow();    
@@ -510,7 +510,7 @@ namespace DNAClient.ViewModel
 
                 Paragraph para = new Paragraph();
 
-                foreach (ConversationViewModel cvModel in GlobalsParameters.openWindows)
+                foreach (ConversationViewModel cvModel in GlobalsParameters.OpenWindows)
                 {
                     if (cvModel.Recipient == message.Sender)
                     {
@@ -520,30 +520,30 @@ namespace DNAClient.ViewModel
                 }
                 if (!ConversationWindowExist)
                 {
-                    if (!GlobalsParameters.cache.ContainsKey(message.Sender))
+                    if (!GlobalsParameters.TextCache.ContainsKey(message.Sender))
                     {
                         FlowDocument flowD = new FlowDocument();
-                        GlobalsParameters.cache.Add(message.Sender, flowD);
+                        GlobalsParameters.TextCache.Add(message.Sender, flowD);
                     }
                     if (!string.IsNullOrEmpty(message.Message))
                     {
                         para = Emoticons(msg);
-                        GlobalsParameters.cache[message.Sender].Blocks.Add(para);
+                        GlobalsParameters.TextCache[message.Sender].Blocks.Add(para);
                     }
-                    if (!GlobalsParameters.openNotifications.Contains(message.Sender) && !string.IsNullOrEmpty(message.Message))
+                    if (!GlobalsParameters.OpenNotifications.Contains(message.Sender) && !string.IsNullOrEmpty(message.Message))
                     {
-                        this.NewNotificationWindow(message.Sender, args, NotificationType.message);   
-                        GlobalsParameters.notificationCache.Add(message.Sender, msg);
+                        this.NewNotificationWindow(message.Sender, args, NotificationType.Message);   
+                        GlobalsParameters.NotificationCache.Add(message.Sender, msg);
                     }
                     else if (!string.IsNullOrEmpty(message.Message))
                     {
-                        GlobalsParameters.notificationCache[message.Sender] += msg;
+                        GlobalsParameters.NotificationCache[message.Sender] += msg;
                     }
                 }
 
                 if (message.Attachment != null)
                 {
-                    this.NewNotificationWindow(message.Sender, args, NotificationType.file);
+                    this.NewNotificationWindow(message.Sender, args, NotificationType.File);
                 }
             }
         }
@@ -553,7 +553,7 @@ namespace DNAClient.ViewModel
         {
             GlobalsParameters.Instance.Contacts = new ObservableCollection<Contact>();
             List<string> friends = new List<string>();
-            var rpcClient = new RpcWay();
+            var rpcClient = new RabbitRpcConnection();
 
             var friendRequest = new FriendRequest
             {

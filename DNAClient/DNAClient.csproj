@@ -93,7 +93,7 @@
     <Compile Include="Globals.cs" />
     <Compile Include="NotificationType.cs" />
     <Compile Include="ProductionWindowFactory.cs" />
-    <Compile Include="RabbitFunctions\RpcWay.cs" />
+    <Compile Include="RabbitFunctions\RabbitRpcConnection.cs" />
     <Compile Include="ViewModel\Base\RelayCommand.cs" />
     <Compile Include="ViewModel\Base\ViewModelBase.cs" />
     <Compile Include="ViewModel\ConversationViewModel.cs" />

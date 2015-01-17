@@ -1,8 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="NotificationType.cs" company="">
+//   
+// </copyright>
+// <summary>
+//   Typ notyfikacji
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace DNAClient
 {
@@ -11,10 +14,14 @@ namespace DNAClient
     /// </summary>
     public enum NotificationType
     {
-        message,
+        /// <summary>
+        /// Przychodząca wiadomość
+        /// </summary>
+        Message,
 
-        status,
-
-        file
+        /// <summary>
+        /// Przychodzący plik
+        /// </summary>
+        File
     }
 }

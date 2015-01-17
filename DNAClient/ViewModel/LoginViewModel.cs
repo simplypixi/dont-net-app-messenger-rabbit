@@ -9,10 +9,8 @@
 
 namespace DNAClient.ViewModel
 {
-    using System.Collections.Generic;
     using System.Threading;
     using System.Windows;
-    using System.Windows.Documents;
 
     using DNAClient.RabbitFunctions;
     using DNAClient.View;
@@ -44,11 +42,6 @@ namespace DNAClient.ViewModel
         /// </summary>
         public LoginViewModel()
         {
-            GlobalsParameters.Instance.CurrentUser = this.Login;
-            GlobalsParameters.openWindows = new List<ConversationViewModel>();
-            GlobalsParameters.cache = new Dictionary<string, FlowDocument>();
-            GlobalsParameters.openNotifications = new List<string>();
-            GlobalsParameters.notificationCache = new Dictionary<string, string>();
             this.LoginCommand = new RelayCommand(this.LoginToServer);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
             this.RegistrationCommand = new RelayCommand(this.RegistrationOnServer);
@@ -127,13 +120,13 @@ namespace DNAClient.ViewModel
         /// </param>
         private void LoginToServer(object parameter)
         {
-            GlobalsParameters.Instance.CurrentUser = this.Login;
-            var rpcClient = new RpcWay();
-
             var loginWindow = parameter as LoginWindow;
 
             if (loginWindow != null)
             {
+                GlobalsParameters.Instance.CurrentUser = this.Login;
+                var rpcClient = new RabbitRpcConnection();
+
                 var authRequest = new AuthRequest
                                       {
                                           Login = this.Login,
@@ -142,7 +135,6 @@ namespace DNAClient.ViewModel
                                       };
 
                 var response = rpcClient.AuthCall(authRequest.Serialize());
-
                 rpcClient.Close();
 
                 if (response.Status == Status.OK)
@@ -166,16 +158,15 @@ namespace DNAClient.ViewModel
         /// </param>
         private void RegistrationOnServer(object parameter)
         {
-            GlobalsParameters.Instance.CurrentUser = this.Login;
-
-            var rpcClient = new RpcWay();
-
             var loginWindow = parameter as LoginWindow;
 
             if (loginWindow != null)
             {
                 if (loginWindow.Password.Password.Equals(loginWindow.RepeatPassword.Password))
                 {
+                    GlobalsParameters.Instance.CurrentUser = this.Login;
+
+                    var rpcClient = new RabbitRpcConnection();
                     var authRequest = new AuthRequest
                                           {
                                               Login = this.Login,
@@ -196,7 +187,7 @@ namespace DNAClient.ViewModel
                     {
                         MessageBox.Show(
                             "Wpisano błędne dane rejestracji lub istnieje już użytkownik o nazwie:" + this.Login
-                            + ".\nUpewnij się czy hasło i jego potwierdzenie są identyczne lub spróbuj wybrać inną nazwę użytkownika.",
+                            + ".\nSpróbuj wybrać inną nazwę użytkownika.",
                             "Błąd rejestracji");
                     }
                 }
@@ -210,7 +201,7 @@ namespace DNAClient.ViewModel
         }
 
         /// <summary>
-        /// Metoda zmiany na rejestrację
+        /// Metoda zmiany wyglądu okna na tryb rejestracja
         /// </summary>
         /// <param name="parameter">
         /// Parametr funkcji
@@ -232,7 +223,7 @@ namespace DNAClient.ViewModel
         }
 
         /// <summary>
-        /// Metoda zmiany na logowanie
+        /// Metoda zmiany wyglądu okna na tryb logowanie
         /// </summary>
         /// <param name="parameter">
         /// Parametr funkcji
