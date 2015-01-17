@@ -15,7 +15,6 @@ namespace DNA
     using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
-    using System.Collections.Generic;
 
     using DNAClient;
 
@@ -133,11 +132,13 @@ namespace DNA
                             {
                                 FriendResponse response = new FriendResponse();
                                 FriendRequest friendRequest = body.DeserializeFriendRequest();
+
                                 if (db.AddFriend(friendRequest.Login, friendRequest.FriendLogin))
                                 {
                                     Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie dodal kontakt {1}.", friendRequest.Login, friendRequest.FriendLogin));
                                     response.Status = Status.OK;
                                     response.Message = "Udało się dodać kontakt.";
+                                    ForceUserStatusChange(friendRequest.FriendLogin, friendRequest.Login);
                                 }
                                 else
                                 {
@@ -271,13 +272,26 @@ namespace DNA
             }
         }
 
+        private static void ForceUserStatusChange(string Login, string recipient)
+        {
+            PresenceStatusNotification message = new PresenceStatusNotification();
+            message.Login = Login;
+            message.Recipient = recipient;
+            message.PresenceStatus = PresenceStatus.Offline;
+            if (GlobalsParameters.Instance.status.ContainsKey(Login))
+            {
+                message.PresenceStatus = GlobalsParameters.Instance.status[Login];
+            }
+            SendStatusNotification(message);
+        }
+
         private static void SendMessageNotification(MessageReq messageReq, bool dontDate = false)
         {
             if (! (GlobalsParameters.Instance.status.ContainsKey(messageReq.Recipient)
                 && GlobalsParameters.Instance.status[messageReq.Recipient] != PresenceStatus.Offline))
             {
                 var file = userPath + "//" + messageReq.Recipient + "_" + messageReq.Login;
-                var msg = messageReq.SendTime + " przez " + messageReq.Login + ":\n" + messageReq.Message;
+                var msg = messageReq.SendTime + " przez " + messageReq.Login + ":\n" + messageReq.Message + "\n";
                 Functions.saveFile(file, msg);
                 return;
             }

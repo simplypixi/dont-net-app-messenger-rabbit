@@ -153,8 +153,7 @@ namespace DNAClient.ViewModel
                 else
                 {
                     MessageBox.Show(
-                        "Błąd logowania",
-                        "Wpisano błędne dane logowania. Upewnij się czy wpisałeś poprawne dane, a następnie spróbuj ponownie.");
+                        "Wpisano błędne dane logowania. Upewnij się czy wpisałeś poprawne dane, a następnie spróbuj ponownie.",  "Błąd logowania");
                 }
             }
         }

@@ -19,6 +19,7 @@ namespace DNAClient.ViewModel
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Documents;
+    using System.Windows.Input;
     using System.Windows.Media.Animation;
     using System.Windows.Markup;
     using System.Windows.Media.Imaging;
@@ -86,7 +87,7 @@ namespace DNAClient.ViewModel
             : this()
         {
             this.talkWindowGUI = flowD;
-            this.talkWindow = this.talkWindowGUI.talk;
+            this.talkWindow = this.talkWindowGUI.Talk;
             this.talkWindow.Document = new FlowDocument();
 
             this.Recipient = recipient;
@@ -193,7 +194,6 @@ namespace DNAClient.ViewModel
                     /* Konwertowanie tekstu na emotki */
                     para = Emoticons(this.talkWindow.Document, msg);
 
-                    GlobalsParameters.cache[message.Sender].Blocks.Add(para);
                     if (!GlobalsParameters.cache.ContainsKey(this.Recipient))
                     {
                         GlobalsParameters.cache.Add(this.Recipient, new FlowDocument());
@@ -232,7 +232,7 @@ namespace DNAClient.ViewModel
             }
 
             var historyFile = this.userPath + "//" + this.Recipient;
-            Functions.saveFile(historyFile, historyMessage);
+            Functions.saveFile(historyFile, historyMessage + "\n");
         }
 
         public void CloseConversationWindow()
@@ -248,6 +248,11 @@ namespace DNAClient.ViewModel
         /// </param>
         private void SendMessage(object parameter)
         {
+            if (string.IsNullOrEmpty(this.Message) && parameter.GetType().Name != "ConversationWindow")
+            {
+                this.Message = parameter.ToString();   
+            }
+
             if (!string.IsNullOrEmpty(this.Message))
             {
                 var attachmentInfo = string.Empty;
