@@ -323,6 +323,7 @@ namespace DNAClient.ViewModel
                     if (element.Name.ToLower() == this.Friend.ToLower())
                     {
                         isContactAlreadyOnList = true;
+                        break;
                     }
                 }
 
@@ -351,12 +352,12 @@ namespace DNAClient.ViewModel
                     if (friendResponse.Status == Status.OK)
                     {
                         Contacts.Add(new Contact() { Name = this.Friend });
+                        this.GetFriends();
+                        this.Friend = string.Empty;
                     }
                     else
                     {
-                        MessageBox.Show(
-                    "Dodanie użytkownika nie powiodło się!",
-                    "Błąd dodawania użytkowika");
+                        MessageBox.Show("Dodanie użytkownika nie powiodło się!", "Błąd dodawania użytkowika");
                     }
                 }
 

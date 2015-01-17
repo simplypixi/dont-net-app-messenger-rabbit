@@ -132,11 +132,13 @@ namespace DNA
                             {
                                 FriendResponse response = new FriendResponse();
                                 FriendRequest friendRequest = body.DeserializeFriendRequest();
+
                                 if (db.AddFriend(friendRequest.Login, friendRequest.FriendLogin))
                                 {
                                     Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie dodal kontakt {1}.", friendRequest.Login, friendRequest.FriendLogin));
                                     response.Status = Status.OK;
                                     response.Message = "Udało się dodać kontakt.";
+                                    ForceUserStatusChange(friendRequest.FriendLogin, friendRequest.Login);
                                 }
                                 else
                                 {
@@ -268,6 +270,19 @@ namespace DNA
                     message.PresenceStatus);
                 SendStatusNotification(message);
             }
+        }
+
+        private static void ForceUserStatusChange(string Login, string recipient)
+        {
+            PresenceStatusNotification message = new PresenceStatusNotification();
+            message.Login = Login;
+            message.Recipient = recipient;
+            message.PresenceStatus = PresenceStatus.Offline;
+            if (GlobalsParameters.Instance.status.ContainsKey(Login))
+            {
+                message.PresenceStatus = GlobalsParameters.Instance.status[Login];
+            }
+            SendStatusNotification(message);
         }
 
         private static void SendMessageNotification(MessageReq messageReq, bool dontDate = false)
