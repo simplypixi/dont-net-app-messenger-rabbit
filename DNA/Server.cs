@@ -172,7 +172,7 @@ namespace DNA
                                 FriendResponse response = new FriendResponse();
                                 FriendRequest friendRequest = body.DeserializeFriendRequest();
                                 List<string> friends = db.GetFriends(friendRequest.Login);
-                                if (friends.Count > 0)
+                                if (friends != null)
                                 {
                                     Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie pobral kontakty.", friendRequest.Login));
                                     response.Status = Status.OK;
@@ -181,7 +181,7 @@ namespace DNA
                                 }
                                 else
                                 {
-                                    Console.WriteLine(string.Format("Nie pobrano zadnych kontaktow dla uzytkownika {0}.", friendRequest.Login));
+                                    Console.WriteLine(string.Format("Nie udalo sie pobrac kontaktow dla uzytkownika {0}.", friendRequest.Login));
                                     response.Status = Status.Error;
                                     response.friendsList = friends;
                                     response.Message = "Nie pobrano żadnych kontaków.";

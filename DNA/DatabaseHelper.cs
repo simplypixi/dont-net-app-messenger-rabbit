@@ -40,8 +40,6 @@ namespace DNA
                 String query = string.Format("SELECT 1 FROM [DNA].[dbo].[User] WHERE Login = '{0}' AND Password COLLATE Polish_CS_AS = '{1}'", login, password);
                 using (SqlCommand command = new SqlCommand(query, conn))
                 {
-                    // TODO: DELETE THIS LINE
-                    Console.WriteLine(command.CommandText);
                     using (var reader = command.ExecuteReader())
                     {
                         if (reader.Read())
@@ -70,9 +68,6 @@ namespace DNA
                 String query = string.Format("INSERT INTO [dbo].[User] (Login, Password) VALUES('{0}', '{1}')", login, password);
                 using (SqlCommand command = new SqlCommand(query, conn))
                 {
-                    // TODO: DELETE THIS LINE
-                    Console.WriteLine(command.CommandText);
-
                     if (command.ExecuteNonQuery() > 0)
                     {
                         return true;
@@ -102,9 +97,6 @@ namespace DNA
                 string query = string.Format("INSERT INTO [dbo].[Friend] (OwnerId, FriendId, FriendLabel) VALUES('{0}', '{1}', '{2}')", ownerId, friendId, friendLogin);
                 using (SqlCommand command = new SqlCommand(query, conn))
                 {
-                    // TODO: DELETE THIS LINE
-                    Console.WriteLine(command.CommandText);
-
                     if (command.ExecuteNonQuery() > 0)
                     {
                         return true;
@@ -134,9 +126,6 @@ namespace DNA
                 String query = string.Format("DELETE FROM [dbo].[Friend] WHERE OwnerId = '{0}' AND FriendId = '{1}'", ownerId, friendId);
                 using (SqlCommand command = new SqlCommand(query, conn))
                 {
-                    // TODO: DELETE THIS LINE
-                    Console.WriteLine(command.CommandText);
-
                     if (command.ExecuteNonQuery() > 0)
                     {
                         return true;
@@ -151,7 +140,7 @@ namespace DNA
 
         public List<string> GetFriends(string ownerLogin)
         {
-            List<string> friendsList = new List<string>();
+            List<string> friendsList = null;
             int? ownerId;
             ownerId = this.GetUserIdWithLogin(ownerLogin);
 
@@ -162,13 +151,11 @@ namespace DNA
 
             using (conn = new SqlConnection(this.connectionString))
             {
+                friendsList = new List<string>();
                 conn.Open();
                 String query = string.Format("SELECT FriendLabel FROM [dbo].[Friend] WHERE OwnerId = '{0}'", ownerId);
                 using (SqlCommand command = new SqlCommand(query, conn))
                 {
-                    // TODO: DELETE THIS LINE
-                    Console.WriteLine(command.CommandText);
-
                     using (var reader = command.ExecuteReader())
                     {
                         while(reader.Read())
@@ -189,9 +176,6 @@ namespace DNA
                 String query = string.Format("SELECT Id FROM [dbo].[User] WHERE Login = '{0}'", login);
                 using (SqlCommand command = new SqlCommand(query, conn))
                 {
-                    // TODO: DELETE THIS LINE
-                    Console.WriteLine(command.CommandText);
-
                     using (var reader = command.ExecuteReader())
                     {
                         if (reader.Read())
