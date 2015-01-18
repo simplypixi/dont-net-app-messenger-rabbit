@@ -147,7 +147,7 @@ namespace DNA
                                         var authRequest = body.DeserializeAuthRequest();
                                         if (db.Register(authRequest.Login, authRequest.Password))
                                         {
-                                            GlobalsParameters.Instance.Status.Add(request.Login, PresenceStatus.Online);
+                                            Global.Status.Add(request.Login, PresenceStatus.Online);
                                             Console.WriteLine("Uzytkownik {0} pomyslnie sie zarejestrował.", authRequest.Login);
                                             response.Status = Status.OK;
                                             response.Message = "Udało się zarejestrować użytkownika.";
@@ -329,7 +329,7 @@ namespace DNA
                     " [LogOff] '{0}':'{1}'",
                     routingKey,
                     message.Login);
-                GlobalsParameters.Instance.Status.Remove(message.Login);
+                Global.Status.Remove(message.Login);
             }
         }
 
@@ -344,8 +344,8 @@ namespace DNA
         /// </param>
         private static void SendMessageNotification(MessageReq messageReq, bool dontDate = false)
         {
-            if (!(GlobalsParameters.Instance.Status.ContainsKey(messageReq.Recipient)
-                && GlobalsParameters.Instance.Status[messageReq.Recipient] != PresenceStatus.Offline))
+            if (!(Global.Status.ContainsKey(messageReq.Recipient)
+                && Global.Status[messageReq.Recipient] != PresenceStatus.Offline))
             {
                 var file = userPath + "//" + messageReq.Recipient + "_" + messageReq.Login;
                 var msg = messageReq.SendTime + " przez " + messageReq.Login + ":\n" + messageReq.Message + "\n";
@@ -390,11 +390,11 @@ namespace DNA
         /// </param>
         private static void SendStatusNotification(PresenceStatusNotification statusChange)
         {
-            if (GlobalsParameters.Instance.Status.ContainsKey(statusChange.Login)
-                && GlobalsParameters.Instance.Status[statusChange.Login] == PresenceStatus.Offline
+            if (Global.Status.ContainsKey(statusChange.Login)
+                && Global.Status[statusChange.Login] == PresenceStatus.Offline
                 && statusChange.PresenceStatus != PresenceStatus.Offline)
             {
-                GlobalsParameters.Instance.Status[statusChange.Login] = statusChange.PresenceStatus;
+                Global.Status[statusChange.Login] = statusChange.PresenceStatus;
                 SendOldMessages(statusChange.Login);
             }
 
@@ -422,13 +422,13 @@ namespace DNA
                         statusChange.Login,
                         statusChange.PresenceStatus,
                         statusChange.Recipient);
-                    if (!GlobalsParameters.Instance.Status.ContainsKey(statusChange.Login))
+                    if (!Global.Status.ContainsKey(statusChange.Login))
                     {
-                        GlobalsParameters.Instance.Status.Add(statusChange.Login, statusChange.PresenceStatus);
+                        Global.Status.Add(statusChange.Login, statusChange.PresenceStatus);
                     }
                     else
                     {
-                        GlobalsParameters.Instance.Status[statusChange.Login] = statusChange.PresenceStatus;
+                        Global.Status[statusChange.Login] = statusChange.PresenceStatus;
                     }
                 }
             }
