@@ -34,7 +34,6 @@ namespace DNAClient
             ConversationWindow window = new ConversationWindow();
 
             ConversationViewModel conversationViewModelModel = new ConversationViewModel(recipient, window);
-            conversationViewModelModel.LoadEmoticons();
             window.DataContext = conversationViewModelModel;
             window.Show();
             return conversationViewModelModel;

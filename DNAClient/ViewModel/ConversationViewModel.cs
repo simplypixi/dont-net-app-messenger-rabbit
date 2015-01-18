@@ -11,7 +11,6 @@ namespace DNAClient.ViewModel
 {
     using System;
     using System.Collections.Generic;
-    using System.Configuration;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
@@ -19,11 +18,8 @@ namespace DNAClient.ViewModel
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Documents;
-    using System.Windows.Input;
-    using System.Windows.Media.Animation;
     using System.Windows.Markup;
     using System.Windows.Media.Imaging;
-    using System.Windows.Media;
 
     using DNAClient.View;
     using DNAClient.ViewModel.Base;
@@ -39,31 +35,59 @@ namespace DNAClient.ViewModel
     public class ConversationViewModel : ViewModelBase
     {
         /// <summary>
-        /// Coś od zarządzania eventami i taskami, jeszcze nie ogarnąłem do końca
+        /// Manual reset event
         /// </summary>
         private static readonly ManualResetEvent FinishEvent = new ManualResetEvent(false);
-
-        // Wiadomość, użytkownik(nadawca), odbiorca 
         
+        /// <summary>
+        /// Fabryka połączeń rabbitMQ
+        /// </summary>
+        private static ConnectionFactory factory = Constants.ConnectionFactory;
+
+        /// <summary>
+        /// Treść wiadomości do wysłania
+        /// </summary>
         private string message;
 
-        private string user;
+        /// <summary>
+        /// Aktualnie zalogowany użytkownik
+        /// </summary>
+        private string currentUser;
 
+        /// <summary>
+        /// Odbiorca wiadomości
+        /// </summary>
         private string recipient;
 
+        /// <summary>
+        /// Załącznik do wiadomości
+        /// </summary>
         private Attachment attachment;
 
-        private ConversationWindow talkWindowGUI;
+        /// <summary>
+        /// Okno rozmowy (obejście dla dostępu do niektórych kontrolek)
+        /// </summary>
+        private ConversationWindow conversationWindow;
 
+        /// <summary>
+        /// Kontrolka odebranych wiadomości
+        /// </summary>
         private RichTextBox talkWindow;
 
-        // odebrane wiadomości (do przerobienia na listę lub coś w ten deseń)
+        /// <summary>
+        /// Dokument przechowujący odebrane wiadomości wraz z emotikonami
+        /// </summary>
         private FlowDocument received;
-        private static ConnectionFactory factory = Constants.ConnectionFactory;
+
+        /// <summary>
+        /// Aktualna ścieżka użytkownika
+        /// </summary>
         private string userPath;
 
-        
-        private Dictionary<string, string> _mappings = new Dictionary<string, string>();
+        /// <summary>
+        /// Słownik mapowania znaków specjalnych na emotikony
+        /// </summary>
+        private Dictionary<string, string> emoticonsMappings = new Dictionary<string, string>();
 
         /// <summary>
         /// Kontruktor klasy <see cref="ConversationViewModel"/>
@@ -71,7 +95,7 @@ namespace DNAClient.ViewModel
         public ConversationViewModel()
         {
             this.userPath = Constants.userPath;
-            this.User = GlobalsParameters.Instance.CurrentUser;
+            this.CurrentUser = GlobalsParameters.Instance.CurrentUser;
             this.SendMessageCommand = new RelayCommand(this.SendMessage);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
             this.AttachFileCommand = new RelayCommand(this.AttachFile);
@@ -81,14 +105,18 @@ namespace DNAClient.ViewModel
         /// Konstruktor ustawiający konkretnego odbiorcę
         /// </summary>
         /// <param name="recipient">
-        /// Odbiorca
+        /// Odbiorca wiadomości
         /// </param>
-        public ConversationViewModel(string recipient, ConversationWindow flowD)
+        /// <param name="conversationWindow">
+        /// Okno rozmowy
+        /// </param>
+        public ConversationViewModel(string recipient, ConversationWindow conversationWindow)
             : this()
         {
-            this.talkWindowGUI = flowD;
-            this.talkWindow = this.talkWindowGUI.Talk;
+            this.conversationWindow = conversationWindow;
+            this.talkWindow = this.conversationWindow.Talk;
             this.talkWindow.Document = new FlowDocument();
+            this.LoadEmoticons();
 
             this.Recipient = recipient;
             if (GlobalsParameters.TextCache.ContainsKey(this.Recipient))
@@ -117,17 +145,17 @@ namespace DNAClient.ViewModel
             }
         }
 
-        public string User
+        public string CurrentUser
         {
             get
             {
-                return this.user;
+                return this.currentUser;
             }
 
             set
             {
-                this.user = value;
-                this.RaisePropertyChanged("User");
+                this.currentUser = value;
+                this.RaisePropertyChanged("CurrentUser");
             }
         }
 
@@ -192,7 +220,7 @@ namespace DNAClient.ViewModel
                     Paragraph para = new Paragraph();
 
                     /* Konwertowanie tekstu na emotki */
-                    para = Emoticons(this.talkWindow.Document, msg);
+                    para = this.Emoticons(msg);
 
                     if (!GlobalsParameters.TextCache.ContainsKey(this.Recipient))
                     {
@@ -235,9 +263,12 @@ namespace DNAClient.ViewModel
             Functions.saveFile(historyFile, historyMessage + "\n");
         }
 
+        /// <summary>
+        /// Metoda zamykająca okno rozmowy, wywoływana z główego okna programu
+        /// </summary>
         public void CloseConversationWindow()
         {
-            this.CloseWindow(this.talkWindowGUI);
+            this.CloseWindow(this.conversationWindow);
         }
 
         /// <summary>
@@ -281,8 +312,10 @@ namespace DNAClient.ViewModel
                     {
                         attachmentInfo = "\n\n" + attachmentInfo;
                     }
+
                     messageInfo = attachmentInfo;
                 }
+
                 if (!string.IsNullOrEmpty(this.Message))
                 {
                     messageInfo = string.Format(
@@ -291,8 +324,9 @@ namespace DNAClient.ViewModel
                         this.Message,
                         attachmentInfo);
                 }
+
                 /* Konwertowanie tekstu na emotki */
-                Paragraph paragraph = this.Emoticons(this.talkWindow.Document, messageInfo);
+                Paragraph paragraph = this.Emoticons(messageInfo);
 
                 if (!GlobalsParameters.TextCache.ContainsKey(this.Recipient))
                 {
@@ -335,7 +369,7 @@ namespace DNAClient.ViewModel
 
                     var messageToSend = new MessageReq
                                       {
-                                          Login = this.User,
+                                          Login = this.CurrentUser,
                                           Message = !string.IsNullOrEmpty(this.Message) ? this.Message : string.Empty,
                                           Recipient = this.Recipient,
                                           SendTime = DateTimeOffset.Now,
@@ -344,12 +378,12 @@ namespace DNAClient.ViewModel
 
                     var body = messageToSend.Serialize();
                     channel.BasicPublish(Constants.Exchange, Constants.keyServerRequestMessage, null, body);
-                    Debug.WriteLine("{0} wysłał \"{1}\" do: {2}", this.User, this.Message, this.Recipient);
+                    Debug.WriteLine("{0} wysłał \"{1}\" do: {2}", this.CurrentUser, this.Message, this.Recipient);
                 }
             }
 
             this.attachment = null;
-            this.talkWindowGUI.SendFile.Content = "Dodaj plik";
+            this.conversationWindow.SendFile.Content = "Dodaj plik";
         }
 
         /// <summary>
@@ -405,6 +439,12 @@ namespace DNAClient.ViewModel
             }
         }
 
+        /// <summary>
+        /// Zamknięcie okna rozmowy i zakończenie 
+        /// </summary>
+        /// <param name="parameter">
+        /// The parameter.
+        /// </param>
         private void CloseWindow(object parameter)
         {
             var window = parameter as Window;
@@ -439,7 +479,7 @@ namespace DNAClient.ViewModel
             string match = string.Empty;
             int lowestPosition = text.Length;
 
-            foreach (KeyValuePair<string, string> pair in _mappings)
+            foreach (KeyValuePair<string, string> pair in this.emoticonsMappings)
             {
                 if (text.Contains(pair.Key))
                 {
@@ -458,89 +498,77 @@ namespace DNAClient.ViewModel
         /// <summary>
         /// Metoda konwertująca ciągn znaków na emotikonę
         /// </summary>
-        /// <param name="mainDoc">
-        /// The main doc.
-        /// </param>
         /// <param name="msg">
         /// The msg.
         /// </param>
         /// <returns>
         /// The <see cref="Paragraph"/>.
         /// </returns>
-        private Paragraph Emoticons(FlowDocument mainDoc, string msg)
+        private Paragraph Emoticons(string msg)
         {
-            FlowDocument flowD = mainDoc;
             Paragraph paragraph = new Paragraph();
 
             Run r = new Run(msg);
 
             paragraph.Inlines.Add(r);
 
-            string emoticonText = GetEmoticonText(r.Text);
+            string emoticonText = this.GetEmoticonText(r.Text);
 
             if (string.IsNullOrEmpty(emoticonText))
             {
                 return paragraph;
             }
-            else
-            {
-                while (!string.IsNullOrEmpty(emoticonText))
-                {
 
-                    TextPointer tp = r.ContentStart;
-                    if(emoticonText!=null)
+            while (!string.IsNullOrEmpty(emoticonText))
+            {
+
+                TextPointer tp = r.ContentStart;
+                if(emoticonText!=null)
                     while (!tp.GetTextInRun(LogicalDirection.Forward).StartsWith(emoticonText))
 
                         tp = tp.GetNextInsertionPosition(LogicalDirection.Forward);
-                    var tr = new TextRange(tp, tp.GetPositionAtOffset(emoticonText.Length)) { Text = " " };
+                var tr = new TextRange(tp, tp.GetPositionAtOffset(emoticonText.Length)) { Text = " " };
 
-                    //relative path to image smile file
-                    Console.WriteLine(emoticonText);
-                    string path = _mappings[emoticonText];
+                //relative path to image smile file
+                Console.WriteLine(emoticonText);
+                string path = this.emoticonsMappings[emoticonText];
 
-                    Image image = new Image
+                Image image = new Image
+                                  {
+                                      Source =
+                                          new BitmapImage(new Uri(path, UriKind.RelativeOrAbsolute)),
+                                      Width = 25,
+                                      Height = 25,
+                                  };
+
+                new InlineUIContainer(image, tp);
+
+                if (paragraph != null)
+                {
+                    var endRun = paragraph.Inlines.LastInline as Run;
+
+                    if (endRun == null)
                     {
-                        Source =
-                            new BitmapImage(new Uri(path, UriKind.RelativeOrAbsolute)),
-                        Width = 25,
-                        Height = 25,
-                    };
-
-                    new InlineUIContainer(image, tp);
-
-                    if (paragraph != null)
-                    {
-                        var endRun = paragraph.Inlines.LastInline as Run;
-
-                        if (endRun == null)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            emoticonText = GetEmoticonText(endRun.Text);
-                        }
-
+                        break;
                     }
-
+                    emoticonText = this.GetEmoticonText(endRun.Text);
                 }
-               
             }
             return paragraph;
         }
 
-        /* 
-         * Metoda wczytująca bazę emotikon 
-        */
-        public void LoadEmoticons()
+        /// <summary>
+        /// Metoda wczytująca emotikony
+        /// </summary>
+        private void LoadEmoticons()
         {
-            _mappings.Add(@"-.-", @"../../emots/e1_25.gif");
-            _mappings.Add(@"xD", @"../../emots/e2_25.gif");
-            _mappings.Add(@"o.O", @"../../emots/e6_25.gif");
-            _mappings.Add(@"oO", @"../../emots/e6_25.gif");
-            _mappings.Add(@":(", @"../../emots/e7_25.gif");
-            _mappings.Add(@":<", @"../../emots/e8_25.gif");
-            _mappings.Add(@":O", @"../../emots/e5_25.gif");
+            this.emoticonsMappings.Add(@"-.-", @"../../emots/e1_25.gif");
+            this.emoticonsMappings.Add(@"xD", @"../../emots/e2_25.gif");
+            this.emoticonsMappings.Add(@"o.O", @"../../emots/e6_25.gif");
+            this.emoticonsMappings.Add(@"oO", @"../../emots/e6_25.gif");
+            this.emoticonsMappings.Add(@":(", @"../../emots/e7_25.gif");
+            this.emoticonsMappings.Add(@":<", @"../../emots/e8_25.gif");
+            this.emoticonsMappings.Add(@":O", @"../../emots/e5_25.gif");
         }
 
     }
