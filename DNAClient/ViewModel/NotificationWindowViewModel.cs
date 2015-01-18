@@ -1,31 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.ObjectModel;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="NotificationWindowViewModel.cs" company="">
+//   
+// </copyright>
+// <summary>
+//   ViewModel okna notyfikacji
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace DNAClient.ViewModel
 {
-    using System;
-    using System.Diagnostics;
     using System.IO;
-    using System.Threading;
-    using System.Threading.Tasks;
     using System.Windows;
-    using System.Linq;
     using System.Windows.Documents;
 
     using DNAClient.ViewModel.Base;
-    using DNAClient.View;
 
     using DTO;
 
     using Microsoft.Win32;
 
+    using RabbitMQ.Client.Events;
+
+    /// <summary>
+    /// ViewModel okna notyfikacji
+    /// </summary>
     public class NotificationWindowViewModel : ViewModelBase
     {
         private string message;
@@ -37,6 +35,16 @@ namespace DNAClient.ViewModel
         /// </summary>
         private NotificationType notificationType;
 
+        /// <summary>
+        /// Polecenie otwarcia nowego okna rozmowy
+        /// </summary>
+        public RelayCommand NewConversationWindowCommand { get; set; }
+
+        /// <summary>
+        /// Polecenie zamknięcia okna notyfikacji
+        /// </summary>
+        public RelayCommand CloseWindowCommand { get; set; }
+
         public string Message
         {
             get
@@ -46,7 +54,7 @@ namespace DNAClient.ViewModel
             set
             {
                 this.message = value;
-                RaisePropertyChanged("Message");
+                this.RaisePropertyChanged("Message");
             }
         }
 
@@ -81,16 +89,21 @@ namespace DNAClient.ViewModel
             }
         }
 
-        public RelayCommand NewConversationWindowCommand { get; set; }
+        /// <summary>
+        /// Otwarcie nowego okna rozmowy
+        /// </summary>
+        /// <param name="parameter">
+        /// The parameter.
+        /// </param>
         private void NewConversationWindow(object parameter)
         {
             if (this.notificationType == NotificationType.Message)
             {
-                ConversationViewModel cvModel = ProductionWindowFactory.CreateConversationWindow(sender);
-                GlobalsParameters.OpenWindows.Add(cvModel);
+                ConversationViewModel conversationViewModel = ProductionWindowFactory.CreateConversationWindow(sender);
+                GlobalsParameters.OpenWindows.Add(conversationViewModel);
                 var msg = this.messageTMP.Body.DeserializeMessageNotification();
                
-                cvModel.AddToHistory(GlobalsParameters.NotificationCache[msg.Sender]);
+                conversationViewModel.AddToHistory(GlobalsParameters.NotificationCache[msg.Sender]);
             }
 
             if (this.notificationType == NotificationType.File)
@@ -99,9 +112,11 @@ namespace DNAClient.ViewModel
             }
 
             this.CloseWindow(parameter);
-            
         }
 
+        /// <summary>
+        /// Odbieranie pliku z załącznika wiadomości
+        /// </summary>
         private void GetFile()
         {
             if (this.messageTMP != null)
@@ -128,8 +143,6 @@ namespace DNAClient.ViewModel
             }
         }
 
-        public RelayCommand CloseWindowCommand { get; set; }
-
         private void CloseWindow(object parameter)
         {
             if (this.notificationType == NotificationType.Message)
@@ -151,8 +164,6 @@ namespace DNAClient.ViewModel
                 window.Close();
             }
         }
-
-
     }
 }
 
