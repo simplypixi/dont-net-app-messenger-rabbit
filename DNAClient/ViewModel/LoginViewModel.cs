@@ -118,7 +118,7 @@ namespace DNAClient.ViewModel
         {
             var loginWindow = parameter as LoginWindow;
 
-            if (loginWindow != null)
+            if (loginWindow != null && !string.IsNullOrEmpty(this.Login))
             {
                 GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
                 var rpcClient = new RabbitRpcConnection();
@@ -140,8 +140,12 @@ namespace DNAClient.ViewModel
                 }
                 else
                 {
-                    MessageBox.Show(response.Message,  "Błąd logowania");
+                    MessageBox.Show(response.Message, "Błąd logowania");
                 }
+            }
+            else
+            {
+                MessageBox.Show("Należy podać login.", "Błąd logowania");
             }
         }
 
@@ -155,9 +159,9 @@ namespace DNAClient.ViewModel
         {
             var loginWindow = parameter as LoginWindow;
 
-            if (loginWindow != null)
+            if (loginWindow != null && !string.IsNullOrEmpty(this.Login))
             {
-                if (loginWindow.Password.Password.Equals(loginWindow.RepeatPassword.Password))
+                if (!string.IsNullOrEmpty(loginWindow.Password.Password) && loginWindow.Password.Password.Equals(loginWindow.RepeatPassword.Password))
                 {
                     GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
 
@@ -185,10 +189,12 @@ namespace DNAClient.ViewModel
                 }
                 else
                 {
-                    MessageBox.Show(
-                            "Wprowadzone hasło i jego potwierdzenie są różne.",
-                            "Błąd rejestracji");
+                    MessageBox.Show("Nie wprowadzono haseł lub wprowadzone hasło i jego potwierdzenie są różne.", "Błąd rejestracji");
                 }
+            }
+            else
+            {
+                MessageBox.Show("Należy podać login.", "Błąd rejestracji");
             }
         }
 
