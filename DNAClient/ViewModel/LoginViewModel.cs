@@ -140,7 +140,7 @@ namespace DNAClient.ViewModel
                 if (response.Status == Status.OK)
                 {
                     ProductionWindowFactory.CreateMainWindow();
-                    loginWindow.Close();
+                    this.CloseWindow(parameter);
                 }
                 else
                 {
@@ -181,7 +181,7 @@ namespace DNAClient.ViewModel
                     if (response.Status == Status.OK)
                     {
                         ProductionWindowFactory.CreateMainWindow();
-                        loginWindow.Close();
+                        this.CloseWindow(parameter);
                     }
                     else
                     {

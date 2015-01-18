@@ -69,7 +69,7 @@
                     <ListBox.ContextMenu>
                         <ContextMenu Background="#FF02B6E3" Foreground="White">
                             <MenuItem Header="Historia rozmowy" Command="{Binding OpenHistoryCommand}" />
-                            <MenuItem Header="Usuń" Command="{Binding DeleteContactCommand}" CommandParameter="{Binding SelectedContact}"/>
+                            <MenuItem Header="Usuń" Command="{Binding DeleteContactCommand}" />
                         </ContextMenu>
                     </ListBox.ContextMenu>
                     
@@ -97,7 +97,7 @@
                 <TextBox x:Name="loginBox" HorizontalAlignment="Left" Height="40" Padding="5,5,10,0" Margin="10,13,0,-1" TextWrapping="Wrap" VerticalAlignment="Top" Width="239" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="Segoe UI Light" FontSize="17" BorderThickness="1" Text="{Binding Friend}"/>
                 <Button x:Name="button" 
                         Padding="0,-18,0,0" 
-                        Command="{Binding addFriendCommand, UpdateSourceTrigger=PropertyChanged}"
+                        Command="{Binding AddFriendCommand, UpdateSourceTrigger=PropertyChanged}"
                         CommandParameter=" "
                         Content="+" HorizontalAlignment="Left" VerticalAlignment="Top" Width="43" Height="40" Background="#FF02B6E3" BorderBrush="{x:Null}" FontFamily="Segoe UI Semibold" FontSize="48" 
                         Foreground="White" ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="254,8,-2,0" Cursor="Hand" ToolTip="Kliknij, aby dodać znajomego."/>

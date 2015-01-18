@@ -47,7 +47,7 @@ namespace DNAClient
         /// Nazwa wysyłającego notyfikację
         /// </param>
         /// <param name="mess">
-        /// Dane o wiadoności z rabbita
+        /// Dane o wiadomości z rabbita
         /// </param>
         /// <param name="notificationType">
         /// Typ notyfikacji
