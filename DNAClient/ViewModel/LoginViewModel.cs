@@ -56,11 +56,7 @@ namespace DNAClient.ViewModel
         {
             get
             {
-                if (this.login != null)
-                {
-                    return this.login.ToLower();
-                }
-                return string.Empty;
+                    return this.login;
             }
 
             set
@@ -124,12 +120,12 @@ namespace DNAClient.ViewModel
 
             if (loginWindow != null)
             {
-                GlobalsParameters.Instance.CurrentUser = this.Login;
+                GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
                 var rpcClient = new RabbitRpcConnection();
 
                 var authRequest = new AuthRequest
                                       {
-                                          Login = this.Login,
+                                          Login = this.Login.ToLower(),
                                           Password = loginWindow.Password.Password,
                                           RequestType = Request.Type.Login,
                                       };
@@ -164,12 +160,12 @@ namespace DNAClient.ViewModel
             {
                 if (loginWindow.Password.Password.Equals(loginWindow.RepeatPassword.Password))
                 {
-                    GlobalsParameters.Instance.CurrentUser = this.Login;
+                    GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
 
                     var rpcClient = new RabbitRpcConnection();
                     var authRequest = new AuthRequest
                                           {
-                                              Login = this.Login,
+                                              Login = this.Login.ToLower(),
                                               Password = loginWindow.Password.Password,
                                               RequestType = Request.Type.Register,
                                           };
