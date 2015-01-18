@@ -371,7 +371,7 @@ namespace DNAClient.ViewModel
                 {
                     openWindow.CloseConversationWindow();    
                 }
-
+                this.LogOff();
                 window.Close();
             }
         }
@@ -705,16 +705,43 @@ namespace DNAClient.ViewModel
         /// </summary>
         private void LoadOldMessages()
         {
-            var rpcClient = new RabbitRpcConnection();
-
-            var request = new Request
+            using (var connection = ConnectionFactory.CreateConnection())
             {
-                Login = this.CurrentUser.ToLower(),
-                RequestType = Request.Type.OldMessages
-            };
+                using (var channel = connection.CreateModel())
+                {
+                    channel.ExchangeDeclare(Constants.Exchange, "topic");
+                    
+                    var message = new Request()
+                    {
+                        Login = this.CurrentUser.ToLower(),
+                    };
 
-            rpcClient.OldMessagesCall(request.Serialize());
-            rpcClient.Close();
+                    var body = message.Serialize();
+                    channel.BasicPublish(Constants.Exchange, Constants.keyServerRequestGetOld, null, body);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Poinformowanie serwera o zamknięciu komunikatora
+        /// </summary>
+        private void LogOff()
+        {
+            using (var connection = ConnectionFactory.CreateConnection())
+            {
+                using (var channel = connection.CreateModel())
+                {
+                    channel.ExchangeDeclare(Constants.Exchange, "topic");
+
+                    var message = new Request()
+                    {
+                        Login = this.CurrentUser.ToLower(),
+                    };
+
+                    var body = message.Serialize();
+                    channel.BasicPublish(Constants.Exchange, Constants.keyServerRequestLogOff, null, body);
+                }
+            }
         }
 
         /// <summary>

@@ -89,19 +89,6 @@ namespace DNAClient.RabbitFunctions
         }
 
         /// <summary>
-        /// Pobieranie wiadomości wysłanych do użytkownika podczas gdy był on offline
-        /// </summary>
-        /// <param name="serializedRequest">
-        /// Serializowany request
-        /// </param>
-        public void OldMessagesCall(byte[] serializedRequest)
-        {
-            var corrId = Guid.NewGuid().ToString();
-            var properties = this.GetBasicProperties(corrId);
-            this.channel.BasicPublish("", Constants.Exchange, properties, serializedRequest);
-        }
-
-        /// <summary>
         /// Metoda zamykająca rabbitowe połączenie 
         /// </summary>
         public void Close()

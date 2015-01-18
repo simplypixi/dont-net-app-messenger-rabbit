@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Globals.cs" company="">
+// <copyright file="Globals.cs" company="DONTNET">
 //   
 // </copyright>
 // <summary>
@@ -7,10 +7,10 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace DNAClient
+namespace DNA
 {
-    using System;
     using System.Collections.Generic;
+
     using DTO;
 
     /// <summary>
@@ -18,29 +18,37 @@ namespace DNAClient
     /// </summary>
     public class GlobalsParameters
     {
+        /// <summary>
+        /// The instance.
+        /// </summary>
         private static GlobalsParameters instance;
 
+        /// <summary>
+        /// Gets the instance.
+        /// </summary>
         public static GlobalsParameters Instance
         {
             get
             {
-                if (instance == null)
-                {
-                    instance = new GlobalsParameters();
-                }
-
-                return instance;
+                return instance ?? (instance = new GlobalsParameters(new Dictionary<string, PresenceStatus>()));
             }
         }
 
         /// <summary>
         /// Słownik przechowujący aktualne statusy użytkowników
         /// </summary>
-        public IDictionary<String, PresenceStatus> status;
+        public IDictionary<string, PresenceStatus> Status { get; set; }
 
-        private GlobalsParameters()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GlobalsParameters"/> class. 
+        /// Prevents a default instance of the <see cref="GlobalsParameters"/> class from being created.
+        /// </summary>
+        /// <param name="status">
+        /// The status.
+        /// </param>
+        public GlobalsParameters(IDictionary<string, PresenceStatus> status)
         {
-            
+            this.Status = status;
         }
     }
 }

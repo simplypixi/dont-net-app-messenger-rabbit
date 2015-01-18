@@ -3,7 +3,7 @@
 //   
 // </copyright>
 // <summary>
-//  Serwer obsługujący wiadomości przechodzące przez kolejki rabbita 
+//   Serwer obsługujący wiadomości przechodzące przez kolejki rabbita
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -16,8 +16,6 @@ namespace DNA
     using System.Threading;
     using System.Threading.Tasks;
 
-    using DNAClient;
-
     using DTO;
     using RabbitMQ.Client;
     using RabbitMQ.Client.Events;
@@ -27,17 +25,42 @@ namespace DNA
     /// </summary>
     public class Server
     {
+        /// <summary>
+        /// The finish event.
+        /// </summary>
         private static readonly ManualResetEvent FinishEvent = new ManualResetEvent(false);
+
+        /// <summary>
+        /// The factory.
+        /// </summary>
         private static ConnectionFactory factory = Constants.ConnectionFactory;
+
+        /// <summary>
+        /// The db.
+        /// </summary>
         private static DatabaseHelper db = new DatabaseHelper();
+
+        /// <summary>
+        /// The user path.
+        /// </summary>
         private static string userPath;
 
-        static void Main(string[] args)
+        /// <summary>
+        /// The global.
+        /// </summary>
+        private static readonly GlobalsParameters Global = new GlobalsParameters(new Dictionary<string, PresenceStatus>());
+
+        /// <summary>
+        /// The main.
+        /// </summary>
+        /// <param name="args">
+        /// The args.
+        /// </param>
+        public static void Main(string[] args)
         {
             userPath = Constants.userPath;
-            GlobalsParameters.Instance.status = new Dictionary<string, PresenceStatus>();
-            Task.Factory.StartNew(() => GetChannel());
-            Task.Factory.StartNew(() => GetChannelRPC());
+            Task.Factory.StartNew(GetChannel);
+            Task.Factory.StartNew(GetChannelRpc);
 
             Console.WriteLine("Starting server...");
 
@@ -45,6 +68,9 @@ namespace DNA
             FinishEvent.Set();
         }
 
+        /// <summary>
+        /// The get channel.
+        /// </summary>
         public static void GetChannel()
         {
             using (var connection = factory.CreateConnection())
@@ -63,7 +89,10 @@ namespace DNA
             }
         }
 
-        public static void GetChannelRPC()
+        /// <summary>
+        /// The get channel rpc.
+        /// </summary>
+        public static void GetChannelRpc()
         {
             using (var connection = factory.CreateConnection())
             {
@@ -78,7 +107,7 @@ namespace DNA
 
                     while (true)
                     {
-                        var ea = (BasicDeliverEventArgs)consumer.Queue.Dequeue();
+                        var ea = consumer.Queue.Dequeue();
 
                         var body = ea.Body;
                         var props = ea.BasicProperties;
@@ -86,111 +115,121 @@ namespace DNA
                         replyProps.CorrelationId = props.CorrelationId;
                         try
                         {
-                            Request request = body.DeserializeRequest();
-                            // Logowanie
-                            if (request.RequestType == AuthRequest.Type.Login)
-                            {
-                                AuthResponse response = new AuthResponse();
-                                AuthRequest authRequest = body.DeserializeAuthRequest();
-                                if (db.Login(authRequest.Login, authRequest.Password))
-                                {
-                                    GlobalsParameters.Instance.status.Add(request.Login, PresenceStatus.Online);
-                                    Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie sie zalogowal.", authRequest.Login));
-                                    response.Status = Status.OK;
-                                    response.Message = "Udało się zalogować.";
-                                }
-                                else
-                                {
-                                    Console.WriteLine(string.Format("Nieudana proba zalogowania przez uzytkownika {0}.", authRequest.Login));
-                                    response.Status = Status.Error;
-                                    response.Message = "Nie udało się zalogować.";
-                                }
-                                responseBytes = response.Serialize();
-                            }
-                            // Rejestracja
-                            else if (request.RequestType == AuthRequest.Type.Register)
-                            {
-                                AuthResponse response = new AuthResponse();
-                                AuthRequest authRequest = body.DeserializeAuthRequest();
-                                if (db.Register(authRequest.Login, authRequest.Password))
-                                {
-                                    GlobalsParameters.Instance.status.Add(request.Login, PresenceStatus.Online);
-                                    Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie sie zarejestrował.", authRequest.Login));
-                                    response.Status = Status.OK;
-                                    response.Message = "Udało się zarejestrować użytkownika.";
-                                }
-                                else
-                                {
-                                    Console.WriteLine(string.Format("Nieudana proba zarejestrowania uzytkownika {0}.", authRequest.Login));
-                                    response.Status = Status.Error;
-                                    response.Message = "Nie udało się zarejestrować użytkownika.";
-                                }
-                                responseBytes = response.Serialize();
-                            }
-                            // Dodawanie znajomych
-                            else if (request.RequestType == Request.Type.AddFriend)
-                            {
-                                FriendResponse response = new FriendResponse();
-                                FriendRequest friendRequest = body.DeserializeFriendRequest();
+                            var request = body.DeserializeRequest();
 
-                                if (db.AddFriend(friendRequest.Login, friendRequest.FriendLogin))
-                                {
-                                    Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie dodal kontakt {1}.", friendRequest.Login, friendRequest.FriendLogin));
-                                    response.Status = Status.OK;
-                                    response.Message = "Udało się dodać kontakt.";
-                                }
-                                else
-                                {
-                                    Console.WriteLine(string.Format("Nieudana proba dodania kontaktu {0} przez uzytkownika {1}.", friendRequest.FriendLogin, friendRequest.Login));
-                                    response.Status = Status.Error;
-                                    response.Message = "Nie udało się dodać kontaktu.";
-                                }
-                                responseBytes = response.Serialize();
-                            }
-                            // Usuwanie znajomych
-                            else if (request.RequestType == Request.Type.RemoveFriend)
+                            switch (request.RequestType)
                             {
-                                FriendResponse response = new FriendResponse();
-                                FriendRequest friendRequest = body.DeserializeFriendRequest();
-                                if (db.RemoveFriend(friendRequest.Login, friendRequest.FriendLogin))
-                                {
-                                    Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie dodal kontakt {1}.", friendRequest.Login, friendRequest.FriendLogin));
-                                    response.Status = Status.OK;
-                                    response.Message = "Udało się dodać kontakt.";
-                                }
-                                else
-                                {
-                                    Console.WriteLine(string.Format("Nieudana proba dodania kontaktu {0} przez uzytkownika {1}.", friendRequest.FriendLogin, friendRequest.Login));
-                                    response.Status = Status.Error;
-                                    response.Message = "Nie udało się dodać kontaktu.";
-                                }
-                                responseBytes = response.Serialize();
-                            }
-                            // Pobieranie listy znajomych
-                            else if (request.RequestType == Request.Type.GetFriends)
-                            {
-                                FriendResponse response = new FriendResponse();
-                                FriendRequest friendRequest = body.DeserializeFriendRequest();
-                                List<string> friends = db.GetFriends(friendRequest.Login);
-                                if (friends != null)
-                                {
-                                    Console.WriteLine(string.Format("Uzytkownik {0} pomyslnie pobral kontakty.", friendRequest.Login));
-                                    response.Status = Status.OK;
-                                    response.friendsList = friends;
-                                    response.Message = "Udało się pobrac kontakty.";
-                                }
-                                else
-                                {
-                                    Console.WriteLine(string.Format("Nie udalo sie pobrac kontaktow dla uzytkownika {0}.", friendRequest.Login));
-                                    response.Status = Status.Error;
-                                    response.friendsList = friends;
-                                    response.Message = "Nie pobrano żadnych kontaków.";
-                                }
-                                responseBytes = response.Serialize();
-                            }
-                            else if (request.RequestType == Request.Type.OldMessages)
-                            {
-                                sendOldMessages(request.Login);
+                                case Request.Type.Login:
+                                    {
+                                        var response = new AuthResponse();
+                                        var authRequest = body.DeserializeAuthRequest();
+                                        if (db.Login(authRequest.Login, authRequest.Password))
+                                        {
+                                            Global.Status.Add(request.Login, PresenceStatus.Online);
+                                            Console.WriteLine("Uzytkownik {0} pomyslnie sie zalogowal.", authRequest.Login);
+                                            response.Status = Status.OK;
+                                            response.Message = "Udało się zalogować.";
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Nieudana proba zalogowania przez uzytkownika {0}.", authRequest.Login);
+                                            response.Status = Status.Error;
+                                            response.Message = "Nie udało się zalogować.";
+                                        }
+
+                                        responseBytes = response.Serialize();
+                                    }
+
+                                    break;
+                                case Request.Type.Register:
+                                    {
+                                        var response = new AuthResponse();
+                                        var authRequest = body.DeserializeAuthRequest();
+                                        if (db.Register(authRequest.Login, authRequest.Password))
+                                        {
+                                            GlobalsParameters.Instance.Status.Add(request.Login, PresenceStatus.Online);
+                                            Console.WriteLine("Uzytkownik {0} pomyslnie sie zarejestrował.", authRequest.Login);
+                                            response.Status = Status.OK;
+                                            response.Message = "Udało się zarejestrować użytkownika.";
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Nieudana proba zarejestrowania uzytkownika {0}.", authRequest.Login);
+                                            response.Status = Status.Error;
+                                            response.Message = "Nie udało się zarejestrować użytkownika.";
+                                        }
+
+                                        responseBytes = response.Serialize();
+                                    }
+
+                                    break;
+                                case Request.Type.AddFriend:
+                                    {
+                                        var response = new FriendResponse();
+                                        var friendRequest = body.DeserializeFriendRequest();
+
+                                        if (db.AddFriend(friendRequest.Login, friendRequest.FriendLogin))
+                                        {
+                                            Console.WriteLine("Uzytkownik {0} pomyslnie dodal kontakt {1}.", friendRequest.Login, friendRequest.FriendLogin);
+                                            response.Status = Status.OK;
+                                            response.Message = "Udało się dodać kontakt.";
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Nieudana proba dodania kontaktu {0} przez uzytkownika {1}.", friendRequest.FriendLogin, friendRequest.Login);
+                                            response.Status = Status.Error;
+                                            response.Message = "Nie udało się dodać kontaktu.";
+                                        }
+
+                                        responseBytes = response.Serialize();
+                                    }
+
+                                    break;
+                                case Request.Type.RemoveFriend:
+                                    {
+                                        var response = new FriendResponse();
+                                        var friendRequest = body.DeserializeFriendRequest();
+                                        if (db.RemoveFriend(friendRequest.Login, friendRequest.FriendLogin))
+                                        {
+                                            Console.WriteLine("Uzytkownik {0} pomyslnie dodal kontakt {1}.", friendRequest.Login, friendRequest.FriendLogin);
+                                            response.Status = Status.OK;
+                                            response.Message = "Udało się dodać kontakt.";
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Nieudana proba dodania kontaktu {0} przez uzytkownika {1}.", friendRequest.FriendLogin, friendRequest.Login);
+                                            response.Status = Status.Error;
+                                            response.Message = "Nie udało się dodać kontaktu.";
+                                        }
+
+                                        responseBytes = response.Serialize();
+                                    }
+
+                                    break;
+                                case Request.Type.GetFriends:
+                                    {
+                                        var response = new FriendResponse();
+                                        var friendRequest = body.DeserializeFriendRequest();
+                                        var friends = db.GetFriends(friendRequest.Login);
+                                        if (friends != null)
+                                        {
+                                            Console.WriteLine("Uzytkownik {0} pomyslnie pobral kontakty.", friendRequest.Login);
+                                            response.Status = Status.OK;
+                                            response.friendsList = friends;
+                                            response.Message = "Udało się pobrac kontakty.";
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Nie udalo sie pobrac kontaktow dla uzytkownika {0}.", friendRequest.Login);
+                                            response.Status = Status.Error;
+                                            response.friendsList = null;
+                                            response.Message = "Nie pobrano żadnych kontaków.";
+                                        }
+
+                                        responseBytes = response.Serialize();
+                                    }
+
+                                    break;
                             }
                         }
                         catch (Exception e)
@@ -199,7 +238,7 @@ namespace DNA
                         }
                         finally
                         {
-                            channel.BasicPublish("", props.ReplyTo, replyProps, responseBytes);
+                            channel.BasicPublish(string.Empty, props.ReplyTo, replyProps, responseBytes);
                             channel.BasicAck(ea.DeliveryTag, false);
                         }
                     }
@@ -207,31 +246,32 @@ namespace DNA
             }
         }
 
-        public static void sendOldMessages(string login)
+        /// <summary>
+        /// The send old messages.
+        /// </summary>
+        /// <param name="login">
+        /// The login.
+        /// </param>
+        public static void SendOldMessages(string login)
         {
-            string[] filePaths = Directory.GetFiles(userPath);
-            for (int i = 0; i < filePaths.Length; i++)
+            var filePaths = Directory.GetFiles(userPath);
+            foreach (var t in filePaths)
             {
-                if (Regex.IsMatch(filePaths[i], string.Format(@"{0}_(.*)", login)))
+                if (!Regex.IsMatch(t, string.Format(@"{0}_(.*)", login)))
                 {
-                    var regex = Regex.Match(
-                        filePaths[i],
-                        string.Format(@"{0}_(.*)", login));
-                    var group = regex.Groups[1];
-                    string sender = group.Value;
-                    var file = userPath + "//" + login + "_" + sender;
-                    StreamReader streamReader = new StreamReader(file);
-                    string message = streamReader.ReadToEnd();
-                    streamReader.Close();
-                    MessageReq messageReq = new MessageReq()
-                    {
-                        Recipient = login,
-                        Login = sender,
-                        Message = message
-                    };
-                    File.Delete(file);
-                    SendMessageNotification(messageReq, true);
+                    continue;
                 }
+
+                var regex = Regex.Match(t, string.Format(@"{0}_(.*)", login));
+                var group = regex.Groups[1];
+                var sender = @group.Value;
+                var file = userPath + "//" + login + "_" + sender;
+                var streamReader = new StreamReader(file);
+                var message = streamReader.ReadToEnd();
+                streamReader.Close();
+                var messageReq = new MessageReq { Recipient = login, Login = sender, Message = message };
+                File.Delete(file);
+                SendMessageNotification(messageReq, true);
             }
         }
 
@@ -269,18 +309,50 @@ namespace DNA
                     message.PresenceStatus);
                 SendStatusNotification(message);
             }
+
+            if (routingKey == Constants.keyServerRequestGetOld)
+            {
+                var message = body.DeserializeRequest();
+
+                Console.WriteLine(
+                    " [GetOldMessages] '{0}':'{1}'",
+                    routingKey,
+                    message.Login);
+                SendOldMessages(message.Login);
+            }
+
+            if (routingKey == Constants.keyServerRequestLogOff)
+            {
+                var message = body.DeserializeRequest();
+
+                Console.WriteLine(
+                    " [LogOff] '{0}':'{1}'",
+                    routingKey,
+                    message.Login);
+                GlobalsParameters.Instance.Status.Remove(message.Login);
+            }
         }
 
+        /// <summary>
+        /// The send message notification.
+        /// </summary>
+        /// <param name="messageReq">
+        /// The message req.
+        /// </param>
+        /// <param name="dontDate">
+        /// The dont date.
+        /// </param>
         private static void SendMessageNotification(MessageReq messageReq, bool dontDate = false)
         {
-            if (!(GlobalsParameters.Instance.status.ContainsKey(messageReq.Recipient)
-                && GlobalsParameters.Instance.status[messageReq.Recipient] != PresenceStatus.Offline))
+            if (!(GlobalsParameters.Instance.Status.ContainsKey(messageReq.Recipient)
+                && GlobalsParameters.Instance.Status[messageReq.Recipient] != PresenceStatus.Offline))
             {
                 var file = userPath + "//" + messageReq.Recipient + "_" + messageReq.Login;
                 var msg = messageReq.SendTime + " przez " + messageReq.Login + ":\n" + messageReq.Message + "\n";
                 Functions.saveFile(file, msg);
                 return;
             }
+
             using (var connection = factory.CreateConnection())
             {
                 using (var channel = connection.CreateModel())
@@ -310,15 +382,22 @@ namespace DNA
             }
         }
 
+        /// <summary>
+        /// The send status notification.
+        /// </summary>
+        /// <param name="statusChange">
+        /// The status change.
+        /// </param>
         private static void SendStatusNotification(PresenceStatusNotification statusChange)
         {
-            if (GlobalsParameters.Instance.status.ContainsKey(statusChange.Login)
-                && GlobalsParameters.Instance.status[statusChange.Login] == PresenceStatus.Offline
+            if (GlobalsParameters.Instance.Status.ContainsKey(statusChange.Login)
+                && GlobalsParameters.Instance.Status[statusChange.Login] == PresenceStatus.Offline
                 && statusChange.PresenceStatus != PresenceStatus.Offline)
             {
-                GlobalsParameters.Instance.status[statusChange.Login] = statusChange.PresenceStatus;
-                sendOldMessages(statusChange.Login);
+                GlobalsParameters.Instance.Status[statusChange.Login] = statusChange.PresenceStatus;
+                SendOldMessages(statusChange.Login);
             }
+
             using (var connection = factory.CreateConnection())
             {
                 using (var channel = connection.CreateModel())
@@ -343,18 +422,16 @@ namespace DNA
                         statusChange.Login,
                         statusChange.PresenceStatus,
                         statusChange.Recipient);
-                    if (!GlobalsParameters.Instance.status.ContainsKey(statusChange.Login))
+                    if (!GlobalsParameters.Instance.Status.ContainsKey(statusChange.Login))
                     {
-                        GlobalsParameters.Instance.status.Add(statusChange.Login, statusChange.PresenceStatus);
+                        GlobalsParameters.Instance.Status.Add(statusChange.Login, statusChange.PresenceStatus);
                     }
                     else
                     {
-                        GlobalsParameters.Instance.status[statusChange.Login] = statusChange.PresenceStatus;
+                        GlobalsParameters.Instance.Status[statusChange.Login] = statusChange.PresenceStatus;
                     }
                 }
             }
         }
     }
-
-
 }
