@@ -140,8 +140,7 @@ namespace DNAClient.ViewModel
                 }
                 else
                 {
-                    MessageBox.Show(
-                        "Wpisano błędne dane logowania. Upewnij się czy wpisałeś poprawne dane, a następnie spróbuj ponownie.",  "Błąd logowania");
+                    MessageBox.Show(response.Message,  "Błąd logowania");
                 }
             }
         }
@@ -181,10 +180,7 @@ namespace DNAClient.ViewModel
                     }
                     else
                     {
-                        MessageBox.Show(
-                            "Wpisano błędne dane rejestracji lub istnieje już użytkownik o nazwie:" + this.Login
-                            + ".\nSpróbuj wybrać inną nazwę użytkownika.",
-                            "Błąd rejestracji");
+                        MessageBox.Show(response.Message, "Błąd rejestracji");
                     }
                 }
                 else

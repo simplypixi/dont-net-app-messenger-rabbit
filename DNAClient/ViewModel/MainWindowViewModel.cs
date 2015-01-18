@@ -107,7 +107,7 @@ namespace DNAClient.ViewModel
         {
             get
             {
-                return this.currentUser.ToLower();
+                return this.currentUser;
             }
 
             set
@@ -314,7 +314,7 @@ namespace DNAClient.ViewModel
                     }
                 }
 
-                if (this.NewFriendName.ToLower().Equals(this.CurrentUser))
+                if (this.NewFriendName.ToLower().Equals(this.CurrentUser.ToLower()))
                 {
                     MessageBox.Show("Nie możesz dodać siebie do znajomych!", "Znajdź sobie znajomych");
                 }
@@ -328,7 +328,7 @@ namespace DNAClient.ViewModel
 
                     var friendRequest = new FriendRequest
                     {
-                        Login = this.CurrentUser,
+                        Login = this.CurrentUser.ToLower(),
                         FriendLogin = this.NewFriendName,
                         RequestType = Request.Type.AddFriend,
                     };
@@ -455,7 +455,7 @@ namespace DNAClient.ViewModel
 
                     var message = new PresenceStatusNotification
                                       {
-                                          Login = this.CurrentUser,
+                                          Login = this.CurrentUser.ToLower(),
                                           PresenceStatus = status,
                                           Recipient = recipient
                                       };
@@ -489,7 +489,7 @@ namespace DNAClient.ViewModel
                     channel.QueueBind(
                         queueName,
                         Constants.Exchange,
-                        string.Format(Constants.keyClientNotification + ".*.{0}.*", this.CurrentUser));
+                        string.Format(Constants.keyClientNotification + ".*.{0}.*", this.CurrentUser.ToLower()));
                     channel.BasicConsume(queueName, true, consumer);
 
                     FinishEvent.WaitOne();
@@ -533,7 +533,7 @@ namespace DNAClient.ViewModel
                 {
                     if (message.PresenceStatus.Equals(PresenceStatus.Demand))
                     {
-                        this.SendStatusToQueue(contact.Name, null);
+                        this.SendStatusToQueue(contact.Name.ToLower(), null);
                     }
 
                     contact.PresenceStatus = message.PresenceStatus;
@@ -709,7 +709,7 @@ namespace DNAClient.ViewModel
 
             var request = new Request
             {
-                Login = this.CurrentUser,
+                Login = this.CurrentUser.ToLower(),
                 RequestType = Request.Type.OldMessages
             };
 
@@ -759,7 +759,7 @@ namespace DNAClient.ViewModel
             }
             else
             {
-                MessageBox.Show("Wystąpił błąd podczas ładowania listy znajomych", "Błąd ładowania listy znajomych");
+                MessageBox.Show(friendResponse.Message, "Błąd ładowania listy znajomych");
             }
 
             return friends;

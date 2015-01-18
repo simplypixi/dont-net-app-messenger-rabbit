@@ -94,8 +94,8 @@
             </Grid>
 
             <Grid Height="52" Margin="0" HorizontalAlignment="Left" Width="295">
-                <TextBox x:Name="loginBox" HorizontalAlignment="Left" Height="40" Padding="5,5,10,0" Margin="10,13,0,-1" TextWrapping="Wrap" VerticalAlignment="Top" Width="239" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="Segoe UI Light" FontSize="17" BorderThickness="1" Text="{Binding Friend}"/>
-                <Button x:Name="button" 
+                <TextBox x:Name="LoginBox" HorizontalAlignment="Left" Height="40" Padding="5,5,10,0" Margin="10,13,0,-1" TextWrapping="Wrap" VerticalAlignment="Top" Width="239" SpellCheck.IsEnabled="True" BorderBrush="{x:Null}" Foreground="#FFB6B6B6" FontFamily="Segoe UI Light" FontSize="17" BorderThickness="1" Text="{Binding NewFriendName}"/>
+                <Button x:Name="NewFriendButton" 
                         Padding="0,-18,0,0" 
                         Command="{Binding AddFriendCommand, UpdateSourceTrigger=PropertyChanged}"
                         CommandParameter=" "
