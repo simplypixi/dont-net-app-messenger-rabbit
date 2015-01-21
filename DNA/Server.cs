@@ -48,7 +48,8 @@ namespace DNA
         /// <summary>
         /// The global.
         /// </summary>
-        private static readonly GlobalsParameters Global = new GlobalsParameters(new Dictionary<string, PresenceStatus>());
+        private static readonly GlobalsParameters Global =
+            new GlobalsParameters(new Dictionary<string, PresenceStatus>());
 
         /// <summary>
         /// The main.
@@ -98,7 +99,7 @@ namespace DNA
             {
                 using (var channel = connection.CreateModel())
                 {
-                    byte[] responseBytes = new Response().Serialize();
+                    var response = new Response();
                     channel.QueueDeclare(Constants.Exchange, false, false, false, null);
                     channel.BasicQos(0, 1, false);
                     var consumer = new QueueingBasicConsumer(channel);
@@ -108,7 +109,6 @@ namespace DNA
                     while (true)
                     {
                         var ea = consumer.Queue.Dequeue();
-
                         var body = ea.Body;
                         var props = ea.BasicProperties;
                         var replyProps = channel.CreateBasicProperties();
@@ -116,119 +116,26 @@ namespace DNA
                         try
                         {
                             var request = body.DeserializeRequest();
-
+                            Console.WriteLine(
+                                "Incoming RPC request type {0} from {1}: ", 
+                                request.RequestType, 
+                                request.Login);
                             switch (request.RequestType)
                             {
                                 case Request.Type.Login:
-                                    {
-                                        var response = new AuthResponse();
-                                        var authRequest = body.DeserializeAuthRequest();
-                                        if (db.Login(authRequest.Login, authRequest.Password))
-                                        {
-                                            Global.Status.Add(request.Login, PresenceStatus.Online);
-                                            Console.WriteLine("Uzytkownik {0} pomyslnie sie zalogowal.", authRequest.Login);
-                                            response.Status = Status.OK;
-                                            response.Message = "Udało się zalogować.";
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("Nieudana proba zalogowania przez uzytkownika {0}.", authRequest.Login);
-                                            response.Status = Status.Error;
-                                            response.Message = "Nie udało się zalogować.";
-                                        }
-
-                                        responseBytes = response.Serialize();
-                                    }
-
+                                    response = Login(body, request);
                                     break;
                                 case Request.Type.Register:
-                                    {
-                                        var response = new AuthResponse();
-                                        var authRequest = body.DeserializeAuthRequest();
-                                        if (db.Register(authRequest.Login, authRequest.Password))
-                                        {
-                                            Global.Status.Add(request.Login, PresenceStatus.Online);
-                                            Console.WriteLine("Uzytkownik {0} pomyslnie sie zarejestrował.", authRequest.Login);
-                                            response.Status = Status.OK;
-                                            response.Message = "Udało się zarejestrować użytkownika.";
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("Nieudana proba zarejestrowania uzytkownika {0}.", authRequest.Login);
-                                            response.Status = Status.Error;
-                                            response.Message = "Nie udało się zarejestrować użytkownika.";
-                                        }
-
-                                        responseBytes = response.Serialize();
-                                    }
-
+                                    response = Register(body, request);
                                     break;
                                 case Request.Type.AddFriend:
-                                    {
-                                        var response = new FriendResponse();
-                                        var friendRequest = body.DeserializeFriendRequest();
-
-                                        if (db.AddFriend(friendRequest.Login, friendRequest.FriendLogin))
-                                        {
-                                            Console.WriteLine("Uzytkownik {0} pomyslnie dodal kontakt {1}.", friendRequest.Login, friendRequest.FriendLogin);
-                                            response.Status = Status.OK;
-                                            response.Message = "Udało się dodać kontakt.";
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("Nieudana proba dodania kontaktu {0} przez uzytkownika {1}.", friendRequest.FriendLogin, friendRequest.Login);
-                                            response.Status = Status.Error;
-                                            response.Message = "Nie udało się dodać kontaktu.";
-                                        }
-
-                                        responseBytes = response.Serialize();
-                                    }
-
+                                    response = AddFriend(body, request);
                                     break;
                                 case Request.Type.RemoveFriend:
-                                    {
-                                        var response = new FriendResponse();
-                                        var friendRequest = body.DeserializeFriendRequest();
-                                        if (db.RemoveFriend(friendRequest.Login, friendRequest.FriendLogin))
-                                        {
-                                            Console.WriteLine("Uzytkownik {0} pomyslnie dodal kontakt {1}.", friendRequest.Login, friendRequest.FriendLogin);
-                                            response.Status = Status.OK;
-                                            response.Message = "Udało się dodać kontakt.";
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("Nieudana proba dodania kontaktu {0} przez uzytkownika {1}.", friendRequest.FriendLogin, friendRequest.Login);
-                                            response.Status = Status.Error;
-                                            response.Message = "Nie udało się dodać kontaktu.";
-                                        }
-
-                                        responseBytes = response.Serialize();
-                                    }
-
+                                    response = RemoveFriend(body, request);
                                     break;
                                 case Request.Type.GetFriends:
-                                    {
-                                        var response = new FriendResponse();
-                                        var friendRequest = body.DeserializeFriendRequest();
-                                        var friends = db.GetFriends(friendRequest.Login);
-                                        if (friends != null)
-                                        {
-                                            Console.WriteLine("Uzytkownik {0} pomyslnie pobral kontakty.", friendRequest.Login);
-                                            response.Status = Status.OK;
-                                            response.friendsList = friends;
-                                            response.Message = "Udało się pobrac kontakty.";
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("Nie udalo sie pobrac kontaktow dla uzytkownika {0}.", friendRequest.Login);
-                                            response.Status = Status.Error;
-                                            response.friendsList = null;
-                                            response.Message = "Nie pobrano żadnych kontaków.";
-                                        }
-
-                                        responseBytes = response.Serialize();
-                                    }
-
+                                    response = GetFriends(body, request);
                                     break;
                             }
                         }
@@ -238,12 +145,194 @@ namespace DNA
                         }
                         finally
                         {
-                            channel.BasicPublish(string.Empty, props.ReplyTo, replyProps, responseBytes);
+                            channel.BasicPublish(string.Empty, props.ReplyTo, replyProps, response.Serialize());
                             channel.BasicAck(ea.DeliveryTag, false);
                         }
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// The login.
+        /// </summary>
+        /// <param name="body">
+        /// The body.
+        /// </param>
+        /// <param name="request">
+        /// The request.
+        /// </param>
+        /// <returns>
+        /// The <see cref="AuthResponse"/>.
+        /// </returns>
+        public static AuthResponse Login(byte[] body, Request request)
+        {
+            var response = new AuthResponse();
+            var authRequest = body.DeserializeAuthRequest();
+            if (db.Login(authRequest.Login, authRequest.Password))
+            {
+                Global.Status.Add(request.Login, PresenceStatus.Online);
+                Console.WriteLine("Uzytkownik {0} pomyslnie sie zalogowal.", authRequest.Login);
+                response.Status = Status.OK;
+                response.Message = "Udało się zalogować.";
+            }
+            else
+            {
+                Console.WriteLine("Nieudana proba zalogowania przez uzytkownika {0}.", authRequest.Login);
+                response.Status = Status.Error;
+                response.Message = "Nie udało się zalogować.";
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// The register.
+        /// </summary>
+        /// <param name="body">
+        /// The body.
+        /// </param>
+        /// <param name="request">
+        /// The request.
+        /// </param>
+        /// <returns>
+        /// The <see cref="AuthResponse"/>.
+        /// </returns>
+        public static AuthResponse Register(byte[] body, Request request)
+        {
+            var response = new AuthResponse();
+            var authRequest = body.DeserializeAuthRequest();
+            if (db.Register(authRequest.Login, authRequest.Password))
+            {
+                Global.Status.Add(request.Login, PresenceStatus.Online);
+                Console.WriteLine("Użytkownik {0} pomyślnie się zarejestrował.", authRequest.Login);
+                response.Status = Status.OK;
+                response.Message = "Udało się zarejestrować użytkownika.";
+            }
+            else
+            {
+                Console.WriteLine("Nieudana próba zarejestrowania użytkownika {0}.", authRequest.Login);
+                response.Status = Status.Error;
+                response.Message = "Nie udało się zarejestrować użytkownika.";
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// The add friend.
+        /// </summary>
+        /// <param name="body">
+        /// The body.
+        /// </param>
+        /// <param name="request">
+        /// The request.
+        /// </param>
+        /// <returns>
+        /// The <see cref="FriendResponse"/>.
+        /// </returns>
+        public static FriendResponse AddFriend(byte[] body, Request request)
+        {
+            var response = new FriendResponse();
+            var friendRequest = body.DeserializeFriendRequest();
+
+            if (db.AddFriend(friendRequest.Login, friendRequest.FriendLogin))
+            {
+                Console.WriteLine(
+                    "Użytkownik {0} pomyślnie dodał kontakt {1}.",
+                    friendRequest.Login,
+                    friendRequest.FriendLogin);
+                response.Status = Status.OK;
+                response.Message = "Udało się dodać kontakt.";
+            }
+            else
+            {
+                Console.WriteLine(
+                    "Nieudana próba dodania kontaktu {0} przez użytkownika {1}.",
+                    friendRequest.FriendLogin,
+                    friendRequest.Login);
+                response.Status = Status.Error;
+                response.Message = "Nie udało się dodać kontaktu.";
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// The remove friend.
+        /// </summary>
+        /// <param name="body">
+        /// The body.
+        /// </param>
+        /// <param name="request">
+        /// The request.
+        /// </param>
+        /// <returns>
+        /// The <see cref="FriendResponse"/>.
+        /// </returns>
+        public static FriendResponse RemoveFriend(byte[] body, Request request)
+        {
+            var response = new FriendResponse();
+            var friendRequest = body.DeserializeFriendRequest();
+            if (db.RemoveFriend(friendRequest.Login, friendRequest.FriendLogin))
+            {
+                Console.WriteLine(
+                    "Użytkownik {0} pomyślnie usunął kontakt {1}.",
+                    friendRequest.Login,
+                    friendRequest.FriendLogin);
+                response.Status = Status.OK;
+                response.Message = "Udało się usunąć kontakt.";
+            }
+            else
+            {
+                Console.WriteLine(
+                    "Nieudana próba usunięcia kontaktu {0} przez użytkownika {1}.",
+                    friendRequest.FriendLogin,
+                    friendRequest.Login);
+                response.Status = Status.Error;
+                response.Message = "Nie udało się usunąć kontaktu.";
+            }
+
+           return response;
+        }
+
+        /// <summary>
+        /// The get friends.
+        /// </summary>
+        /// <param name="body">
+        /// The body.
+        /// </param>
+        /// <param name="request">
+        /// The request.
+        /// </param>
+        /// <returns>
+        /// The <see cref="FriendResponse"/>.
+        /// </returns>
+        public static FriendResponse GetFriends(byte[] body, Request request)
+        {
+            var response = new FriendResponse();
+            var friendRequest = body.DeserializeFriendRequest();
+            var friends = db.GetFriends(friendRequest.Login);
+            if (friends != null)
+            {
+                Console.WriteLine(
+                    "Użytkownik {0} pomyślnie pobrał kontakty.",
+                    friendRequest.Login);
+                response.Status = Status.OK;
+                response.friendsList = friends;
+                response.Message = "Udało się pobrać kontakty.";
+            }
+            else
+            {
+                Console.WriteLine(
+                    "Nie udało się pobrać kontaktów dla użytkownika {0}.",
+                    friendRequest.Login);
+                response.Status = Status.Error;
+                response.friendsList = null;
+                response.Message = "Nie pobrano żadnych kontaków.";
+            }
+
+            return response;
         }
 
         /// <summary>
