@@ -54,6 +54,8 @@ namespace DNAClient.ViewModel
         /// </summary>
         private string selectedStatus;
 
+        private RabbitRpcConnection rpcClient;
+
         /// <summary>
         /// Nazwa nowego kontaktu
         /// </summary>
@@ -90,7 +92,7 @@ namespace DNAClient.ViewModel
             // Uruchomienie zadania, które w tle będzie nasłuchiwać wiadomości przychodzących z serwera
             var ctx = SynchronizationContext.Current;
             Task.Factory.StartNew(() => this.GetChannel(ctx));
-
+            this.rpcClient = new RabbitRpcConnection();
             this.LoadEmoticons();
             this.LoadFriendsList();
             this.LoadOldMessages();
@@ -227,7 +229,6 @@ namespace DNAClient.ViewModel
         {
             if (this.SelectedContact != null)
             {
-                var rpcClient = new RabbitRpcConnection();
                 var friendRequest = new FriendRequest
                                         {
                                             Login = this.currentUser,
@@ -235,8 +236,7 @@ namespace DNAClient.ViewModel
                                             RequestType = Request.Type.RemoveFriend,
                                         };
 
-                var friendResponse = rpcClient.FriendCall(friendRequest.Serialize());
-                rpcClient.Close();
+                var friendResponse = this.rpcClient.FriendCall(friendRequest.Serialize());
 
                 if (friendResponse.Status == Status.OK)
                 {
@@ -324,7 +324,6 @@ namespace DNAClient.ViewModel
                 }
                 else
                 {
-                    var rpcClient = new RabbitRpcConnection();
 
                     var friendRequest = new FriendRequest
                     {
@@ -334,7 +333,6 @@ namespace DNAClient.ViewModel
                     };
 
                     var friendResponse = rpcClient.FriendCall(friendRequest.Serialize());
-                    rpcClient.Close();
 
                     if (friendResponse.Status == Status.OK)
                     {
@@ -372,6 +370,7 @@ namespace DNAClient.ViewModel
                     openWindow.CloseConversationWindow();    
                 }
                 this.LogOff();
+                this.rpcClient.Close();
                 window.Close();
             }
         }
@@ -766,7 +765,6 @@ namespace DNAClient.ViewModel
         {
             GlobalsParameters.Instance.Contacts = new ObservableCollection<Contact>();
             var friends = new List<string>();
-            var rpcClient = new RabbitRpcConnection();
 
             var friendRequest = new FriendRequest
             {
@@ -775,7 +773,6 @@ namespace DNAClient.ViewModel
             };
 
             var friendResponse = rpcClient.FriendCall(friendRequest.Serialize());
-            rpcClient.Close();
 
             if (friendResponse.Status == Status.OK)
             {
