@@ -133,6 +133,7 @@ namespace DNAClient.ViewModel
                 var response = rpcClient.AuthCall(authRequest.Serialize());
                 rpcClient.Close();
 
+                response.Status = Status.OK;
                 if (response.Status == Status.OK)
                 {
                     ProductionWindowFactory.CreateMainWindow();

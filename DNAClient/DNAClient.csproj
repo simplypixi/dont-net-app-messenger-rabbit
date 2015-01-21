@@ -204,6 +204,10 @@
     <Resource Include="emots\e8_25.gif" />
     <Resource Include="emots\e9_25.gif" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Img\delete.png" />
+    <Resource Include="Img\history.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
