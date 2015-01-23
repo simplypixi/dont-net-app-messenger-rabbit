@@ -227,7 +227,7 @@ namespace DNAClient.ViewModel
         /// </param>
         private void DeleteContact(object parameter)
         {
-            if (this.SelectedContact != null)
+            if (this.SelectedContact.Name != null)
             {
                 var friendRequest = new FriendRequest
                                         {
@@ -258,8 +258,11 @@ namespace DNAClient.ViewModel
         /// </param>
         private void OpenHistory(object parameter)
         {
-            var historyFile = this.userPath + "//" + this.SelectedContact.Name;
-            Process.Start(@historyFile);
+            if (this.selectedContact.Name != null)
+            {
+                var historyFile = this.userPath + "//" + this.SelectedContact.Name;
+                Process.Start(@historyFile);
+            }
         }
 
         /// <summary>
