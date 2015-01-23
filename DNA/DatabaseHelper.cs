@@ -133,6 +133,11 @@ namespace DNA
                 return false;
             }
 
+            if (this.IsContactAlreadyOnList((int)ownerId, (int)friendId))
+            {
+                return false;
+            }
+
             using (this.conn = new SqlConnection(this.connectionString))
             {
                 this.conn.Open();
@@ -143,6 +148,31 @@ namespace DNA
                     command.Parameters.AddWithValue("friendID", friendId);
                     command.Parameters.AddWithValue("friendLogin", friendLogin);
                     return command.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+
+        public bool IsContactAlreadyOnList(int ownerId, int friendId)
+        {
+            using (this.conn = new SqlConnection(this.connectionString))
+            {
+                this.conn.Open();
+                var query = "SELECT id FROM [dbo].[Friend] WHERE OwnerID = @ownerID AND FriendID = @friendID";
+                using (var command = new SqlCommand(query, this.conn))
+                {
+                    command.Parameters.AddWithValue("ownerID", ownerId);
+                    command.Parameters.AddWithValue("friendID", friendId);
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.HasRows)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
                 }
             }
         }

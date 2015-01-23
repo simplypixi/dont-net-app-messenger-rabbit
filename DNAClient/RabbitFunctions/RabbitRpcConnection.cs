@@ -48,15 +48,21 @@ namespace DNAClient.RabbitFunctions
         {
             var corrId = Guid.NewGuid().ToString();
             var props = this.GetBasicProperties(corrId);
-
+            AuthResponse authResponse = new AuthResponse();
             this.channel.BasicPublish("", Constants.Exchange, props, serializedRequest);
 
             while (true)
             {
-                var ea = this.consumer.Queue.Dequeue();
+                RabbitMQ.Client.Events.BasicDeliverEventArgs ea;
+                this.consumer.Queue.Dequeue(2000, out ea);
+                if (ea == null)
+                {
+                    authResponse.Message = "Przekroczono maksymalny czas oczekiwania na odpowiedź z serwera.";
+                    return authResponse;
+                }
                 if (ea.BasicProperties.CorrelationId == corrId)
                 {
-                    var authResponse = ea.Body.DeserializeAuthResponse();
+                    authResponse = ea.Body.DeserializeAuthResponse();
                     return authResponse;
                 }
             }
@@ -75,14 +81,21 @@ namespace DNAClient.RabbitFunctions
         {
             var corrId = Guid.NewGuid().ToString();
             var properties = this.GetBasicProperties(corrId);
+            FriendResponse friendResponse = new FriendResponse();
             this.channel.BasicPublish("", Constants.Exchange, properties, serializedRequest);
 
             while (true)
             {
-                var ea = this.consumer.Queue.Dequeue();
+                RabbitMQ.Client.Events.BasicDeliverEventArgs ea;
+                this.consumer.Queue.Dequeue(2000, out ea);
+                if (ea == null)
+                {
+                    friendResponse.Message = "Przekroczono maksymalny czas oczekiwania na odpowiedź z serwera.";
+                    return friendResponse;
+                }
                 if (ea.BasicProperties.CorrelationId == corrId)
                 {
-                    var friendResponse = ea.Body.DeserializeFriendResponse();
+                    friendResponse = ea.Body.DeserializeFriendResponse();
                     return friendResponse;
                 }
             }
