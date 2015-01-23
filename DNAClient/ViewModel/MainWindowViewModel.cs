@@ -64,7 +64,7 @@ namespace DNAClient.ViewModel
         /// <summary>
         /// Wybrany kontakt z listy
         /// </summary>
-        private Contact selectedContact = new Contact() { Name = null };
+        private Contact selectedContact;// = new Contact() { Name = null };
 
         /// <summary>
         /// Aktualna ścieżka użytkownika
@@ -227,7 +227,7 @@ namespace DNAClient.ViewModel
         /// </param>
         private void DeleteContact(object parameter)
         {
-            if (this.SelectedContact.Name != null)
+            if (this.SelectedContact != null)
             {
                 var friendRequest = new FriendRequest
                                         {
@@ -258,7 +258,7 @@ namespace DNAClient.ViewModel
         /// </param>
         private void OpenHistory(object parameter)
         {
-            if (this.selectedContact.Name != null)
+            if (this.selectedContact != null)
             {
                 var historyFile = this.userPath + "//" + this.SelectedContact.Name;
                 Process.Start(@historyFile);
