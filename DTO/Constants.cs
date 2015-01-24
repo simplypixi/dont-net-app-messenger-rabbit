@@ -32,5 +32,7 @@ namespace DTO
 
         public static string keyServerRequest = "server.request";
         public static string userPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+        public static int milisecondsTimeout = 10000;
     }
 }

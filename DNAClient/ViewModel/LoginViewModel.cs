@@ -166,7 +166,6 @@ namespace DNAClient.ViewModel
                 {
                     GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
 
-                   
                     var authRequest = new AuthRequest
                                           {
                                               Login = this.Login.ToLower(),
@@ -175,8 +174,6 @@ namespace DNAClient.ViewModel
                                           };
 
                     var response = this.rpcClient.AuthCall(authRequest.Serialize());
-
-               
 
                     if (response.Status == Status.OK)
                     {

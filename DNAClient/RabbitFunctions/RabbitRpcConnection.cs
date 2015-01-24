@@ -14,6 +14,7 @@ namespace DNAClient.RabbitFunctions
     using DTO;
 
     using RabbitMQ.Client;
+    using RabbitMQ.Client.Events;
 
     /// <summary>
     /// Klasa zapewniająca wywołanie metod request-response 
@@ -48,18 +49,34 @@ namespace DNAClient.RabbitFunctions
         {
             var corrId = Guid.NewGuid().ToString();
             var props = this.GetBasicProperties(corrId);
+            var authResponse = new AuthResponse();
 
             this.channel.BasicPublish("", Constants.Exchange, props, serializedRequest);
 
-            while (true)
+            try
             {
-                var ea = this.consumer.Queue.Dequeue();
-                if (ea.BasicProperties.CorrelationId == corrId)
+                BasicDeliverEventArgs ea;
+                if (!this.consumer.Queue.Dequeue(Constants.milisecondsTimeout, out ea))
                 {
-                    var authResponse = ea.Body.DeserializeAuthResponse();
+                    this.channel.QueuePurge(Constants.Exchange);
+                    authResponse.Message = "Serwer nie odpowiada, prosimy spróbować ponownie.";
+                    authResponse.Status = Status.Error;
+                    return authResponse;
+                }
+
+                if (ea != null && ea.BasicProperties.CorrelationId == corrId)
+                {
+                    authResponse = ea.Body.DeserializeAuthResponse();
                     return authResponse;
                 }
             }
+            catch (Exception e)
+            {
+                authResponse.Message = "Niespodziewany wyjątek: \n\n" + e.Message;
+                authResponse.Status = Status.Error;
+            }
+
+            return authResponse;
         }
 
         /// <summary>
@@ -75,17 +92,34 @@ namespace DNAClient.RabbitFunctions
         {
             var corrId = Guid.NewGuid().ToString();
             var properties = this.GetBasicProperties(corrId);
+            var friendsResponse = new FriendResponse();
+
             this.channel.BasicPublish("", Constants.Exchange, properties, serializedRequest);
 
-            while (true)
+            try
             {
-                var ea = this.consumer.Queue.Dequeue();
-                if (ea.BasicProperties.CorrelationId == corrId)
+                BasicDeliverEventArgs ea;
+                if (!this.consumer.Queue.Dequeue(Constants.milisecondsTimeout, out ea))
                 {
-                    var friendResponse = ea.Body.DeserializeFriendResponse();
-                    return friendResponse;
+                    this.channel.QueuePurge(Constants.Exchange);
+                    friendsResponse.Message = "Serwer nie odpowiada, prosimy spróbować ponownie.";
+                    friendsResponse.Status = Status.Error;
+                    return friendsResponse;
+                }
+
+                if (ea != null && ea.BasicProperties.CorrelationId == corrId)
+                {
+                    friendsResponse = ea.Body.DeserializeFriendResponse();
+                    return friendsResponse;
                 }
             }
+            catch (Exception e)
+            {
+                friendsResponse.Message = "Niespodziewany wyjątek: \n\n" + e.Message;
+                friendsResponse.Status = Status.Error;
+            }
+
+            return friendsResponse;
         }
 
         /// <summary>
