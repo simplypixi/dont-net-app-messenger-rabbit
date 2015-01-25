@@ -103,6 +103,7 @@ namespace DNA
                     channel.QueueDeclare(Constants.Exchange, false, false, false, null);
                     channel.BasicQos(0, 1, false);
                     var consumer = new QueueingBasicConsumer(channel);
+                    channel.QueuePurge(Constants.Exchange);
                     channel.BasicConsume(Constants.Exchange, false, consumer);
                     Console.WriteLine(" [x] Awaiting RPC requests");
 

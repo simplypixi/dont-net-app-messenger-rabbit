@@ -58,7 +58,6 @@ namespace DNAClient.RabbitFunctions
                 BasicDeliverEventArgs ea;
                 if (!this.consumer.Queue.Dequeue(Constants.milisecondsTimeout, out ea))
                 {
-                    this.channel.QueuePurge(Constants.Exchange);
                     authResponse.Message = "Serwer nie odpowiada, prosimy spróbować ponownie.";
                     authResponse.Status = Status.Error;
                     return authResponse;
@@ -101,7 +100,6 @@ namespace DNAClient.RabbitFunctions
                 BasicDeliverEventArgs ea;
                 if (!this.consumer.Queue.Dequeue(Constants.milisecondsTimeout, out ea))
                 {
-                    this.channel.QueuePurge(Constants.Exchange);
                     friendsResponse.Message = "Serwer nie odpowiada, prosimy spróbować ponownie.";
                     friendsResponse.Status = Status.Error;
                     return friendsResponse;
