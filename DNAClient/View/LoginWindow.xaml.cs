@@ -10,6 +10,7 @@
 namespace DNAClient.View
 {
     using System.Windows.Input;
+    using System.Windows.Controls;
 
     /// <summary>
     /// Okno logowania
@@ -23,6 +24,8 @@ namespace DNAClient.View
             RepeatPassword.Password = "Powtórz hasło";
             Password.Password = "Wpisz hasło";
             Login.Text = "Wpisz login";
+
+            this.Stop_Loading();
         }
 
         private void LoginWindow_MouseDown(object sender, MouseButtonEventArgs e)
@@ -52,5 +55,19 @@ namespace DNAClient.View
                 }
             }
         }
+
+        public void Start_Loading()
+        {
+            this.loader.IsBusy = true;
+            this.win.Visibility = System.Windows.Visibility.Collapsed;
+        }
+
+        public void Stop_Loading()
+        {
+            this.loader.IsBusy = false;
+            this.win.Visibility = System.Windows.Visibility.Visible;
+        }
+
+
     }
 }
