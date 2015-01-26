@@ -1,8 +1,11 @@
 ﻿<Application x:Class="DNAClient.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:DNAClient.View.Converters"
              StartupUri="View/LoginWindow.xaml">
     <Application.Resources>
-         
+         <ResourceDictionary>
+             <converters:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter"/>
+         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -10,7 +10,6 @@
 namespace DNAClient.View
 {
     using System.Windows.Input;
-    using System.Windows.Controls;
 
     /// <summary>
     /// Okno logowania
@@ -53,19 +52,5 @@ namespace DNAClient.View
                 }
             }
         }
-
-        public void Start_Loading()
-        {
-            this.loader.IsBusy = true;
-            this.win.Visibility = System.Windows.Visibility.Collapsed;
-        }
-
-        public void Stop_Loading()
-        {
-            this.loader.IsBusy = false;
-            this.win.Visibility = System.Windows.Visibility.Visible;
-        }
-
-
     }
 }

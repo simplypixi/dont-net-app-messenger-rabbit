@@ -15,7 +15,7 @@
         <vm:LoginViewModel x:Key="LoginViewModel"/>
     </Window.Resources>
     <Grid>
-        <toolkit:BusyIndicator IsBusy="false" x:Name="loader">
+        <toolkit:BusyIndicator IsBusy="{Binding IsBusy}" x:Name="loader">
             <toolkit:BusyIndicator.BusyContentTemplate>
                 <DataTemplate>
                     <StackPanel Visibility="Visible" Background="#FF02C4FC" Height="312" Margin="-10,-10,-10,-10" Width="280">
@@ -35,7 +35,8 @@
             </toolkit:BusyIndicator.ProgressBarStyle>
         </toolkit:BusyIndicator>
         
-        <StackPanel x:Name="win" HorizontalAlignment="Left" VerticalAlignment="Top" Width="294">
+        <StackPanel x:Name="win" HorizontalAlignment="Left" VerticalAlignment="Top" Width="294" 
+                    Visibility="{Binding IsBusy, Converter={StaticResource InvertedBoolToVisibilityConverter}}">
             <Button Command="{Binding CloseWindowCommand, UpdateSourceTrigger=PropertyChanged}" 
                     CommandParameter="{Binding ElementName=Window}" Content="" 
                     HorizontalAlignment="Left" Margin="272,10,0,0" VerticalAlignment="Top" 

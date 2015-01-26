@@ -12,7 +12,9 @@ namespace DNAClient.ViewModel
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.ComponentModel;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -20,12 +22,9 @@ namespace DNAClient.ViewModel
     using System.Windows.Controls;
     using System.Windows.Documents;
     using System.Windows.Media.Imaging;
-    using System.ComponentModel;
-    using System.IO;
 
     using DNAClient.RabbitFunctions;
     using DNAClient.ViewModel.Base;
-    using DNAClient.View;
 
     using DTO;
 
@@ -79,6 +78,12 @@ namespace DNAClient.ViewModel
         /// </summary>
         private Dictionary<string, string> emoticonsMappings = new Dictionary<string, string>();
 
+        private BackgroundWorker loadContactsWorker;
+
+        private bool isBusy;
+
+        private FriendResponse friendResponse = new FriendResponse();
+        
         /// <summary>
         /// Konstruktor view modelu głównego okna
         /// </summary>
@@ -103,6 +108,7 @@ namespace DNAClient.ViewModel
             // Ustawienie statusu jako zalogowany. Informacja ta zostanie wysłana do wszystkich kontaktów na liście,
             // dzięki temu użytkownik otrzyma wiadomość o aktualnych statusach swoich znajomych
             this.SelectedStatus = "Zalogowany";
+            this.IsBusy = false;
         }
 
         /// <summary>
@@ -165,7 +171,12 @@ namespace DNAClient.ViewModel
         {
             get
             {
-                return this.newFriendName;
+                if (this.newFriendName != null)
+                {
+                    return this.newFriendName;
+                }
+
+                return string.Empty;
             }
 
             set
@@ -194,6 +205,24 @@ namespace DNAClient.ViewModel
             {
                 GlobalsParameters.Instance.Contacts = value;
                 this.RaisePropertyChanged("Contacts");
+            }
+        }
+
+        /// <summary>
+        /// Właściwość oznaczająca czy program jest aktualnie w trakcie łączenia z serwerem.
+        /// Dla true uruchamiana jest "betoniarka" :)
+        /// </summary>
+        public bool IsBusy
+        {
+            get
+            {
+                return this.isBusy;
+            }
+
+            set
+            {
+                this.isBusy = value;
+                this.RaisePropertyChanged("IsBusy");
             }
         }
 
@@ -311,8 +340,6 @@ namespace DNAClient.ViewModel
         /// </param>
         private void AddNewFriend(object parameter)
         {
-            var MainWindow = parameter as MainWindow;
-
             if (string.IsNullOrEmpty(this.NewFriendName))
             {
                 MessageBox.Show(
@@ -341,45 +368,10 @@ namespace DNAClient.ViewModel
                 }
                 else
                 {
-                    DTO.FriendResponse friendResponse = new  FriendResponse();
-                    BackgroundWorker worker = new BackgroundWorker();
-                    worker.DoWork += (o, ea) =>
-                    {
-
-                        var friendRequest = new FriendRequest
-                        {
-                            Login = this.CurrentUser.ToLower(),
-                            FriendLogin = this.NewFriendName,
-                            RequestType = Request.Type.AddFriend,
-                        };
-                    
-
-                        friendResponse = rpcClient.FriendCall(friendRequest.Serialize());
-                    };
-
-                    worker.RunWorkerCompleted += (o, ea) =>
-                    {
-                        MainWindow.Stop_Loading();
-                    };
-
-                    MainWindow.Start_Loading();
-                    worker.RunWorkerAsync();
-
-                    if (friendResponse.Status == Status.OK)
-                    {
-                        this.Contacts.Add(new Contact() { Name = this.NewFriendName });
-                        this.SendStatusToQueue(this.NewFriendName.ToLower(), "Zwroc");
-                        this.SendStatus();
-                        this.NewFriendName = string.Empty;
-                    }
-                    else
-                    {
-                        MessageBox.Show(friendResponse.Message, "Błąd dodawania użytkowika");
-                    }
+                    this.SetBackGroundContactsLoading();
+                    this.loadContactsWorker.RunWorkerAsync();
                 }
             }
-
-
         }
 
         /// <summary>
@@ -402,6 +394,7 @@ namespace DNAClient.ViewModel
                 {
                     openWindow.CloseConversationWindow();    
                 }
+
                 this.LogOff();
                 this.rpcClient.Close();
                 window.Close();
@@ -820,6 +813,44 @@ namespace DNAClient.ViewModel
             }
 
             return friends;
+        }
+
+        /// <summary>
+        /// Metoda ustawia pobieranie kontaktów jako funkcję działąjąca w tle.
+        /// </summary>
+        private void SetBackGroundContactsLoading()
+        {
+            this.loadContactsWorker = new BackgroundWorker();
+            this.loadContactsWorker.DoWork += (o, ea) =>
+            {
+                this.friendResponse = new FriendResponse();
+                var friendRequest = new FriendRequest
+                {
+                    Login = this.CurrentUser.ToLower(),
+                    FriendLogin = this.NewFriendName,
+                    RequestType = Request.Type.AddFriend,
+                };
+
+                this.IsBusy = true;
+                this.friendResponse = rpcClient.FriendCall(friendRequest.Serialize());
+            };
+
+            this.loadContactsWorker.RunWorkerCompleted += (o, ea) =>
+            {
+                this.IsBusy = false;
+
+                if (this.friendResponse.Status == Status.OK)
+                {
+                    this.Contacts.Add(new Contact() { Name = this.NewFriendName });
+                    this.SendStatusToQueue(this.NewFriendName.ToLower(), "Zwroc");
+                    this.SendStatus();
+                    this.NewFriendName = string.Empty;
+                }
+                else
+                {
+                    MessageBox.Show(friendResponse.Message, "Błąd dodawania użytkowika");
+                }
+            };
         }
     }
 }

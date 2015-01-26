@@ -9,15 +9,15 @@
 
 namespace DNAClient.ViewModel
 {
+    using System.ComponentModel;
     using System.Threading;
     using System.Windows;
-    using System.ComponentModel;
 
     using DNAClient.RabbitFunctions;
     using DNAClient.View;
     using DNAClient.ViewModel.Base;
-    using DTO;
 
+    using DTO;
 
     /// <summary>
     /// View model okna logowania
@@ -41,6 +41,12 @@ namespace DNAClient.ViewModel
         /// </summary>
         private string confirmedPassword;
 
+        private Response responseFromServer;
+
+        private BackgroundWorker backgroundWorker;
+
+        private bool isBusy;
+
         /// <summary>
         /// Konstruktor viewmodelu okna logowania 
         /// </summary>
@@ -52,6 +58,7 @@ namespace DNAClient.ViewModel
             this.ToLogCommand = new RelayCommand(this.ToLog);
             this.ToRegistrationCommand = new RelayCommand(this.ToRegistration);
             this.rpcClient = new RabbitRpcConnection();
+            this.IsBusy = false;
         }
 
         /// <summary>
@@ -94,6 +101,24 @@ namespace DNAClient.ViewModel
         }
 
         /// <summary>
+        /// Właściwość oznaczająca czy program jest aktualnie w trakcie łączenia z serwerem.
+        /// Dla true uruchamiana jest "betoniarka" :)
+        /// </summary>
+        public bool IsBusy
+        {
+            get
+            {
+                return this.isBusy;
+            }
+
+            set
+            {
+                this.isBusy = value;
+                this.RaisePropertyChanged("IsBusy");
+            }
+        }
+
+        /// <summary>
         /// Komenda zmiany okna na logowanie
         /// </summary>
         public RelayCommand ToLogCommand { get; set; }
@@ -123,42 +148,10 @@ namespace DNAClient.ViewModel
         {
             var loginWindow = parameter as LoginWindow;
 
-            var response = new Response();
-            var worker = new BackgroundWorker();
-            
-            worker.DoWork += (o, ea) =>
-            {
-                GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
-
-                var authRequest = new AuthRequest
-                                        {
-                                            Login = this.Login.ToLower(),
-                                            Password = loginWindow.Password.Password,
-                                            RequestType = Request.Type.Login,
-                                        };
-
-                response = this.rpcClient.AuthCall(authRequest.Serialize());
-            };
-
-            worker.RunWorkerCompleted += (o, ea) =>
-            {
-                loginWindow.Stop_Loading();
-
-                if (response.Status == Status.OK)
-                {
-                    ProductionWindowFactory.CreateMainWindow();
-                    this.CloseWindow(parameter);
-                }
-                else
-                {
-                    MessageBox.Show(response.Message, "Błąd logowania");
-                }
-            };
-
             if (loginWindow != null && !string.IsNullOrEmpty(this.Login))
             {
-                loginWindow.Start_Loading();
-                worker.RunWorkerAsync();
+                this.SetBackgroundWorker(loginWindow, Request.Type.Login);
+                this.backgroundWorker.RunWorkerAsync();
             }
             else
             {
@@ -175,43 +168,13 @@ namespace DNAClient.ViewModel
         private void RegistrationOnServer(object parameter)
         {
             var loginWindow = parameter as LoginWindow;
-            var response = new AuthResponse();
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.DoWork += (o, ea) =>
-            {
-                GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
-
-                var authRequest = new AuthRequest
-                                        {
-                                            Login = this.Login.ToLower(),
-                                            Password = loginWindow.Password.Password,
-                                            RequestType = Request.Type.Register,
-                                        };
-
-                response = this.rpcClient.AuthCall(authRequest.Serialize());
-            };
-
-            worker.RunWorkerCompleted += (o, ea) =>
-            {
-                loginWindow.Stop_Loading();
-
-                if (response.Status == Status.OK)
-                {
-                    ProductionWindowFactory.CreateMainWindow();
-                    this.CloseWindow(parameter);
-                }
-                else
-                {
-                    MessageBox.Show(response.Message, "Błąd rejestracji");
-                }
-            };
 
             if (loginWindow != null && !string.IsNullOrEmpty(this.Login))
             {
                 if (!string.IsNullOrEmpty(loginWindow.Password.Password) && loginWindow.Password.Password.Equals(loginWindow.RepeatPassword.Password))
                 {
-                    loginWindow.Start_Loading();
-                    worker.RunWorkerAsync();
+                    this.SetBackgroundWorker(parameter, Request.Type.Register);
+                    this.backgroundWorker.RunWorkerAsync();
                 }
                 else
                 {
@@ -233,17 +196,17 @@ namespace DNAClient.ViewModel
         private void ToRegistration(object parameter)
         {
             var loginWindow = parameter as LoginWindow;
-            loginWindow.Start_Loading();
             if (loginWindow != null)
             {
+                this.IsBusy = true;
                 loginWindow.Height = 365;
                 loginWindow.RepeatPassword.Visibility = Visibility.Visible;
                 loginWindow.buttonCreate.Visibility = Visibility.Visible;
                 loginWindow.buttonLog.Visibility = Visibility.Visible;
                 loginWindow.buttonRegister.Visibility = Visibility.Collapsed;
                 loginWindow.buttonLogin.Visibility = Visibility.Collapsed;
+                this.IsBusy = false;
             }
-            loginWindow.Stop_Loading();
         }
 
         /// <summary>
@@ -255,17 +218,17 @@ namespace DNAClient.ViewModel
         private void ToLog(object parameter)
         {
             var loginWindow = parameter as LoginWindow;
-            loginWindow.Start_Loading();
             if (loginWindow != null)
             {
+                this.IsBusy = true;
                 loginWindow.Height = 323;
                 loginWindow.RepeatPassword.Visibility = Visibility.Collapsed;
                 loginWindow.buttonCreate.Visibility = Visibility.Collapsed;
                 loginWindow.buttonLog.Visibility = Visibility.Collapsed;
                 loginWindow.buttonRegister.Visibility = Visibility.Visible;
                 loginWindow.buttonLogin.Visibility = Visibility.Visible;
+                this.IsBusy = false;
             }
-            loginWindow.Stop_Loading();
         }
 
         /// <summary>
@@ -283,6 +246,54 @@ namespace DNAClient.ViewModel
                 FinishEvent.Set();
                 this.rpcClient.Close();
                 window.Close();
+            }
+        }
+
+        /// <summary>
+        /// Metoda ustawiająca łączenie z serwerem w celu autoryzacji jako funkcję działającą w tle.
+        /// </summary>
+        /// <param name="parameter">
+        /// Okno zawierające PasswordBox
+        /// </param>
+        /// <param name="requestType">
+        /// Typ autoryzacji (logowanie/rejestracja)
+        /// </param>
+        private void SetBackgroundWorker(object parameter, Request.Type requestType)
+        {
+            var loginWindow = parameter as LoginWindow;
+
+            if (loginWindow != null)
+            {
+                this.backgroundWorker = new BackgroundWorker();
+                this.backgroundWorker.DoWork += (o, ea) =>
+                {
+                    GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
+
+                    var authRequest = new AuthRequest
+                    {
+                        Login = this.Login.ToLower(),
+                        Password = loginWindow.Password.Password,
+                        RequestType = requestType,
+                    };
+
+                    this.IsBusy = true;
+                    this.responseFromServer = this.rpcClient.AuthCall(authRequest.Serialize());
+                };
+
+                this.backgroundWorker.RunWorkerCompleted += (o, ea) =>
+                {
+                    this.IsBusy = false;
+
+                    if (this.responseFromServer.Status == Status.OK)
+                    {
+                        ProductionWindowFactory.CreateMainWindow();
+                        this.CloseWindow(parameter);
+                    }
+                    else
+                    {
+                        MessageBox.Show(this.responseFromServer.Message, "Błąd logowania");
+                    }
+                };
             }
         }
     }
