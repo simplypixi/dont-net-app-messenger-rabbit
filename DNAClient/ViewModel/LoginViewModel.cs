@@ -32,6 +32,8 @@ namespace DNAClient.ViewModel
         /// </summary>
         private string login;
 
+        private RabbitRpcConnection rpcClient;
+
         /// <summary>
         /// Potwierdzenie hasła użytkownika
         /// </summary>
@@ -47,6 +49,7 @@ namespace DNAClient.ViewModel
             this.RegistrationCommand = new RelayCommand(this.RegistrationOnServer);
             this.ToLogCommand = new RelayCommand(this.ToLog);
             this.ToRegistrationCommand = new RelayCommand(this.ToRegistration);
+            this.rpcClient = new RabbitRpcConnection();
         }
 
         /// <summary>
@@ -123,8 +126,7 @@ namespace DNAClient.ViewModel
             if (loginWindow != null && !string.IsNullOrEmpty(this.Login))
             {
                 GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
-                var rpcClient = new RabbitRpcConnection();
-
+               
                 var authRequest = new AuthRequest
                                       {
                                           Login = this.Login.ToLower(),
@@ -132,10 +134,9 @@ namespace DNAClient.ViewModel
                                           RequestType = Request.Type.Login,
                                       };
 
-                var response = rpcClient.AuthCall(authRequest.Serialize());
-                rpcClient.Close();
 
-                response.Status == Status.OK;
+                var response = this.rpcClient.AuthCall(authRequest.Serialize());
+                response.Status = Status.OK;
                 if (response.Status == Status.OK)
                 {
                     ProductionWindowFactory.CreateMainWindow();
@@ -173,7 +174,7 @@ namespace DNAClient.ViewModel
                 {
                     GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
 
-                    var rpcClient = new RabbitRpcConnection();
+                   
                     var authRequest = new AuthRequest
                                           {
                                               Login = this.Login.ToLower(),
@@ -181,9 +182,9 @@ namespace DNAClient.ViewModel
                                               RequestType = Request.Type.Register,
                                           };
 
-                    var response = rpcClient.AuthCall(authRequest.Serialize());
+                    var response = this.rpcClient.AuthCall(authRequest.Serialize());
 
-                    rpcClient.Close();
+               
 
                     if (response.Status == Status.OK)
                     {
@@ -265,6 +266,7 @@ namespace DNAClient.ViewModel
             if (window != null)
             {
                 FinishEvent.Set();
+                this.rpcClient.Close();
                 window.Close();
             }
         }

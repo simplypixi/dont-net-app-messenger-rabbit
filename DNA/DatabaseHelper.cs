@@ -66,9 +66,11 @@ namespace DNA
             using (this.conn = new SqlConnection(this.connectionString))
             {
                this.conn.Open();
-                var query = string.Format("SELECT 1 FROM [DNA].[dbo].[User] WHERE Login = '{0}' AND Password COLLATE Polish_CS_AS = '{1}'", login, password);
+                var query = "SELECT 1 FROM [DNA].[dbo].[User] WHERE Login = @login AND Password COLLATE Polish_CS_AS = @password";
                 using (var command = new SqlCommand(query, this.conn))
                 {
+                    command.Parameters.AddWithValue("login", login);
+                    command.Parameters.AddWithValue("password", password);
                     using (var reader = command.ExecuteReader())
                     {
                         return reader.Read();
@@ -99,9 +101,11 @@ namespace DNA
             using (this.conn = new SqlConnection(this.connectionString))
             {
                 this.conn.Open();
-                string query = string.Format("INSERT INTO [dbo].[User] (Login, Password) VALUES('{0}', '{1}')", login, password);
+                string query = "INSERT INTO [dbo].[User] (Login, Password) VALUES(@login, @password)";
                 using (var command = new SqlCommand(query, this.conn))
                 {
+                    command.Parameters.AddWithValue("login", login);
+                    command.Parameters.AddWithValue("password", password);
                     return command.ExecuteNonQuery() > 0;
                 }
             }
@@ -132,9 +136,12 @@ namespace DNA
             using (this.conn = new SqlConnection(this.connectionString))
             {
                 this.conn.Open();
-                var query = string.Format("INSERT INTO [dbo].[Friend] (OwnerId, FriendId, FriendLabel) VALUES('{0}', '{1}', '{2}')", ownerId, friendId, friendLogin);
+                var query = "INSERT INTO [dbo].[Friend] (OwnerId, FriendId, FriendLabel) VALUES(@ownerID, @friendID, @friendLogin)";
                 using (var command = new SqlCommand(query, this.conn))
                 {
+                    command.Parameters.AddWithValue("ownerID", ownerId);
+                    command.Parameters.AddWithValue("friendID", friendId);
+                    command.Parameters.AddWithValue("friendLogin", friendLogin);
                     return command.ExecuteNonQuery() > 0;
                 }
             }
@@ -165,9 +172,11 @@ namespace DNA
             using (this.conn = new SqlConnection(this.connectionString))
             {
                 this.conn.Open();
-                var query = string.Format("DELETE FROM [dbo].[Friend] WHERE OwnerId = '{0}' AND FriendId = '{1}'", ownerId, friendId);
+                var query = "DELETE FROM [dbo].[Friend] WHERE OwnerId = @ownerID AND FriendId = @friendID";
                 using (var command = new SqlCommand(query, this.conn))
                 {
+                    command.Parameters.AddWithValue("ownerID", ownerId);
+                    command.Parameters.AddWithValue("friendID", friendId);
                     return command.ExecuteNonQuery() > 0;
                 }
             }
@@ -199,9 +208,10 @@ namespace DNA
             {
                 friendsList = new List<string>();
                 this.conn.Open();
-                var query = string.Format("SELECT FriendLabel FROM [dbo].[Friend] WHERE OwnerId = '{0}'", ownerId);
+                var query = "SELECT FriendLabel FROM [dbo].[Friend] WHERE OwnerId = @ownerID";
                 using (var command = new SqlCommand(query, this.conn))
                 {
+                    command.Parameters.AddWithValue("ownerID", ownerId);
                     using (var reader = command.ExecuteReader())
                     {
                         while (reader.Read())
@@ -232,9 +242,10 @@ namespace DNA
             using (this.conn = new SqlConnection(this.connectionString))
             {
                 this.conn.Open();
-                var query = string.Format("SELECT Id FROM [dbo].[User] WHERE Login = '{0}'", login);
+                var query = "SELECT Id FROM [dbo].[User] WHERE Login = @login";
                 using (var command = new SqlCommand(query, this.conn))
                 {
+                    command.Parameters.AddWithValue("login", login);
                     using (var reader = command.ExecuteReader())
                     {
                         if (reader.Read())
@@ -262,9 +273,10 @@ namespace DNA
             using (this.conn = new SqlConnection(this.connectionString))
             {
                 this.conn.Open();
-                var query = string.Format("SELECT 1 FROM [dbo].[User] WHERE Login = '{0}'", login);
+                var query = "SELECT 1 FROM [dbo].[User] WHERE Login = @login";
                 using (var command = new SqlCommand(query, this.conn))
                 {
+                    command.Parameters.AddWithValue("login", login);
                     using (var reader = command.ExecuteReader())
                     {
                         if (reader.HasRows)
