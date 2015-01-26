@@ -11,11 +11,13 @@ namespace DNAClient.ViewModel
 {
     using System.Threading;
     using System.Windows;
+    using System.ComponentModel;
 
     using DNAClient.RabbitFunctions;
     using DNAClient.View;
     using DNAClient.ViewModel.Base;
     using DTO;
+
 
     /// <summary>
     /// View model okna logowania
@@ -121,19 +123,27 @@ namespace DNAClient.ViewModel
         {
             var loginWindow = parameter as LoginWindow;
 
-            if (loginWindow != null && !string.IsNullOrEmpty(this.Login))
+            var response = new Response();
+            var worker = new BackgroundWorker();
+            
+            worker.DoWork += (o, ea) =>
             {
                 GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
-               
-                var authRequest = new AuthRequest
-                                      {
-                                          Login = this.Login.ToLower(),
-                                          Password = loginWindow.Password.Password,
-                                          RequestType = Request.Type.Login,
-                                      };
 
-                var response = this.rpcClient.AuthCall(authRequest.Serialize());
-               
+                var authRequest = new AuthRequest
+                                        {
+                                            Login = this.Login.ToLower(),
+                                            Password = loginWindow.Password.Password,
+                                            RequestType = Request.Type.Login,
+                                        };
+
+                response = this.rpcClient.AuthCall(authRequest.Serialize());
+            };
+
+            worker.RunWorkerCompleted += (o, ea) =>
+            {
+                loginWindow.Stop_Loading();
+
                 if (response.Status == Status.OK)
                 {
                     ProductionWindowFactory.CreateMainWindow();
@@ -143,6 +153,12 @@ namespace DNAClient.ViewModel
                 {
                     MessageBox.Show(response.Message, "Błąd logowania");
                 }
+            };
+
+            if (loginWindow != null && !string.IsNullOrEmpty(this.Login))
+            {
+                loginWindow.Start_Loading();
+                worker.RunWorkerAsync();
             }
             else
             {
@@ -159,31 +175,43 @@ namespace DNAClient.ViewModel
         private void RegistrationOnServer(object parameter)
         {
             var loginWindow = parameter as LoginWindow;
+            var response = new AuthResponse();
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += (o, ea) =>
+            {
+                GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
+
+                var authRequest = new AuthRequest
+                                        {
+                                            Login = this.Login.ToLower(),
+                                            Password = loginWindow.Password.Password,
+                                            RequestType = Request.Type.Register,
+                                        };
+
+                response = this.rpcClient.AuthCall(authRequest.Serialize());
+            };
+
+            worker.RunWorkerCompleted += (o, ea) =>
+            {
+                loginWindow.Stop_Loading();
+
+                if (response.Status == Status.OK)
+                {
+                    ProductionWindowFactory.CreateMainWindow();
+                    this.CloseWindow(parameter);
+                }
+                else
+                {
+                    MessageBox.Show(response.Message, "Błąd rejestracji");
+                }
+            };
 
             if (loginWindow != null && !string.IsNullOrEmpty(this.Login))
             {
                 if (!string.IsNullOrEmpty(loginWindow.Password.Password) && loginWindow.Password.Password.Equals(loginWindow.RepeatPassword.Password))
                 {
-                    GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
-
-                    var authRequest = new AuthRequest
-                                          {
-                                              Login = this.Login.ToLower(),
-                                              Password = loginWindow.Password.Password,
-                                              RequestType = Request.Type.Register,
-                                          };
-
-                    var response = this.rpcClient.AuthCall(authRequest.Serialize());
-
-                    if (response.Status == Status.OK)
-                    {
-                        ProductionWindowFactory.CreateMainWindow();
-                        this.CloseWindow(parameter);
-                    }
-                    else
-                    {
-                        MessageBox.Show(response.Message, "Błąd rejestracji");
-                    }
+                    loginWindow.Start_Loading();
+                    worker.RunWorkerAsync();
                 }
                 else
                 {
@@ -205,17 +233,17 @@ namespace DNAClient.ViewModel
         private void ToRegistration(object parameter)
         {
             var loginWindow = parameter as LoginWindow;
+            loginWindow.Start_Loading();
             if (loginWindow != null)
             {
-                loginWindow.Hide();
                 loginWindow.Height = 365;
                 loginWindow.RepeatPassword.Visibility = Visibility.Visible;
                 loginWindow.buttonCreate.Visibility = Visibility.Visible;
                 loginWindow.buttonLog.Visibility = Visibility.Visible;
                 loginWindow.buttonRegister.Visibility = Visibility.Collapsed;
                 loginWindow.buttonLogin.Visibility = Visibility.Collapsed;
-                loginWindow.Show();
             }
+            loginWindow.Stop_Loading();
         }
 
         /// <summary>
@@ -227,17 +255,17 @@ namespace DNAClient.ViewModel
         private void ToLog(object parameter)
         {
             var loginWindow = parameter as LoginWindow;
+            loginWindow.Start_Loading();
             if (loginWindow != null)
             {
-                loginWindow.Hide();
                 loginWindow.Height = 323;
                 loginWindow.RepeatPassword.Visibility = Visibility.Collapsed;
                 loginWindow.buttonCreate.Visibility = Visibility.Collapsed;
                 loginWindow.buttonLog.Visibility = Visibility.Collapsed;
                 loginWindow.buttonRegister.Visibility = Visibility.Visible;
                 loginWindow.buttonLogin.Visibility = Visibility.Visible;
-                loginWindow.Show();
             }
+            loginWindow.Stop_Loading();
         }
 
         /// <summary>

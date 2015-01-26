@@ -66,6 +66,9 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WpfAnimatedGif">
+      <HintPath>..\packages\WpfAnimatedGif.1.4.12\lib\net\WpfAnimatedGif.dll</HintPath>
+    </Reference>
     <Reference Include="Xceed.Wpf.AvalonDock">
       <HintPath>..\packages\Extended.Wpf.Toolkit.2.3\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
     </Reference>
@@ -203,6 +206,13 @@
     <Resource Include="emots\e7_25.gif" />
     <Resource Include="emots\e8_25.gif" />
     <Resource Include="emots\e9_25.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Img\delete.png" />
+    <Resource Include="Img\history.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Img\loader.gif" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

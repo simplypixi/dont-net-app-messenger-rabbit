@@ -20,9 +20,12 @@ namespace DNAClient.ViewModel
     using System.Windows.Controls;
     using System.Windows.Documents;
     using System.Windows.Media.Imaging;
+    using System.ComponentModel;
+    using System.IO;
 
     using DNAClient.RabbitFunctions;
     using DNAClient.ViewModel.Base;
+    using DNAClient.View;
 
     using DTO;
 
@@ -261,7 +264,16 @@ namespace DNAClient.ViewModel
             if (this.selectedContact != null)
             {
                 var historyFile = this.userPath + "//" + this.SelectedContact.Name;
-                Process.Start(@historyFile);
+                if (File.Exists(historyFile))
+                {
+                    Process.Start("notepad.exe", @historyFile);
+                }
+                else
+                {
+                    MessageBox.Show(
+                    "Historia rozmów z tym użytkownikiem nie istnieje.",
+                    "Błąd");
+                }
             }
         }
 
@@ -299,6 +311,8 @@ namespace DNAClient.ViewModel
         /// </param>
         private void AddNewFriend(object parameter)
         {
+            var MainWindow = parameter as MainWindow;
+
             if (string.IsNullOrEmpty(this.NewFriendName))
             {
                 MessageBox.Show(
@@ -327,15 +341,29 @@ namespace DNAClient.ViewModel
                 }
                 else
                 {
-
-                    var friendRequest = new FriendRequest
+                    DTO.FriendResponse friendResponse = new  FriendResponse();
+                    BackgroundWorker worker = new BackgroundWorker();
+                    worker.DoWork += (o, ea) =>
                     {
-                        Login = this.CurrentUser.ToLower(),
-                        FriendLogin = this.NewFriendName,
-                        RequestType = Request.Type.AddFriend,
+
+                        var friendRequest = new FriendRequest
+                        {
+                            Login = this.CurrentUser.ToLower(),
+                            FriendLogin = this.NewFriendName,
+                            RequestType = Request.Type.AddFriend,
+                        };
+                    
+
+                        friendResponse = rpcClient.FriendCall(friendRequest.Serialize());
                     };
 
-                    var friendResponse = rpcClient.FriendCall(friendRequest.Serialize());
+                    worker.RunWorkerCompleted += (o, ea) =>
+                    {
+                        MainWindow.Stop_Loading();
+                    };
+
+                    MainWindow.Start_Loading();
+                    worker.RunWorkerAsync();
 
                     if (friendResponse.Status == Status.OK)
                     {
@@ -350,6 +378,8 @@ namespace DNAClient.ViewModel
                     }
                 }
             }
+
+
         }
 
         /// <summary>
