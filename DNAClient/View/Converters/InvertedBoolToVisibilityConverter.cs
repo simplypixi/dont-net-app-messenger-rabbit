@@ -17,7 +17,7 @@ namespace DNAClient.View.Converters
     /// <summary>
     /// Klasa konwertująca wartość bool na visibility do bindowania w XAML.
     /// </summary>
-    public class BoolToVisibilityConverter : IValueConverter
+    public class InvertedBoolToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -28,15 +28,15 @@ namespace DNAClient.View.Converters
 
             if (value is bool)
             {
-                return (bool)value ? Visibility.Visible : Visibility.Collapsed;
+                return (bool)value ? Visibility.Collapsed : Visibility.Visible;
             }
 
-            return Visibility.Collapsed;
+            return Visibility.Visible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return (Visibility)value == Visibility.Visible;
+            return (Visibility)value != Visibility.Visible;
         }
     }
 }

@@ -47,6 +47,8 @@ namespace DNAClient.ViewModel
 
         private bool isBusy;
 
+        private bool inRegistrationMode;
+
         /// <summary>
         /// Konstruktor viewmodelu okna logowania 
         /// </summary>
@@ -55,10 +57,11 @@ namespace DNAClient.ViewModel
             this.LoginCommand = new RelayCommand(this.LoginToServer);
             this.CloseWindowCommand = new RelayCommand(this.CloseWindow);
             this.RegistrationCommand = new RelayCommand(this.RegistrationOnServer);
-            this.ToLogCommand = new RelayCommand(this.ToLog);
-            this.ToRegistrationCommand = new RelayCommand(this.ToRegistration);
+            this.ToLogCommand = new RelayCommand(this.ToLoginMode);
+            this.ToRegistrationCommand = new RelayCommand(this.ToRegistrationMode);
             this.rpcClient = new RabbitRpcConnection();
             this.IsBusy = false;
+            this.InRegistrationMode = false;
         }
 
         /// <summary>
@@ -115,6 +118,20 @@ namespace DNAClient.ViewModel
             {
                 this.isBusy = value;
                 this.RaisePropertyChanged("IsBusy");
+            }
+        }
+
+        public bool InRegistrationMode
+        {
+            get
+            {
+                return this.inRegistrationMode;
+            }
+
+            set
+            {
+                this.inRegistrationMode = value;
+                this.RaisePropertyChanged("InRegistrationMode");
             }
         }
 
@@ -191,22 +208,11 @@ namespace DNAClient.ViewModel
         /// Metoda zmiany wyglądu okna na tryb rejestracja
         /// </summary>
         /// <param name="parameter">
-        /// Parametr funkcji
+        ///     Parametr funkcji
         /// </param>
-        private void ToRegistration(object parameter)
+        private void ToRegistrationMode(object parameter)
         {
-            var loginWindow = parameter as LoginWindow;
-            if (loginWindow != null)
-            {
-                this.IsBusy = true;
-                loginWindow.Height = 365;
-                loginWindow.RepeatPassword.Visibility = Visibility.Visible;
-                loginWindow.buttonCreate.Visibility = Visibility.Visible;
-                loginWindow.buttonLog.Visibility = Visibility.Visible;
-                loginWindow.buttonRegister.Visibility = Visibility.Collapsed;
-                loginWindow.buttonLogin.Visibility = Visibility.Collapsed;
-                this.IsBusy = false;
-            }
+            this.InRegistrationMode = true;
         }
 
         /// <summary>
@@ -215,20 +221,9 @@ namespace DNAClient.ViewModel
         /// <param name="parameter">
         /// Parametr funkcji
         /// </param>
-        private void ToLog(object parameter)
+        private void ToLoginMode(object parameter)
         {
-            var loginWindow = parameter as LoginWindow;
-            if (loginWindow != null)
-            {
-                this.IsBusy = true;
-                loginWindow.Height = 323;
-                loginWindow.RepeatPassword.Visibility = Visibility.Collapsed;
-                loginWindow.buttonCreate.Visibility = Visibility.Collapsed;
-                loginWindow.buttonLog.Visibility = Visibility.Collapsed;
-                loginWindow.buttonRegister.Visibility = Visibility.Visible;
-                loginWindow.buttonLogin.Visibility = Visibility.Visible;
-                this.IsBusy = false;
-            }
+            this.InRegistrationMode = false;
         }
 
         /// <summary>

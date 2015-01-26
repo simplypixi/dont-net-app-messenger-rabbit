@@ -112,6 +112,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="View\Converters\BoolToVisibilityConverter.cs" />
+    <Compile Include="View\Converters\InvertedBoolToVisibilityConverter.cs" />
     <Compile Include="View\LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>
     </Compile>
