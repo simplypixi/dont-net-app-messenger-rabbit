@@ -18,7 +18,7 @@ namespace DTO
     using RabbitMQ.Client;
     public static class Constants
     {
-        public static ConnectionFactory ConnectionFactory = new ConnectionFactory() { HostName = "10.100.6.119", UserName = "dna", Password = "dna" };
+        public static ConnectionFactory ConnectionFactory = new ConnectionFactory() { HostName = "localhost" }; //"10.100.6.119", UserName = "dna", Password = "dna" };
         public static string keyServerRequestMessage = "server.request.message";
         public static string keyServerRequestGetOld = "server.request.getold";
         public static string keyServerRequestLogOff = "server.request.logoff";

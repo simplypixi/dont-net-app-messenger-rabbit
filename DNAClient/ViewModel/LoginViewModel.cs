@@ -11,11 +11,13 @@ namespace DNAClient.ViewModel
 {
     using System.Threading;
     using System.Windows;
+    using System.ComponentModel;
 
     using DNAClient.RabbitFunctions;
     using DNAClient.View;
     using DNAClient.ViewModel.Base;
     using DTO;
+
 
     /// <summary>
     /// View model okna logowania
@@ -121,22 +123,36 @@ namespace DNAClient.ViewModel
         {
             var loginWindow = parameter as LoginWindow;
 
-            loginWindow.Start_Loading();
-
-            if (loginWindow != null && !string.IsNullOrEmpty(this.Login))
+            DTO.Response response = new Response();
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += (o, ea) =>
             {
-                GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
-               
-                var authRequest = new AuthRequest
-                                      {
-                                          Login = this.Login.ToLower(),
-                                          Password = loginWindow.Password.Password,
-                                          RequestType = Request.Type.Login,
-                                      };
+
+                if (loginWindow != null && !string.IsNullOrEmpty(this.Login))
+                {
+                    GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
+
+                    var authRequest = new AuthRequest
+                                            {
+                                                Login = this.Login.ToLower(),
+                                                Password = loginWindow.Password.Password,
+                                                RequestType = Request.Type.Login,
+                                            };
 
 
-                var response = this.rpcClient.AuthCall(authRequest.Serialize());
-                response.Status = Status.OK;
+                    response = this.rpcClient.AuthCall(authRequest.Serialize());
+
+                }
+                else
+                {
+                    MessageBox.Show("Należy podać login.", "Błąd logowania");
+                }
+            };
+
+            worker.RunWorkerCompleted += (o, ea) =>
+            {
+                loginWindow.Stop_Loading();
+
                 if (response.Status == Status.OK)
                 {
                     ProductionWindowFactory.CreateMainWindow();
@@ -144,16 +160,12 @@ namespace DNAClient.ViewModel
                 }
                 else
                 {
-                    loginWindow.Stop_Loading();
                     MessageBox.Show(response.Message, "Błąd logowania");
                 }
-      
-            }
-            else
-            {
-                loginWindow.Stop_Loading();
-                MessageBox.Show("Należy podać login.", "Błąd logowania");
-            }
+            };
+            loginWindow.Start_Loading();
+            worker.RunWorkerAsync();
+
         }
 
         /// <summary>
@@ -166,47 +178,55 @@ namespace DNAClient.ViewModel
         {
             var loginWindow = parameter as LoginWindow;
 
-            loginWindow.Start_Loading();
-
-            if (loginWindow != null && !string.IsNullOrEmpty(this.Login))
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += (o, ea) =>
             {
-                if (!string.IsNullOrEmpty(loginWindow.Password.Password) && loginWindow.Password.Password.Equals(loginWindow.RepeatPassword.Password))
+
+                if (loginWindow != null && !string.IsNullOrEmpty(this.Login))
                 {
-                    GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
-
-                   
-                    var authRequest = new AuthRequest
-                                          {
-                                              Login = this.Login.ToLower(),
-                                              Password = loginWindow.Password.Password,
-                                              RequestType = Request.Type.Register,
-                                          };
-
-                    var response = this.rpcClient.AuthCall(authRequest.Serialize());
-
-               
-
-                    if (response.Status == Status.OK)
+                    if (!string.IsNullOrEmpty(loginWindow.Password.Password) && loginWindow.Password.Password.Equals(loginWindow.RepeatPassword.Password))
                     {
-                        ProductionWindowFactory.CreateMainWindow();
-                        this.CloseWindow(parameter);
+                        GlobalsParameters.Instance.CurrentUser = this.Login.ToLower();
+
+
+                        var authRequest = new AuthRequest
+                                              {
+                                                  Login = this.Login.ToLower(),
+                                                  Password = loginWindow.Password.Password,
+                                                  RequestType = Request.Type.Register,
+                                              };
+
+                        var response = this.rpcClient.AuthCall(authRequest.Serialize());
+
+                        response.Status = Status.OK;
+
+                        if (response.Status == Status.OK)
+                        {
+                            ProductionWindowFactory.CreateMainWindow();
+                            this.CloseWindow(parameter);
+                        }
+                        else
+                        {
+                            MessageBox.Show(response.Message, "Błąd rejestracji");
+                        }
                     }
                     else
                     {
-                        MessageBox.Show(response.Message, "Błąd rejestracji");
+                        MessageBox.Show("Nie wprowadzono haseł lub wprowadzone hasło i jego potwierdzenie są różne.", "Błąd rejestracji");
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Nie wprowadzono haseł lub wprowadzone hasło i jego potwierdzenie są różne.", "Błąd rejestracji");
+                    MessageBox.Show("Należy podać login.", "Błąd rejestracji");
                 }
-            }
-            else
-            {
-                MessageBox.Show("Należy podać login.", "Błąd rejestracji");
-            }
+            };
 
-            loginWindow.Stop_Loading();
+            worker.RunWorkerCompleted += (o, ea) =>
+            {
+                loginWindow.Stop_Loading();
+            };
+            loginWindow.Start_Loading();
+            worker.RunWorkerAsync();
         }
 
         /// <summary>

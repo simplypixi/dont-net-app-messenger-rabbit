@@ -24,8 +24,6 @@ namespace DNAClient.View
             RepeatPassword.Password = "Powtórz hasło";
             Password.Password = "Wpisz hasło";
             Login.Text = "Wpisz login";
-
-            this.Stop_Loading();
         }
 
         private void LoginWindow_MouseDown(object sender, MouseButtonEventArgs e)
